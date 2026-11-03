@@ -1,0 +1,34 @@
+# CLAUDE.md — Radar de explotación activa (KEV/EPSS)
+
+Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan completo en
+`C:\Users\Jorge\.claude\plans\pasted-content-id-f06a-rol-act-a-iridescent-kurzweil.md`.
+
+## Stack
+- Backend: Python 3.12, FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, pandas (`backend/`)
+- BD: PostgreSQL 16 con tres bases aisladas: `radar` (app), `n8n`, `langflow`
+- Orquestación: n8n self-hosted (`n8n/workflows/*.json`)
+- IA: LangChain (en el backend) + LangFlow (`langflow/flows/*.json`); proveedor por `.env` (`LLM_PROVIDER`)
+- Frontend: React + Vite + TypeScript, Tailwind v4 (plugin Vite), motion, Phosphor, sonner (`frontend/`)
+- UI toda en español; interfaz muestra hora en America/Lima, BD guarda UTC
+
+## Comandos
+- Levantar todo: `docker compose up -d --build` (generar `.env` antes: `sh scripts/gen-secrets.sh` o `scripts/gen-secrets.ps1`)
+- Con Ollama: `docker compose --profile ollama up -d`
+- Tests backend: `docker compose run --rm backend pytest`
+- Lint/tipos backend: `docker compose run --rm backend sh -c "ruff check . && mypy app"`
+- Migrar: `docker compose run --rm backend alembic upgrade head`; nueva: `alembic revision --autogenerate -m "msg"`
+- Frontend (en `frontend/`): `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`
+- Servicios: app :8080, API :8000 (`/docs`), n8n :5678, LangFlow :7860, Mailpit :8025
+
+## Convenciones
+- Python local es 3.11: el backend se ejecuta y prueba SIEMPRE en el contenedor (3.12).
+- Ningún secreto en el código; todo en `.env` (fuera de git). `.env.example` documentado.
+- Permisos `módulo:acción` validados en el backend; el frontend solo oculta.
+- n8n NUNCA escribe en tablas de la app: usa `/api/v1/internal/*` con `X-Service-Key`.
+- Cruce, score y SLA: lógica determinista en `backend/app/services` (pandas); la IA nunca decide detección.
+- La IA solo responde con datos recuperados (grounding), con salida estructurada y registro en bitácora.
+- `audit_log` es solo de añadir (trigger + hash encadenado). Sin endpoints de edición/borrado.
+- Antes de cerrar una fase: lint + tipos + tests + build, demostración y commit. Sin errores pendientes.
+- Diseño: skills en `.claude/skills` (emil-design-eng, impeccable, design-taste-frontend). Modo "Operate": densidad legible,
+  severidad con color + texto/icono, animaciones <300 ms, `prefers-reduced-motion`.
+- Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).

@@ -1,0 +1,8 @@
+-r requirements.txt
+pytest==8.3.*
+pytest-asyncio==0.25.*
+respx==0.22.*
+ruff==0.8.*
+mypy==1.13.*
+pip-audit==2.7.*
+pandas-stubs

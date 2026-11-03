@@ -1,0 +1,113 @@
+name: radar
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *restart
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      RADAR_DB_PASSWORD: ${RADAR_DB_PASSWORD}
+      N8N_DB_PASSWORD: ${N8N_DB_PASSWORD}
+      LANGFLOW_DB_PASSWORD: ${LANGFLOW_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    <<: *restart
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: "true"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://radar_app:${RADAR_DB_PASSWORD}@postgres:5432/radar
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    <<: *restart
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+  n8n:
+    <<: *restart
+    image: n8nio/n8n:3.1.0
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: n8n
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Lima}
+      TZ: ${GENERIC_TIMEZONE:-America/Lima}
+      RADAR_SERVICE_KEY: ${RADAR_SERVICE_KEY}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    volumes:
+      - n8ndata:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5678/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  langflow:
+    <<: *restart
+    image: langflowai/langflow:1.13.0
+    environment:
+      LANGFLOW_DATABASE_URL: postgresql://langflow:${LANGFLOW_DB_PASSWORD}@postgres:5432/langflow
+      LANGFLOW_AUTO_LOGIN: "false"
+      LANGFLOW_SUPERUSER: ${LANGFLOW_SUPERUSER}
+      LANGFLOW_SUPERUSER_PASSWORD: ${LANGFLOW_SUPERUSER_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${LANGFLOW_PORT:-7860}:7860"
+    volumes:
+      - ./langflow/flows:/flows:ro
+
+  mailpit:
+    <<: *restart
+    image: axllent/mailpit:v1.33
+    ports:
+      - "8025:8025"
+
+  ollama:
+    <<: *restart
+    image: ollama/ollama:0.40.14
+    profiles: ["ollama"]
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  pgdata:
+  n8ndata:
+  ollama:
