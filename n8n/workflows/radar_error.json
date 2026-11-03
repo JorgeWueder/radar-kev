@@ -1,0 +1,67 @@
+{
+  "id": "RadarError01",
+  "name": "Radar: registro de errores",
+  "active": false,
+  "nodes": [
+    {
+      "id": "d66d8302-67f6-5521-b962-f0abb37d73c4",
+      "name": "Error en el flujo diario",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "4e16acce-6981-5e48-9dda-8dd3af8b171c",
+      "name": "Registrar fallo en la app",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/runs/fail-latest",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({node: $json.execution.lastNodeExecuted || 'desconocido', message: ($json.execution.error && $json.execution.error.message) || 'error no controlado'}) }}"
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "Error en el flujo diario": {
+      "main": [
+        [
+          {
+            "node": "Registrar fallo en la app",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9e9179db-b820-5796-8d74-dbd2befafdba",
+  "pinData": {},
+  "tags": []
+}

@@ -5,6 +5,9 @@ os.environ["ENVIRONMENT"] = "test"
 os.environ["JWT_SECRET"] = "test-secret-test-secret-test-secret-123456"
 os.environ["TRUST_PROXY_HEADERS"] = "false"
 os.environ["RADAR_SERVICE_KEY"] = "test-service-key"
+os.environ["FERNET_KEY"] = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="  # 32 bytes, solo para tests
+os.environ["ALERT_EMAIL_TO"] = "equipo@test.example"
+os.environ["ALERT_WEBHOOK_URL"] = ""
 
 import uuid  # noqa: E402
 from collections.abc import Iterator  # noqa: E402
@@ -81,3 +84,33 @@ def login(c: TestClient, email: str, password: str = PASSWORD) -> dict[str, str]
     r = c.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+@pytest.fixture(autouse=True)
+def _no_real_smtp(monkeypatch: pytest.MonkeyPatch) -> Iterator[list[object]]:
+    """Ningún test envía correo real (ni a Mailpit): el SMTP se sustituye por un registro en memoria."""
+    from app.services import notifications
+
+    sent: list[object] = []
+
+    class RecordingSMTP:
+        def __init__(self, host: str, port: int, timeout: int = 0) -> None:
+            pass
+
+        def __enter__(self) -> "RecordingSMTP":
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            return None
+
+        def starttls(self) -> None:
+            return None
+
+        def login(self, user: str, password: str) -> None:
+            return None
+
+        def send_message(self, msg: object) -> None:
+            sent.append(msg)
+
+    monkeypatch.setattr(notifications.smtplib, "SMTP", RecordingSMTP)
+    yield sent

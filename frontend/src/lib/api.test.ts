@@ -61,3 +61,12 @@ describe('criticidad', () => {
     expect(criticalityKind(1)).toBe('neutral')
   })
 })
+
+describe('etiquetas de tickets', () => {
+  it('cubren todos los estados, prioridades y SLA que envía el backend', async () => {
+    const { PRIORITY, SLA, TICKET_STATUS, BAND } = await import('./labels')
+    for (const s of ['open', 'in_progress', 'resolved', 'closed', 'risk_accepted']) expect(TICKET_STATUS[s]).toBeDefined()
+    for (const p of ['critical', 'high', 'medium', 'low']) { expect(PRIORITY[p]).toBeDefined(); expect(BAND[p]).toBeDefined() }
+    for (const s of ['vencido', 'por_vencer', 'en_plazo', 'no_aplica']) expect(SLA[s]).toBeDefined()
+  })
+})

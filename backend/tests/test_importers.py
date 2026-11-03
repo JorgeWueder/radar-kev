@@ -24,14 +24,14 @@ def test_csv_accepts_aliases_semicolon_and_comma_decimal() -> None:
 
 def test_csv_reports_row_errors_without_aborting() -> None:
     data = (
-        "hostname,ip,cve,cvss\n"
-        "ok-1,10.0.0.1,CVE-2021-44228,9.8\n"
-        "bad host!,10.0.0.2,CVE-2021-44228,9.8\n"
-        "ok-2,999.1.1.1,CVE-2021-44228,9.8\n"
-        "ok-3,10.0.0.3,NOT-A-CVE,9.8\n"
-        "ok-4,10.0.0.4,CVE-2021-44228,11\n"
-        "ok-5,10.0.0.5,CVE-2022-0778,abc\n"
-    ).encode()
+        b"hostname,ip,cve,cvss\n"
+        b"ok-1,10.0.0.1,CVE-2021-44228,9.8\n"
+        b"bad host!,10.0.0.2,CVE-2021-44228,9.8\n"
+        b"ok-2,999.1.1.1,CVE-2021-44228,9.8\n"
+        b"ok-3,10.0.0.3,NOT-A-CVE,9.8\n"
+        b"ok-4,10.0.0.4,CVE-2021-44228,11\n"
+        b"ok-5,10.0.0.5,CVE-2022-0778,abc\n"
+    )
     r = parse_csv(data)
     assert len(r.rows) == 1 and r.total_errors == 5
     assert [e["row"] for e in r.errors] == [3, 4, 5, 6, 7]

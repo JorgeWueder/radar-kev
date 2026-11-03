@@ -40,3 +40,18 @@ export const SLA: Record<string, [Kind, string]> = {
   en_plazo: ['ok', 'En plazo'],
   no_aplica: ['neutral', 'No aplica'],
 }
+
+export const TICKET_STATUS: Record<string, [Kind, string]> = {
+  open: ['warn', 'Abierto'],
+  in_progress: ['neutral', 'En remediación'],
+  resolved: ['ok', 'Resuelto'],
+  closed: ['ok', 'Cerrado'],
+  risk_accepted: ['neutral', 'Riesgo aceptado'],
+}
+
+export const PRIORITY: Record<string, [Kind, string]> = {
+  critical: ['danger', 'Crítica'],
+  high: ['warn', 'Alta'],
+  medium: ['neutral', 'Media'],
+  low: ['ok', 'Baja'],
+}

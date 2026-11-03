@@ -155,6 +155,66 @@ export default function SettingsPage() {
           </div>
         </Panel>
       </div>
+      <IntegrationsPanel />
     </>
+  )
+}
+
+type Integrations = Record<'smtp_host' | 'smtp_port' | 'smtp_user' | 'smtp_password' | 'smtp_from' | 'alert_email_to' | 'webhook_url' | 'webhook_kind' | 'telegram_chat_id', string>
+
+const KINDS: [string, string][] = [['generic', 'Genérico (Teams u otro)'], ['slack', 'Slack'], ['telegram', 'Telegram']]
+
+function IntegrationsPanel() {
+  const { can } = useAuth()
+  const qc = useQueryClient()
+  const editable = can('settings', 'edit')
+  const cur = useQuery({ queryKey: ['integrations'], queryFn: () => api.get<Integrations>('/settings/integrations') })
+  const [draft, setDraft] = useState<Integrations | null>(null)
+  const v = draft ?? cur.data
+  const set = (k: keyof Integrations) => (e: { target: { value: string } }) => v && setDraft({ ...v, [k]: e.target.value })
+
+  const save = useMutation({
+    mutationFn: () => api.put<Integrations>('/settings/integrations', { ...draft, smtp_port: Number(draft?.smtp_port) }),
+    onSuccess: () => { toast.success('Integraciones guardadas'); setDraft(null); void qc.invalidateQueries({ queryKey: ['integrations'] }) },
+    onError: (e: Error) => toast.error(e.message),
+  })
+  const test = useMutation({
+    mutationFn: (channel: 'email' | 'webhook') => api.post(`/settings/integrations/test-${channel}`),
+    onSuccess: () => toast.success('Prueba enviada'),
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  if (cur.isPending) return <Panel className="mt-4"><Skeleton cols={3} rows={4} /></Panel>
+  if (cur.isError || !v) return <Panel className="mt-4"><ErrorState message={cur.error?.message ?? 'Error'} onRetry={() => void cur.refetch()} /></Panel>
+  const f = (k: keyof Integrations, label: string, type = 'text', ph = '') => (
+    <Field label={label}><Input type={type} placeholder={ph} value={v[k]} disabled={!editable} autoComplete="off" onChange={set(k)} /></Field>
+  )
+  return (
+    <Panel className="mt-4 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-[14px] font-semibold">Canales de alerta</h2>
+          <p className="text-[12px] text-muted">Alerta urgente por correo (SMTP) y por webhook. Los secretos se guardan cifrados y nunca se muestran.</p>
+        </div>
+        {editable && (
+          <div className="flex gap-2">
+            <Button disabled={draft !== null || test.isPending} onClick={() => test.mutate('email')}>Probar correo</Button>
+            <Button disabled={draft !== null || test.isPending} onClick={() => test.mutate('webhook')}>Probar webhook</Button>
+            <Button variant="primary" disabled={!draft || save.isPending} onClick={() => save.mutate()}>Guardar</Button>
+          </div>
+        )}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {f('smtp_host', 'Servidor SMTP')}{f('smtp_port', 'Puerto', 'number')}{f('smtp_user', 'Usuario SMTP')}{f('smtp_password', 'Contraseña SMTP', 'password', 'Sin cambios')}
+        {f('smtp_from', 'Remitente')}<div className="md:col-span-1 xl:col-span-3">{f('alert_email_to', 'Destinatarios (separados por coma)')}</div>
+        <Field label="Tipo de webhook">
+          <select className="h-8 w-full rounded-md border border-line bg-surface px-2 text-[13px]" value={v.webhook_kind} disabled={!editable} onChange={set('webhook_kind')}>
+            {KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+        </Field>
+        <div className="md:col-span-1 xl:col-span-2">{f('webhook_url', 'URL del webhook', 'password', 'https://…')}</div>
+        {v.webhook_kind === 'telegram' && f('telegram_chat_id', 'Chat ID de Telegram')}
+      </div>
+    </Panel>
   )
 }

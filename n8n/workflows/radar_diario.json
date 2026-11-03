@@ -1,0 +1,1019 @@
+{
+  "id": "RadarDiario01",
+  "name": "Radar diario KEV/EPSS",
+  "active": true,
+  "nodes": [
+    {
+      "id": "17dff454-3b95-57ec-9ab0-ff7ed604fb51",
+      "name": "Cron diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "9cfd82d9-ea49-5485-bd82-1c84eb7546ea",
+      "name": "Ejecución manual (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "radar-manual",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "73a66d21-8f68-5833-87ca-80be6b1ae327"
+    },
+    {
+      "id": "70f7d616-81a9-54cc-9b02-1ea3dc1240c7",
+      "name": "¿Llamada autorizada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e17c53dd-0b52-5a89-88cf-d813d9d15764",
+              "leftValue": "={{ $json.headers['x-service-key'] }}",
+              "rightValue": "={{ $env.RADAR_SERVICE_KEY }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5810357d-3709-5c6c-8e85-ee3ce1d3488d",
+      "name": "Responder 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"iniciado\"}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "d04500f4-c782-5d2f-b799-8c8249088004",
+      "name": "Responder 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\": \"clave de servicio inválida\"}",
+        "options": {
+          "responseCode": 401
+        }
+      }
+    },
+    {
+      "id": "e9fd143a-7984-501e-a33c-745bd5c1d51f",
+      "name": "Parámetros (programado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fdc873cc-50c6-59e2-9640-6e1f60e6ce28",
+              "name": "trigger",
+              "value": "cron",
+              "type": "string"
+            },
+            {
+              "id": "c0ad5859-ec52-5e5e-909c-e80f28cd3a43",
+              "name": "force",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "25e1781c-33af-5419-903e-c4624024a1fb",
+      "name": "Parámetros (manual)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        240
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ea796394-62d6-594e-a707-62b9bcb22206",
+              "name": "trigger",
+              "value": "manual",
+              "type": "string"
+            },
+            {
+              "id": "b44c6916-300f-5d23-92b3-73c5f750bdbb",
+              "name": "force",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "ca3ecb42-a865-52e8-8c3a-3f036497a6a8",
+      "name": "Iniciar ejecución",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/runs/start",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({trigger: $json.trigger, force: $json.force}) }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "2b78ff44-0fa5-51e9-9613-114f3532b5be",
+      "name": "¿Ya se ejecutó hoy?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1300,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "39d5fa01-2ab6-5672-980d-b7be337bb3fd",
+              "leftValue": "={{ $json.skipped }}",
+              "rightValue": null,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "563d369f-73d1-5c78-aede-a83c329107a5",
+      "name": "Fin: ejecución omitida",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        20
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e87c13f4-4449-5cec-9183-e8d16ccbbbae",
+      "name": "HTTP KEV (CISA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        180
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.KEV_URL }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ce927c2d-6686-5b20-9a0a-63d0b74c7b5e",
+      "name": "Ingesta KEV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/kev/ingest",
+        "options": {
+          "timeout": 120000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "run_id",
+              "value": "={{ $('Iniciar ejecución').first().json.run_id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "bae0daea-9ed0-5714-89e4-09f12b98b894",
+      "name": "Fallo: descarga de KEV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        340
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/runs/{{ $('Iniciar ejecución').first().json.run_id }}/fail",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({node: 'HTTP KEV (CISA)', message: String(($json.error && ($json.error.message || $json.error.description)) || 'sin detalle').toString().slice(0, 500) }) }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "6771f459-8e36-5443-8a51-4952dc37dd86",
+      "name": "Fallo: ingesta de KEV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        340
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/runs/{{ $('Iniciar ejecución').first().json.run_id }}/fail",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({node: 'Ingesta KEV', message: String(($json.error && ($json.error.message || $json.error.description)) || 'sin detalle').toString().slice(0, 500) }) }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "c4d7a521-4158-59a8-bb57-ce95e03c1b79",
+      "name": "CVEs del inventario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.RADAR_API_URL }}/internal/inventory/cves",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f6775d0d-9da2-5562-8c4c-fd55b4e3ceda",
+      "name": "¿Inventario con CVEs?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2340,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c5986599-a7fd-56e3-b894-e702d3b205d7",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "28bcbfe5-6760-543b-894e-bcbe8b004097",
+      "name": "Lotes EPSS (≤100 CVEs y ≤1900 caracteres)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        20
+      ],
+      "parameters": {
+        "jsCode": "// Lotes de la API de EPSS: la lógica real vive en el backend; esto solo parte la lista de CVEs.\nconst cves = $input.first().json.cves || [];\nconst MAX_N = 100, MAX_CHARS = 1900;\nconst batches = [];\nlet cur = [], size = 0;\nfor (const cve of cves) {\n  const add = cve.length + (cur.length ? 1 : 0);\n  if (cur.length && (cur.length >= MAX_N || size + add > MAX_CHARS)) { batches.push(cur); cur = []; size = 0; }\n  cur.push(cve);\n  size += cve.length + (cur.length > 1 ? 1 : 0);\n}\nif (cur.length) batches.push(cur);\nreturn batches.map((b) => ({ json: { cves: b.join(','), n: b.length } }));\n"
+      }
+    },
+    {
+      "id": "f0122b9f-b7e6-5e86-99b3-1c32442234f1",
+      "name": "HTTP EPSS (FIRST)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        20
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.EPSS_API_URL }}",
+        "options": {
+          "timeout": 60000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "cve",
+              "value": "={{ $json.cves }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "a9734418-0027-52c8-99ca-e91727d068c7",
+      "name": "Agregar EPSS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all().flatMap((i) => i.json.data || []);\nreturn [{ json: { run_id: $('Iniciar ejecución').first().json.run_id, items } }];\n"
+      }
+    },
+    {
+      "id": "d2747893-9f1b-58ee-bee1-c0efc428a230",
+      "name": "Ingesta EPSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3380,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/epss/ingest",
+        "options": {
+          "timeout": 120000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "286f32a1-ee0a-516e-a34c-ae174f1674eb",
+      "name": "Respaldo: CSV diario de EPSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/epss/fallback",
+        "options": {
+          "timeout": 180000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({run_id: $('Iniciar ejecución').first().json.run_id}) }}"
+      },
+      "onError": "continueRegularOutput",
+      "executeOnce": true
+    },
+    {
+      "id": "37127c99-9a50-52cc-a3b1-f2e6c32238c6",
+      "name": "Cruce con inventario (pandas)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3640,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/correlate",
+        "options": {
+          "timeout": 180000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({run_id: $('Iniciar ejecución').first().json.run_id}) }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "cac958b9-4b31-578d-a20e-7eeabff8dfbf",
+      "name": "¿Hay nueva entrada KEV en mi entorno?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3900,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "884ef2d3-c80c-58e2-849c-cabd5211eb47",
+              "leftValue": "={{ $json.new_matches.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "91167d8d-3d0c-5b4e-b354-889e5a73c553",
+      "name": "Preparar tabla de registro (PostgreSQL)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4160,
+        20
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS radar_run_log (id bigserial PRIMARY KEY, run_id uuid NOT NULL, run_date date NOT NULL, new_matches int NOT NULL, payload jsonb, created_at timestamptz DEFAULT now())",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "radarN8nDb",
+          "name": "PostgreSQL de n8n (registro propio)"
+        }
+      }
+    },
+    {
+      "id": "6803ede1-143e-51ac-bf34-37925c41d51f",
+      "name": "Registro propio de n8n (PostgreSQL)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4420,
+        20
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO radar_run_log (run_id, run_date, new_matches, payload) VALUES ($1::uuid, CURRENT_DATE, $2::int, $3::jsonb)",
+        "options": {
+          "queryReplacement": "={{ [$('Iniciar ejecución').first().json.run_id, $('Cruce con inventario (pandas)').first().json.new_matches.length, JSON.stringify($('Cruce con inventario (pandas)').first().json.new_matches.map(m => ({cve: m.cve_id, host: m.hostname, score: m.risk_score})))] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "radarN8nDb",
+          "name": "PostgreSQL de n8n (registro propio)"
+        }
+      }
+    },
+    {
+      "id": "fc9db3c9-3303-54a4-b571-56c3010ed6a1",
+      "name": "Alerta urgente y tickets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4680,
+        20
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/alerts/dispatch",
+        "options": {
+          "timeout": 120000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({run_id: $('Iniciar ejecución').first().json.run_id, matches: $('Cruce con inventario (pandas)').first().json.new_matches}) }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f0af88ac-bb08-51e4-af1a-309250792143",
+      "name": "Bitácora: cierre de la ejecución",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4940,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/runs/{{ $('Iniciar ejecución').first().json.run_id }}/finish",
+        "options": {
+          "timeout": 60000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "Cron diario": {
+      "main": [
+        [
+          {
+            "node": "Parámetros (programado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecución manual (webhook)": {
+      "main": [
+        [
+          {
+            "node": "¿Llamada autorizada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Llamada autorizada?": {
+      "main": [
+        [
+          {
+            "node": "Responder 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder 200": {
+      "main": [
+        [
+          {
+            "node": "Parámetros (manual)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parámetros (programado)": {
+      "main": [
+        [
+          {
+            "node": "Iniciar ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parámetros (manual)": {
+      "main": [
+        [
+          {
+            "node": "Iniciar ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar ejecución": {
+      "main": [
+        [
+          {
+            "node": "¿Ya se ejecutó hoy?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Ya se ejecutó hoy?": {
+      "main": [
+        [
+          {
+            "node": "Fin: ejecución omitida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP KEV (CISA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP KEV (CISA)": {
+      "main": [
+        [
+          {
+            "node": "Ingesta KEV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallo: descarga de KEV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingesta KEV": {
+      "main": [
+        [
+          {
+            "node": "CVEs del inventario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallo: ingesta de KEV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CVEs del inventario": {
+      "main": [
+        [
+          {
+            "node": "¿Inventario con CVEs?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Inventario con CVEs?": {
+      "main": [
+        [
+          {
+            "node": "Lotes EPSS (≤100 CVEs y ≤1900 caracteres)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cruce con inventario (pandas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lotes EPSS (≤100 CVEs y ≤1900 caracteres)": {
+      "main": [
+        [
+          {
+            "node": "HTTP EPSS (FIRST)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP EPSS (FIRST)": {
+      "main": [
+        [
+          {
+            "node": "Agregar EPSS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respaldo: CSV diario de EPSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar EPSS": {
+      "main": [
+        [
+          {
+            "node": "Ingesta EPSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingesta EPSS": {
+      "main": [
+        [
+          {
+            "node": "Cruce con inventario (pandas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respaldo: CSV diario de EPSS": {
+      "main": [
+        [
+          {
+            "node": "Cruce con inventario (pandas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cruce con inventario (pandas)": {
+      "main": [
+        [
+          {
+            "node": "¿Hay nueva entrada KEV en mi entorno?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay nueva entrada KEV en mi entorno?": {
+      "main": [
+        [
+          {
+            "node": "Preparar tabla de registro (PostgreSQL)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bitácora: cierre de la ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar tabla de registro (PostgreSQL)": {
+      "main": [
+        [
+          {
+            "node": "Registro propio de n8n (PostgreSQL)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro propio de n8n (PostgreSQL)": {
+      "main": [
+        [
+          {
+            "node": "Alerta urgente y tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta urgente y tickets": {
+      "main": [
+        [
+          {
+            "node": "Bitácora: cierre de la ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Lima",
+    "errorWorkflow": "RadarError01",
+    "saveManualExecutions": true
+  },
+  "versionId": "0f212f10-6c3b-5350-839c-79031ba8be64",
+  "pinData": {},
+  "tags": []
+}

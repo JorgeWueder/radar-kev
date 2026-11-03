@@ -34,7 +34,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
 
 ## Estado de fases
-- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación) y 3 (KEV, EPSS, cruce pandas, score/SLA, catálogo KEV, configuración, ejecuciones) completas.
+- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) y 4 (n8n, alertas, tickets, integraciones) completas.
 - Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
 - Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
 - Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
@@ -51,3 +51,14 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
   Recalcular tras cambiar la fórmula usa `mark_matches=False` para no gastar esas coincidencias.
 - EPSS/CVSS ausentes cuentan 0 en el score (no se inventan). Con los pesos por defecto todo CVE en KEV tiende a saturar en 90 a 100.
 - El seed (`SEED_ON_START=true`) crea 16 activos y ~40 hallazgos reales (`app/seed_demo.py`); idempotente.
+
+## Fase 4: n8n, alertas y tickets
+- Workflow en `n8n/workflows/` (ver `n8n/README.md`). Se importa y publica solo al levantar (`n8n-import`); tras editar un JSON:
+  `docker compose up -d --force-recreate n8n-import n8n`. Los `.sh` deben tener finales de línea LF (`.gitattributes`).
+- Disparo manual: `curl -X POST localhost:5678/webhook/radar-manual -H "X-Service-Key: $RADAR_SERVICE_KEY" -d '{}'` o el botón "Ejecutar ahora".
+- `services/alerting.py`: alerta + ticket por coincidencia NUEVA (UNIQUE + ON CONFLICT DO NOTHING) y UN correo/webhook resumen por ejecución.
+  Un canal caído no detiene al otro; el resultado queda en `alert_deliveries`.
+- Resolver un ticket mitiga el hallazgo; aceptar el riesgo lo marca `accepted`; reabrir lo devuelve a `open`.
+- SMTP/webhook configurables en la app (secretos cifrados con Fernet) con respaldo en `.env`. Mailpit (:8025) captura los correos en desarrollo.
+- Los tests nunca envían correo real (fixture autouse `_no_real_smtp`).
+- Los errores de fuentes externas se truncan al registrarlos (pueden ser páginas HTML enteras).

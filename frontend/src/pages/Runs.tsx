@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 
-import { EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
+import { toast } from 'sonner'
+
+import { Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { formatDuration, formatLima } from '../lib/format'
 import type { Kind } from '../lib/labels'
 
@@ -17,12 +20,27 @@ const STATUS: Record<string, [Kind, string]> = {
 }
 
 export default function Runs() {
+  const { can } = useAuth()
+  const qc = useQueryClient()
   const [open, setOpen] = useState<string | null>(null)
   const list = useQuery({ queryKey: ['runs'], queryFn: () => api.get<{ items: Run[]; total: number }>('/workflow-runs'), refetchInterval: 30_000 })
 
+  const trigger = useMutation({
+    mutationFn: () => api.post('/workflow-runs/trigger'),
+    onSuccess: () => {
+      toast.success('Flujo iniciado en n8n; el resultado aparecerá aquí en unos segundos')
+      for (const ms of [4000, 12000, 30000]) setTimeout(() => void qc.invalidateQueries({ queryKey: ['runs'] }), ms)
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
   return (
     <>
-      <PageHeader title="Ejecuciones del workflow" subtitle="Cruce diario de KEV y EPSS con el inventario, orquestado por n8n. Un fallo de una fuente externa aparece aquí en rojo." />
+      <PageHeader
+        title="Ejecuciones del workflow"
+        subtitle="Cruce diario de KEV y EPSS con el inventario, orquestado por n8n. Un fallo de una fuente externa aparece aquí en rojo."
+        actions={can('workflow', 'create') && <Button variant="primary" disabled={trigger.isPending} onClick={() => trigger.mutate()}>{trigger.isPending ? 'Iniciando…' : 'Ejecutar ahora'}</Button>}
+      />
       <Panel className="overflow-x-auto">
         {list.isPending ? <Skeleton cols={7} rows={5} /> : list.isError ? (
           <ErrorState message={list.error.message} onRetry={() => void list.refetch()} />
@@ -32,7 +50,7 @@ export default function Runs() {
           <table className="w-full text-[13px]">
             <thead><tr>
               <th className={th}>Inicio (Lima)</th><th className={th}>Disparo</th><th className={th}>Estado</th><th className={th}>Catálogo KEV</th>
-              <th className={`${th} text-right`}>EPSS</th><th className={`${th} text-right`}>Nuevas en KEV</th><th className={`${th} text-right`}>Duración</th>
+              <th className={`${th} text-right`}>EPSS</th><th className={`${th} text-right`}>Nuevas en KEV</th><th className={`${th} text-right`}>Alertas</th><th className={`${th} text-right`}>Duración</th>
             </tr></thead>
             <tbody>
               {list.data.items.map((r) => {
@@ -47,10 +65,11 @@ export default function Runs() {
                       <td className={`${td} font-mono text-[12px]`}>{r.kev_catalog_version ?? '—'}{r.kev_total > 0 && <span className="text-muted"> · {r.kev_total}</span>}</td>
                       <td className={`${td} text-right tabular-nums`}>{r.epss_scored}</td>
                       <td className={`${td} text-right tabular-nums`}>{r.new_matches}</td>
+                      <td className={`${td} text-right tabular-nums`}>{r.alerts_created}</td>
                       <td className={`${td} text-right tabular-nums`}>{formatDuration(ms)}</td>
                     </tr>
                     {open === r.id && (
-                      <tr><td colSpan={7} className="border-b border-line bg-sunken px-4 py-3">
+                      <tr><td colSpan={8} className="border-b border-line bg-sunken px-4 py-3">
                         <ul className="space-y-1 text-[12px]">
                           {r.errors.map((e, i) => <li key={i}><span className="font-mono font-medium">{e.node}</span>: {e.message} <span className="text-muted">({formatLima(e.at)})</span></li>)}
                         </ul>

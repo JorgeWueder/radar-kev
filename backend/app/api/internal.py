@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,6 +16,7 @@ from app.db.session import get_db
 from app.models.intel import WorkflowRun
 from app.models.inventory import Vulnerability
 from app.services import feeds
+from app.services.alerting import Match, dispatch_matches, source_failure_alert
 from app.services.audit import write_audit
 from app.services.correlation import correlate
 from app.services.intel import IntelError, ingest_epss, ingest_kev, parse_epss_csv
@@ -48,9 +49,25 @@ class EpssIn(RunRef):
     score_date: str | None = None
 
 
+class DispatchIn(RunRef):
+    matches: list[Match] = Field(max_length=5000)
+
+
 class FailIn(BaseModel):
-    node: str = Field(max_length=80)
-    message: str = Field(max_length=1000)
+    """Los errores de fuentes externas pueden ser páginas HTML enteras: se truncan, nunca se rechazan."""
+
+    node: str
+    message: str
+
+    @field_validator("node", mode="before")
+    @classmethod
+    def _node(cls, v: object) -> str:
+        return str(v)[:80]
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _message(cls, v: object) -> str:
+        return str(v)[:1000]
 
 
 def _run(db: Session, run_id: uuid.UUID) -> WorkflowRun:
@@ -159,6 +176,27 @@ def run_correlation(body: RunRef, db: Session = Depends(get_db)) -> dict[str, An
     }  # fmt: skip
 
 
+@router.post("/alerts/dispatch")
+def alerts_dispatch(body: DispatchIn, db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Crea alerta + ticket por cada coincidencia NUEVA y avisa por correo/webhook (idempotente)."""
+    run = _run(db, body.run_id)
+    out = dispatch_matches(db, run, body.matches)
+    _sys_audit(db, "alerts_dispatch", detail={k: v for k, v in out.items() if k != "tickets"})
+    db.commit()
+    return out
+
+
+@router.post("/runs/fail-latest")
+def fail_latest(body: FailIn, db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Lo usa el workflow de errores de n8n, que no conoce el run_id: marca como fallida la última en curso."""
+    run = db.execute(
+        select(WorkflowRun).where(WorkflowRun.status == "running").order_by(WorkflowRun.started_at.desc())
+    ).scalars().first()
+    if run is None:
+        return {"status": "no_running_run"}
+    return fail_run(run.id, body, db)
+
+
 @router.post("/runs/{run_id}/finish")
 def finish_run(run_id: uuid.UUID, db: Session = Depends(get_db)) -> dict[str, Any]:
     run = _run(db, run_id)
@@ -176,5 +214,11 @@ def fail_run(run_id: uuid.UUID, body: FailIn, db: Session = Depends(get_db)) -> 
     run.status = "failed"
     run.finished_at = datetime.now(UTC)
     _sys_audit(db, "run_fail", result="failure", detail={"run": str(run.id), "node": body.node, "message": body.message})
+    try:
+        source_failure_alert(db, run, body.node, body.message)
+    except Exception:  # la alerta es un extra: nunca debe impedir registrar el fallo
+        db.rollback()
+        run = _run(db, run_id)
+        run.status = "failed"
     db.commit()
     return {"status": "failed"}

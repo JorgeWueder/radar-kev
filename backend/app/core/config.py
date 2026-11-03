@@ -27,6 +27,16 @@ class Settings(BaseSettings):
     epss_csv_url: str = "https://epss.empiricalsecurity.com/epss_scores-current.csv.gz"
     nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
+    app_url: str = "http://localhost:8080"
+    n8n_webhook_url: str = "http://n8n:5678/webhook/radar-manual"
+    smtp_host: str = "mailpit"
+    smtp_port: int = 1025
+    smtp_user: str = ""
+    smtp_password: SecretStr = SecretStr("")
+    smtp_from: str = "radar@localhost"
+    alert_email_to: str = ""
+    alert_webhook_url: SecretStr = SecretStr("")
+
     llm_provider: str = "none"
     llm_model: str = "claude-sonnet-5-5"
 

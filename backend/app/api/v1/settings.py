@@ -1,12 +1,13 @@
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.api.deps import audit, require
 from app.db.session import get_db
 from app.models.auth import User
+from app.services import integrations, notifications
 from app.services.correlation import correlate
 from app.services.intel import get_active_config, save_new_version
 from app.services.scoring import ScoringParams, band_of, base_score, risk_score, sla_due
@@ -85,3 +86,68 @@ def preview_scoring(body: PreviewIn, _: User = Depends(require("settings", "view
         base=round(base_score(p, s.epss, s.percentile, s.cvss, s.criticality), 4),
         score=score, band=band, sla_days_from_detection=days,
     )
+
+
+class IntegrationsIn(BaseModel):
+    """Los secretos (contraseña SMTP, URL del webhook) vacíos o enmascarados conservan el valor actual."""
+
+    smtp_host: str = Field("", max_length=255)
+    smtp_port: int = Field(1025, ge=1, le=65535)
+    smtp_user: str = Field("", max_length=255)
+    smtp_password: str = Field("", max_length=255)
+    smtp_from: str = Field("", max_length=255)
+    alert_email_to: str = Field("", max_length=1000)
+    webhook_url: str = Field("", max_length=1000, pattern=r"^(https?://\S+|\*{8}|)$")
+    webhook_kind: str = Field("generic", pattern="^(generic|slack|teams|telegram)$")
+    telegram_chat_id: str = Field("", max_length=60)
+
+
+@router.get("/integrations")
+def get_integrations(
+    _: User = Depends(require("settings", "view")), db: Session = Depends(get_db)
+) -> dict[str, str]:
+    return integrations.masked(db)
+
+
+@router.put("/integrations")
+def put_integrations(
+    request: Request,
+    body: IntegrationsIn,
+    actor: User = Depends(require("settings", "edit")),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    values = {k: str(v) for k, v in body.model_dump().items()}
+    changed = integrations.save(db, values)
+    audit(db, request, "settings", "integrations_update", user=actor, detail={"keys": sorted(changed)})
+    db.commit()
+    return integrations.masked(db)
+
+
+@router.post("/integrations/test-email")
+def test_email(
+    request: Request, actor: User = Depends(require("settings", "edit")), db: Session = Depends(get_db)
+) -> dict[str, str]:
+    try:
+        notifications.send_email(integrations.load(db), "[Radar KEV] Prueba de correo", "Canal de correo configurado correctamente.")
+    except notifications.NotifyError as e:
+        audit(db, request, "settings", "test_email", user=actor, result="failure", detail={"error": str(e)})
+        db.commit()
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e)) from None
+    audit(db, request, "settings", "test_email", user=actor)
+    db.commit()
+    return {"status": "enviado"}
+
+
+@router.post("/integrations/test-webhook")
+def test_webhook(
+    request: Request, actor: User = Depends(require("settings", "edit")), db: Session = Depends(get_db)
+) -> dict[str, str]:
+    try:
+        notifications.send_webhook(integrations.load(db), "[Radar KEV] Prueba de webhook: canal configurado correctamente.")
+    except notifications.NotifyError as e:
+        audit(db, request, "settings", "test_webhook", user=actor, result="failure", detail={"error": str(e)})
+        db.commit()
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e)) from None
+    audit(db, request, "settings", "test_webhook", user=actor)
+    db.commit()
+    return {"status": "enviado"}

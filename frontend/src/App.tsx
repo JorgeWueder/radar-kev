@@ -3,12 +3,15 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { Shell } from './components/Shell'
 import { useAuth } from './lib/auth'
 import type { Action } from './lib/permissions'
+import Alerts from './pages/Alerts'
 import Assets from './pages/Assets'
 import Audit from './pages/Audit'
 import Imports from './pages/Imports'
 import Kev from './pages/Kev'
 import Runs from './pages/Runs'
 import SettingsPage from './pages/Settings'
+import TicketDetail from './pages/TicketDetail'
+import Tickets from './pages/Tickets'
 import Login from './pages/Login'
 import Overview from './pages/Overview'
 import Profile from './pages/Profile'
@@ -31,6 +34,9 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route element={user ? <Shell /> : <Navigate to="/login" replace />}>
         <Route path="/resumen" element={<Protected module="dashboard"><Overview /></Protected>} />
+        <Route path="/alertas" element={<Protected module="alerts"><Alerts /></Protected>} />
+        <Route path="/tickets" element={<Protected module="tickets"><Tickets /></Protected>} />
+        <Route path="/tickets/:id" element={<Protected module="tickets"><TicketDetail /></Protected>} />
         <Route path="/activos" element={<Protected module="assets"><Assets /></Protected>} />
         <Route path="/importacion" element={<Protected module="imports"><Imports /></Protected>} />
         <Route path="/vulnerabilidades" element={<Protected module="vulnerabilities"><Vulnerabilities /></Protected>} />

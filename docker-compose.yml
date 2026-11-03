@@ -50,10 +50,11 @@ services:
     ports:
       - "${FRONTEND_PORT:-8080}:80"
 
-  n8n:
-    <<: *restart
+  n8n-import:
     image: n8nio/n8n:3.1.0
-    environment:
+    restart: "no"
+    entrypoint: ["/bin/sh", "/import.sh"]
+    environment: &n8n-env
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_DATABASE: n8n
@@ -62,16 +63,34 @@ services:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Lima}
       TZ: ${GENERIC_TIMEZONE:-America/Lima}
+      # Los workflows leen estas variables ($env); n8n NO recibe credenciales de la base radar.
       RADAR_SERVICE_KEY: ${RADAR_SERVICE_KEY}
+      RADAR_API_URL: http://backend:8000/api/v1
+      KEV_URL: ${KEV_URL}
+      EPSS_API_URL: ${EPSS_API_URL}
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
     depends_on:
       postgres:
+        condition: service_healthy
+    volumes:
+      - ./n8n/workflows:/workflows:ro
+      - ./n8n/import.sh:/import.sh:ro
+
+  n8n:
+    <<: *restart
+    image: n8nio/n8n:3.1.0
+    environment: *n8n-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      n8n-import:
+        condition: service_completed_successfully
+      backend:
         condition: service_healthy
     ports:
       - "${N8N_PORT:-5678}:5678"
     volumes:
       - n8ndata:/home/node/.n8n
-      - ./n8n/workflows:/workflows:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5678/healthz || exit 1"]
       interval: 10s

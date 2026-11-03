@@ -1,5 +1,6 @@
 import {
   ArrowsClockwise,
+  Bell,
   Bug,
   ClipboardText,
   Crosshair,
@@ -9,12 +10,14 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Target,
+  Ticket,
   SignOut,
   Sun,
   UploadSimple,
   UserCircle,
   Users,
 } from '@phosphor-icons/react'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
@@ -34,6 +37,8 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/resumen', label: 'Resumen', icon: Gauge, module: 'dashboard', action: 'view' },
+  { to: '/alertas', label: 'Alertas', icon: Bell, module: 'alerts', action: 'view' },
+  { to: '/tickets', label: 'Tickets', icon: Ticket, module: 'tickets', action: 'view' },
   { to: '/activos', label: 'Activos', icon: HardDrives, module: 'assets', action: 'view' },
   { to: '/importacion', label: 'Importación', icon: UploadSimple, module: 'imports', action: 'view' },
   { to: '/vulnerabilidades', label: 'Vulnerabilidades', icon: Bug, module: 'vulnerabilities', action: 'view' },
@@ -85,6 +90,12 @@ export function Shell() {
       .catch(() => undefined)
   }
 
+  const unread = useQuery({
+    queryKey: ['alerts-unread'],
+    queryFn: () => api.get<{ unread: number }>('/alerts/unread-count'),
+    refetchInterval: 30_000,
+    enabled: can('alerts', 'view'),
+  }).data?.unread ?? 0
   const items = NAV.filter((n) => can(n.module, n.action))
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors duration-150 ${
@@ -108,6 +119,9 @@ export function Shell() {
             <NavLink key={to} to={to} className={link}>
               <Icon size={18} weight="regular" />
               {label}
+              {to === '/alertas' && unread > 0 && (
+                <span className="ml-auto rounded-full bg-danger px-1.5 text-[11px] font-semibold leading-[18px] text-bg" aria-label={`${unread} sin leer`}>{unread > 99 ? '99+' : unread}</span>
+              )}
             </NavLink>
           ))}
         </nav>
