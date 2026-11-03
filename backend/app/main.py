@@ -1,13 +1,17 @@
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
 from app.api.health import router as health_router
+from app.api.v1 import audit, auth, roles, users
 from app.core.config import get_settings
+from app.core.ratelimit import limiter
 
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -32,11 +36,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    if settings.environment != "test" and len(settings.jwt_secret.get_secret_value()) < 32:
+        raise RuntimeError("JWT_SECRET debe tener al menos 32 caracteres (ver .env.example)")
     app = FastAPI(
         title="Radar de explotación activa (KEV/EPSS)",
-        version="0.1.0",
+        version="0.2.0",
         description="API del radar: cruce diario de inventario con CISA KEV y FIRST EPSS.",
     )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -55,6 +63,10 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(health_router)
+    api = APIRouter(prefix="/api/v1")
+    for module in (auth, users, roles, audit):
+        api.include_router(module.router)
+    app.include_router(api)
     return app
 
 

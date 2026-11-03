@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     radar_service_key: SecretStr = SecretStr("")
     frontend_origin: str = "http://localhost:8080"
     tz_ui: str = "America/Lima"
+    trust_proxy_headers: bool = False
+    seed_on_start: bool = False
+    seed_demo_password: SecretStr = SecretStr("")
 
     kev_url: str = (
         "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"

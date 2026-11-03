@@ -1,35 +1,36 @@
-import { IconContext, Moon, Crosshair, Sun } from '@phosphor-icons/react'
-import { useState } from 'react'
-import { Toaster } from 'sonner'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
-import { applyTheme } from './lib/theme'
+import { Shell } from './components/Shell'
+import { useAuth } from './lib/auth'
+import type { Action } from './lib/permissions'
+import Audit from './pages/Audit'
+import Login from './pages/Login'
+import Overview from './pages/Overview'
+import Profile from './pages/Profile'
+import Roles from './pages/Roles'
+import Users from './pages/Users'
+
+function Protected({ module, action = 'view', children }: { module?: string; action?: Action; children: React.ReactNode }) {
+  const { user, can } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  if (module && !can(module, action)) return <Navigate to="/resumen" replace />
+  return <>{children}</>
+}
 
 export default function App() {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
-  const toggle = () => {
-    const next = !dark
-    applyTheme(next ? 'dark' : 'light')
-    setDark(next)
-  }
+  const { user, loading } = useAuth()
+  if (loading) return <div className="grid min-h-screen place-items-center text-muted" role="status">Cargando…</div>
   return (
-    <IconContext.Provider value={{ weight: 'regular', size: 18 }}>
-      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-5 py-3">
-        <div className="flex items-center gap-2 font-semibold">
-          <Crosshair /> Radar KEV/EPSS
-        </div>
-        <button
-          onClick={toggle}
-          aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-          className="rounded-md border border-[var(--border)] p-2 transition-transform duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
-        >
-          {dark ? <Sun /> : <Moon />}
-        </button>
-      </header>
-      <main className="p-5">
-        <h1 className="text-xl font-semibold">Radar de explotación activa</h1>
-        <p className="mt-1 text-[var(--muted)]">Fase 0: esqueleto de la aplicación.</p>
-      </main>
-      <Toaster position="bottom-right" />
-    </IconContext.Provider>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route element={user ? <Shell /> : <Navigate to="/login" replace />}>
+        <Route path="/resumen" element={<Protected module="dashboard"><Overview /></Protected>} />
+        <Route path="/usuarios" element={<Protected module="users"><Users /></Protected>} />
+        <Route path="/roles" element={<Protected module="roles"><Roles /></Protected>} />
+        <Route path="/bitacora" element={<Protected module="audit"><Audit /></Protected>} />
+        <Route path="/perfil" element={<Protected><Profile /></Protected>} />
+      </Route>
+      <Route path="*" element={<Navigate to="/resumen" replace />} />
+    </Routes>
   )
 }

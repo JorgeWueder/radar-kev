@@ -1,9 +1,11 @@
 from sqlalchemy import create_engine
 
+import app.models  # noqa: F401  (registra las tablas en Base.metadata)
 from alembic import context
 from app.core.config import get_settings
+from app.db.base import Base
 
-target_metadata = None  # se enlaza al Base.metadata de los modelos en la fase 1
+target_metadata = Base.metadata
 
 
 def run_migrations_online() -> None:
