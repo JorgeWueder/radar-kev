@@ -36,7 +36,8 @@ def isolated_schema() -> Iterator[sessionmaker[Session]]:
         c.execute(text(f"CREATE SCHEMA {name}"))
     engine = create_engine(url, connect_args={"options": f"-c search_path={name},public"})
     try:
-        Base.metadata.create_all(engine)
+        # checkfirst=False: con search_path incluyendo public, has_table vería las tablas reales.
+        Base.metadata.create_all(engine, checkfirst=False)
         with engine.begin() as c:
             apply_audit_immutability(c)
         maker = sessionmaker(bind=engine, expire_on_commit=False)
