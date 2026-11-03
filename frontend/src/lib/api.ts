@@ -70,13 +70,14 @@ function buildUrl(path: string, params?: Options['params']): string {
 
 async function send(path: string, opts: Options): Promise<Response> {
   const headers: Record<string, string> = {}
-  if (opts.body !== undefined) headers['Content-Type'] = 'application/json'
+  if (opts.body !== undefined && !(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json'
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`
   return fetch(buildUrl(path, opts.params), {
     method: opts.method ?? 'GET',
     headers,
     credentials: 'include',
-    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+    body:
+      opts.body === undefined ? undefined : opts.body instanceof FormData ? opts.body : JSON.stringify(opts.body),
   })
 }
 
@@ -107,6 +108,13 @@ export const api = {
   put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+}
+
+/** Sube un archivo (multipart) en el campo `file`. */
+export function upload<T>(path: string, file: File): Promise<T> {
+  const form = new FormData()
+  form.append('file', file)
+  return request<T>(path, { method: 'POST', body: form })
 }
 
 /** Descarga un archivo autenticado (exportaciones) y lo entrega al navegador. */

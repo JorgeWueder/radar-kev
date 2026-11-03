@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<NessusClientData_v2>
+  <Policy><policyName>Escaneo demo</policyName></Policy>
+  <Report name="Escaneo demo">
+    <ReportHost name="10.10.1.21">
+      <HostProperties>
+        <tag name="host-ip">10.10.1.21</tag>
+        <tag name="host-fqdn">web-prod-01.corp.example.com</tag>
+        <tag name="operating-system">Linux Kernel 5.15 on Ubuntu 22.04</tag>
+      </HostProperties>
+      <ReportItem port="8080" svc_name="www" protocol="tcp" severity="4" pluginID="156014" pluginName="Apache Log4j &lt; 2.15.0 RCE">
+        <cve>CVE-2021-44228</cve>
+        <cvss3_base_score>10.0</cvss3_base_score>
+        <cvss3_vector>CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H</cvss3_vector>
+        <cvss_base_score>9.3</cvss_base_score>
+      </ReportItem>
+      <ReportItem port="443" svc_name="www" protocol="tcp" severity="3" pluginID="159475" pluginName="OpenSSL 1.1.1 &lt; 1.1.1n DoS">
+        <cve>CVE-2022-0778</cve>
+        <cvss3_base_score>7.5</cvss3_base_score>
+        <cvss3_vector>CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</cvss3_vector>
+      </ReportItem>
+      <ReportItem port="0" svc_name="general" protocol="tcp" severity="0" pluginID="19506" pluginName="Nessus Scan Information"/>
+    </ReportHost>
+    <ReportHost name="10.10.0.5">
+      <HostProperties>
+        <tag name="host-ip">10.10.0.5</tag>
+        <tag name="hostname">vpn-gw-01</tag>
+        <tag name="operating-system">PAN-OS 10.2</tag>
+      </HostProperties>
+      <ReportItem port="443" svc_name="www" protocol="tcp" severity="4" pluginID="187001" pluginName="PAN-OS GlobalProtect Command Injection">
+        <cve>CVE-2024-3400</cve>
+        <cvss3_base_score>10.0</cvss3_base_score>
+      </ReportItem>
+      <ReportItem port="443" svc_name="www" protocol="tcp" severity="4" pluginID="183000" pluginName="Citrix Bleed style disclosure">
+        <cve>CVE-2023-4966</cve>
+        <cve>CVE-2023-4967</cve>
+        <cvss3_base_score>9.4</cvss3_base_score>
+      </ReportItem>
+    </ReportHost>
+    <ReportHost name="10.10.3.8">
+      <HostProperties>
+        <tag name="host-ip">10.10.3.8</tag>
+        <tag name="host-fqdn">legacy-rdp-01</tag>
+        <tag name="operating-system">Microsoft Windows Server 2008 R2</tag>
+      </HostProperties>
+      <ReportItem port="3389" svc_name="msrdp" protocol="tcp" severity="4" pluginID="12209" pluginName="BlueKeep RDP RCE">
+        <cve>CVE-2019-0708</cve>
+        <cvss_base_score>10.0</cvss_base_score>
+        <cvss_vector>CVSS2#AV:N/AC:L/Au:N/C:C/I:C/A:C</cvss_vector>
+      </ReportItem>
+    </ReportHost>
+  </Report>
+</NessusClientData_v2>

@@ -1,11 +1,14 @@
 import {
+  Bug,
   ClipboardText,
   Crosshair,
   Gauge,
+  HardDrives,
   Moon,
   ShieldCheck,
   SignOut,
   Sun,
+  UploadSimple,
   UserCircle,
   Users,
 } from '@phosphor-icons/react'
@@ -28,6 +31,9 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/resumen', label: 'Resumen', icon: Gauge, module: 'dashboard', action: 'view' },
+  { to: '/activos', label: 'Activos', icon: HardDrives, module: 'assets', action: 'view' },
+  { to: '/importacion', label: 'Importación', icon: UploadSimple, module: 'imports', action: 'view' },
+  { to: '/vulnerabilidades', label: 'Vulnerabilidades', icon: Bug, module: 'vulnerabilities', action: 'view' },
   { to: '/usuarios', label: 'Usuarios', icon: Users, module: 'users', action: 'view' },
   { to: '/roles', label: 'Roles y permisos', icon: ShieldCheck, module: 'roles', action: 'view' },
   { to: '/bitacora', label: 'Bitácora', icon: ClipboardText, module: 'audit', action: 'view' },

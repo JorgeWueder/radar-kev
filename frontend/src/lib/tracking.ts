@@ -70,6 +70,9 @@ export class ModuleTracker {
 
 export const ROUTE_MODULES: Record<string, string> = {
   '/resumen': 'dashboard',
+  '/activos': 'assets',
+  '/importacion': 'imports',
+  '/vulnerabilidades': 'vulnerabilities',
   '/usuarios': 'users',
   '/roles': 'roles',
   '/bitacora': 'audit',

@@ -9,7 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import Response
 
 from app.api.health import router as health_router
-from app.api.v1 import audit, auth, roles, users
+from app.api.v1 import assets, audit, auth, imports, roles, users, vulnerabilities
 from app.core.config import get_settings
 from app.core.ratelimit import limiter
 
@@ -64,7 +64,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     api = APIRouter(prefix="/api/v1")
-    for module in (auth, users, roles, audit):
+    for module in (auth, users, roles, audit, assets, imports, vulnerabilities):
         api.include_router(module.router)
     app.include_router(api)
     return app

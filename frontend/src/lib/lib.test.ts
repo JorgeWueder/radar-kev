@@ -77,6 +77,8 @@ describe('seguimiento de módulos', () => {
   it('mapea rutas a módulos', () => {
     expect(moduleForPath('/bitacora')).toBe('audit')
     expect(moduleForPath('/usuarios/123')).toBe('users')
+    expect(moduleForPath('/importacion')).toBe('imports')
+    expect(moduleForPath('/vulnerabilidades')).toBe('vulnerabilities')
     expect(moduleForPath('/login')).toBeNull()
   })
 })

@@ -32,3 +32,12 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Diseño: skills en `.claude/skills` (emil-design-eng, impeccable, design-taste-frontend). Modo "Operate": densidad legible,
   severidad con color + texto/icono, animaciones <300 ms, `prefers-reduced-motion`.
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
+
+## Estado de fases
+- Fase 0 (base), 1 (identidad/RBAC/bitácora) y 2 (activos, importación CSV/Nessus, vulnerabilidades) completas.
+- Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
+- Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
+- Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
+- Tests del backend usan un esquema PostgreSQL temporal (`tests/conftest.py::isolated_schema`); nunca tocan `public`.
+- Nota de herramienta: heredocs de Bash con comillas simples/`
+` fallan en este entorno; crear archivos con la herramienta Write.

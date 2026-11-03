@@ -1,0 +1,12 @@
+hostname,ip,cve,cvss,os
+web-prod-01,10.10.1.21,CVE-2021-44228,10.0,Ubuntu 22.04
+web-prod-01,10.10.1.21,CVE-2022-0778,7.5,Ubuntu 22.04
+vpn-gw-01,10.10.0.5,CVE-2024-3400,10.0,PAN-OS 10.2
+vpn-gw-01,10.10.0.5,CVE-2023-4966,9.4,PAN-OS 10.2
+db-prod-01,10.10.2.15,CVE-2023-34362,9.8,Windows Server 2019
+db-prod-01,10.10.2.15,CVE-2021-3449,5.9,Windows Server 2019
+legacy-rdp-01,10.10.3.8,CVE-2019-0708,9.8,Windows Server 2008 R2
+app-stg-01,10.20.1.4,CVE-2023-38545,9.8,Debian 12
+app-stg-01,10.20.1.4,CVE-2022-3602,7.5,Debian 12
+dev-box-07,10.30.1.7,CVE-2023-0286,7.4,Ubuntu 20.04
+dev-box-07,10.30.1.7,CVE-2020-11022,6.1,Ubuntu 20.04

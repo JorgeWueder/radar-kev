@@ -1,4 +1,4 @@
-import { CheckCircle, Prohibit, Warning, XCircle } from '@phosphor-icons/react'
+import { CheckCircle, Minus, Warning, XCircle } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
 
@@ -71,7 +71,7 @@ export function StatusBadge({ kind, children }: { kind: 'ok' | 'warn' | 'danger'
     danger: 'bg-danger-soft text-danger',
     neutral: 'bg-sunken text-muted',
   }[kind]
-  const Icon = { ok: CheckCircle, warn: Warning, danger: XCircle, neutral: Prohibit }[kind]
+  const Icon = { ok: CheckCircle, warn: Warning, danger: XCircle, neutral: Minus }[kind]
   return (
     <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[12px] font-medium ${styles}`}>
       <Icon size={13} weight="bold" aria-hidden />
