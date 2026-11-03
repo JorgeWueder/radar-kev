@@ -18,6 +18,7 @@ from app.core.rbac import (
 from app.core.security import hash_password
 from app.db.session import get_sessionmaker
 from app.models.auth import Permission, Role, User
+from app.seed_demo import seed_demo
 
 DEMO_USERS = [
     ("admin@radar.local", "Administrador Demo", ADMIN),
@@ -64,6 +65,8 @@ def run() -> None:
             password = settings.seed_demo_password.get_secret_value()
             if password:
                 seed_users(db, password)
+                db.flush()
+                seed_demo(db)
         db.commit()
 
 

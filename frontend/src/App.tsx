@@ -6,6 +6,9 @@ import type { Action } from './lib/permissions'
 import Assets from './pages/Assets'
 import Audit from './pages/Audit'
 import Imports from './pages/Imports'
+import Kev from './pages/Kev'
+import Runs from './pages/Runs'
+import SettingsPage from './pages/Settings'
 import Login from './pages/Login'
 import Overview from './pages/Overview'
 import Profile from './pages/Profile'
@@ -31,6 +34,9 @@ export default function App() {
         <Route path="/activos" element={<Protected module="assets"><Assets /></Protected>} />
         <Route path="/importacion" element={<Protected module="imports"><Imports /></Protected>} />
         <Route path="/vulnerabilidades" element={<Protected module="vulnerabilities"><Vulnerabilities /></Protected>} />
+        <Route path="/kev" element={<Protected module="kev"><Kev /></Protected>} />
+        <Route path="/ejecuciones" element={<Protected module="workflow"><Runs /></Protected>} />
+        <Route path="/configuracion" element={<Protected module="settings"><SettingsPage /></Protected>} />
         <Route path="/usuarios" element={<Protected module="users"><Users /></Protected>} />
         <Route path="/roles" element={<Protected module="roles"><Roles /></Protected>} />
         <Route path="/bitacora" element={<Protected module="audit"><Audit /></Protected>} />

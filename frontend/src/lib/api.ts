@@ -53,7 +53,7 @@ export function refreshAccessToken(): Promise<string | null> {
 interface Options {
   method?: string
   body?: unknown
-  params?: Record<string, string | number | undefined | null>
+  params?: Record<string, string | number | boolean | undefined | null>
   raw?: boolean
 }
 

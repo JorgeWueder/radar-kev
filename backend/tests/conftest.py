@@ -4,6 +4,7 @@ import os
 os.environ["ENVIRONMENT"] = "test"
 os.environ["JWT_SECRET"] = "test-secret-test-secret-test-secret-123456"
 os.environ["TRUST_PROXY_HEADERS"] = "false"
+os.environ["RADAR_SERVICE_KEY"] = "test-service-key"
 
 import uuid  # noqa: E402
 from collections.abc import Iterator  # noqa: E402

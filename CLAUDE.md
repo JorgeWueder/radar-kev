@@ -34,10 +34,20 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
 
 ## Estado de fases
-- Fase 0 (base), 1 (identidad/RBAC/bitácora) y 2 (activos, importación CSV/Nessus, vulnerabilidades) completas.
+- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación) y 3 (KEV, EPSS, cruce pandas, score/SLA, catálogo KEV, configuración, ejecuciones) completas.
 - Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
 - Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
 - Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
 - Tests del backend usan un esquema PostgreSQL temporal (`tests/conftest.py::isolated_schema`); nunca tocan `public`.
 - Nota de herramienta: heredocs de Bash con comillas simples/`
 ` fallan en este entorno; crear archivos con la herramienta Write.
+
+## Fase 3: cruce y score
+- Actualizar a mano con datos reales: `docker compose exec backend python -m app.refresh` (descarga KEV y EPSS, ingesta y cruza).
+- Lógica en `backend/app/services/`: `scoring.py` (fórmula y SLA, funciones puras), `intel.py` (ingesta KEV/EPSS, config versionada),
+  `correlation.py` (pandas), `feeds.py` (descargas con reintentos; lotes EPSS ≤100 CVEs y ≤1900 caracteres).
+- `/api/v1/internal/*` exige `X-Service-Key` (= `RADAR_SERVICE_KEY`) y no aparece en Swagger.
+- `kev_matched_at` solo se fija una vez: es la base de la idempotencia (la 2ª ejecución del día no genera "nuevas" coincidencias).
+  Recalcular tras cambiar la fórmula usa `mark_matches=False` para no gastar esas coincidencias.
+- EPSS/CVSS ausentes cuentan 0 en el score (no se inventan). Con los pesos por defecto todo CVE en KEV tiende a saturar en 90 a 100.
+- El seed (`SEED_ON_START=true`) crea 16 activos y ~40 hallazgos reales (`app/seed_demo.py`); idempotente.

@@ -1,4 +1,4 @@
-import { formatDuration, formatLima, limaInputToIso } from './format'
+import { formatDate, formatDuration, formatLima, formatPct, limaInputToIso } from './format'
 import { hasPermission } from './permissions'
 import { ModuleTracker, moduleForPath, type NavigationEvent } from './tracking'
 
@@ -17,6 +17,18 @@ describe('hora de Lima', () => {
     expect(formatDuration(null)).toBe('—')
     expect(formatDuration(850)).toBe('850 ms')
     expect(formatDuration(65_000)).toBe('1 min 5 s')
+  })
+})
+
+describe('formato de datos', () => {
+  it('porcentajes con coma decimal y guion para ausentes', () => {
+    expect(formatPct(0.97312)).toBe('97,3 %')
+    expect(formatPct(1, 0)).toBe('100 %')
+    expect(formatPct(null)).toBe('—')
+  })
+  it('fechas dd/mm/aaaa sin desfase de zona', () => {
+    expect(formatDate('2026-11-13')).toBe('13/11/2026')
+    expect(formatDate(null)).toBe('—')
   })
 })
 

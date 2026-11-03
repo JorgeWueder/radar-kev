@@ -24,3 +24,8 @@ testpaths = ["tests"]
 [[tool.mypy.overrides]]
 module = ["app.api.*"]
 disallow_untyped_decorators = false
+
+# pandas no tiene tipos precisos para filas/Series dinámicas; la lógica se cubre con tests.
+[[tool.mypy.overrides]]
+module = ["app.services.correlation"]
+ignore_errors = true

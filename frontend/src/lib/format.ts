@@ -32,3 +32,15 @@ export function formatDuration(ms: number | null | undefined): string {
   if (s < 60) return `${s} s`
   return `${Math.floor(s / 60)} min ${s % 60} s`
 }
+
+/** 0.97312 → "97,3 %"; nulo → guion (los datos ausentes no se inventan). */
+export function formatPct(value: number | null | undefined, digits = 1): string {
+  if (value === null || value === undefined) return '—'
+  return `${(value * 100).toFixed(digits).replace('.', ',')} %`
+}
+
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const [y, m, d] = iso.slice(0, 10).split('-')
+  return `${d}/${m}/${y}`
+}

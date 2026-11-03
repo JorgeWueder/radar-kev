@@ -9,7 +9,8 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import Response
 
 from app.api.health import router as health_router
-from app.api.v1 import assets, audit, auth, imports, roles, users, vulnerabilities
+from app.api import internal
+from app.api.v1 import assets, audit, auth, imports, kev, roles, settings, users, vulnerabilities, workflow
 from app.core.config import get_settings
 from app.core.ratelimit import limiter
 
@@ -35,8 +36,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def create_app() -> FastAPI:
-    settings = get_settings()
-    if settings.environment != "test" and len(settings.jwt_secret.get_secret_value()) < 32:
+    cfg = get_settings()
+    if cfg.environment != "test" and len(cfg.jwt_secret.get_secret_value()) < 32:
         raise RuntimeError("JWT_SECRET debe tener al menos 32 caracteres (ver .env.example)")
     app = FastAPI(
         title="Radar de explotación activa (KEV/EPSS)",
@@ -48,7 +49,7 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
+        allow_origins=[cfg.frontend_origin],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
@@ -64,7 +65,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     api = APIRouter(prefix="/api/v1")
-    for module in (auth, users, roles, audit, assets, imports, vulnerabilities):
+    for module in (auth, users, roles, audit, assets, imports, vulnerabilities, kev, settings, workflow, internal):
         api.include_router(module.router)
     app.include_router(api)
     return app

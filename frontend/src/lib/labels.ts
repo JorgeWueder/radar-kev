@@ -24,3 +24,19 @@ export const VULN_STATUS: Record<string, string> = {
 export function criticalityKind(c: number): 'danger' | 'warn' | 'neutral' {
   return c >= 4 ? 'danger' : c === 3 ? 'warn' : 'neutral'
 }
+
+export type Kind = 'ok' | 'warn' | 'danger' | 'neutral'
+
+export const BAND: Record<string, [Kind, string]> = {
+  critical: ['danger', 'Crítico'],
+  high: ['warn', 'Alto'],
+  medium: ['neutral', 'Medio'],
+  low: ['ok', 'Bajo'],
+}
+
+export const SLA: Record<string, [Kind, string]> = {
+  vencido: ['danger', 'Vencido'],
+  por_vencer: ['warn', 'Por vencer'],
+  en_plazo: ['ok', 'En plazo'],
+  no_aplica: ['neutral', 'No aplica'],
+}
