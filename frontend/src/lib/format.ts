@@ -44,3 +44,32 @@ export function formatDate(iso: string | null | undefined): string {
   const [y, m, d] = iso.slice(0, 10).split('-')
   return `${d}/${m}/${y}`
 }
+
+/** Fecha de hoy en Lima como aaaa-mm-dd. */
+export function limaToday(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: LIMA }).format(now)
+}
+
+/** Días enteros desde hoy (Lima) hasta una fecha aaaa-mm-dd: negativo si ya pasó, nulo si no hay fecha. */
+export function daysUntil(iso: string | null | undefined, now: Date = new Date()): number | null {
+  if (!iso) return null
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
+  const [ty, tm, td] = limaToday(now).split('-').map(Number)
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ty, tm - 1, td)) / 86_400_000)
+}
+
+/** "vence en 3 días", "vence hoy", "vencido hace 2 días". */
+export function dueText(days: number): string {
+  if (days < 0) return `vencido hace ${-days} ${-days === 1 ? 'día' : 'días'}`
+  if (days === 0) return 'vence hoy'
+  if (days === 1) return 'vence mañana'
+  return `vence en ${days} días`
+}
+
+/** Fracción (0 a 1) del plazo de SLA ya transcurrida entre la creación y el vencimiento (fin del día en Lima). */
+export function slaProgress(createdIso: string, dueIso: string, now: number): number {
+  const start = new Date(createdIso).getTime()
+  const end = new Date(`${dueIso.slice(0, 10)}T23:59:59-05:00`).getTime()
+  if (end <= start) return 1
+  return Math.min(1, Math.max(0, (now - start) / (end - start)))
+}

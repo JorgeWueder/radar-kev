@@ -19,10 +19,30 @@ const SUMMARY_LABELS: Record<string, string> = {
   updated_vulnerabilities: 'Hallazgos actualizados', reopened: 'Reabiertos',
 }
 
+const STEPS = ['Subir archivo', 'Previsualizar', 'Confirmar']
+
+/** Indicador de pasos: deja claro que primero se previsualiza y recién después se guarda. */
+function Steps({ current }: { current: 0 | 1 | 2 }) {
+  return (
+    <ol className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]" aria-label="Pasos de la importación">
+      {STEPS.map((label, i) => (
+        <li key={label} aria-current={i === current ? 'step' : undefined} className={`flex items-center gap-2 ${i === current ? 'font-medium text-ink' : 'text-muted'}`}>
+          <span className={`grid size-5 place-items-center rounded-full text-[11px] tabular-nums ${i < current ? 'bg-ink text-bg' : i === current ? 'border border-ink' : 'border border-line-strong'}`}>
+            {i < current ? <CheckCircle size={13} weight="bold" aria-hidden /> : i + 1}
+          </span>
+          {label}
+          {i < STEPS.length - 1 && <span className="mx-1 h-px w-6 bg-line-strong" aria-hidden />}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 export default function Imports() {
   const { can } = useAuth()
   const qc = useQueryClient()
   const input = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
   const [preview, setPreview] = useState<Preview | null>(null)
   const [done, setDone] = useState<Batch | null>(null)
   const [error, setError] = useState('')
@@ -56,15 +76,17 @@ export default function Imports() {
   return (
     <>
       <PageHeader title="Importación de hallazgos" subtitle="CSV genérico o reporte Nessus (.nessus). Se previsualiza antes de guardar nada." />
+      {can('imports', 'create') && <Steps current={done ? 2 : preview ? 1 : 0} />}
       {can('imports', 'create') && (
         <Panel className="mb-4 p-4">
           <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); pick(e.dataTransfer.files[0]) }}
-            className="flex flex-col items-center gap-2 rounded-md border border-dashed border-line px-4 py-8 text-center"
+            onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => { e.preventDefault(); setDragging(false); pick(e.dataTransfer.files[0]) }}
+            className={`flex flex-col items-center gap-2 rounded-[20px] border-2 border-dashed px-4 py-8 text-center transition-[background-color,border-color] duration-150 ${dragging ? 'border-ink bg-sunken' : 'border-line-strong hover:border-ink hover:bg-sunken'}`}
           >
-            <UploadSimple size={22} className="text-muted" aria-hidden />
-            <p className="text-[13px]">Arrastre un archivo aquí o <button className="font-medium text-link underline underline-offset-2" onClick={() => input.current?.click()}>seleccione uno</button></p>
+            <UploadSimple size={26} className={dragging ? 'text-ink' : 'text-muted'} aria-hidden />
+            <p className="text-[13px]">{dragging ? 'Suelte el archivo para analizarlo' : <>Arrastre un archivo aquí o <button className="font-medium text-link underline underline-offset-2" onClick={() => input.current?.click()}>seleccione uno</button></>}</p>
             <p className="text-[12px] text-muted">.csv o .nessus · máximo 10 MB · hasta 20.000 filas</p>
             <input ref={input} type="file" accept=".csv,.nessus" className="sr-only" aria-label="Archivo de hallazgos" onChange={(e) => pick(e.target.files?.[0])} />
             <Button variant="ghost" onClick={() => void download('/imports/template.csv', {}, 'plantilla_hallazgos.csv')}><DownloadSimple size={15} /> Descargar plantilla CSV</Button>
@@ -75,9 +97,10 @@ export default function Imports() {
       )}
 
       {preview && (
-        <Panel className="mb-4">
+        <Panel className="mb-4 border-2 !border-ink">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
             <div>
+              <p className="text-[12px] font-medium text-muted">Paso 2 de 3 · Revise y confirme. Todavía no se guardó nada.</p>
               <p className="font-medium">{preview.filename}</p>
               <p className="text-[13px] text-muted">
                 {preview.rows_ok} hallazgos válidos en {preview.hosts} equipos

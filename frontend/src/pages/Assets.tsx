@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { DownloadSimple, Plus } from '@phosphor-icons/react'
+import { DownloadSimple, Plus, Warning } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -7,19 +7,14 @@ import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  Button, Dialog, EmptyState, ErrorState, Field, Input, PageHeader, Panel, Select, Skeleton,
-  StatusBadge, td, th,
-} from '../components/ui'
+import { AssetDrawer } from '../components/detail'
+import { DataTable, Meta, Pagination, rowOpen, stop, type Column } from '../components/kit'
+import { Button, Dialog, EmptyState, Field, Input, PageHeader, Select } from '../components/ui'
 import { api, download } from '../lib/api'
 import { useAuth, type User } from '../lib/auth'
-import { ASSET_TYPE, CRITICALITY, ENVIRONMENT, criticalityKind } from '../lib/labels'
+import { ASSET_TYPE, CRITICALITY, ENVIRONMENT } from '../lib/labels'
+import type { Asset } from '../lib/types'
 
-interface Asset {
-  id: string; hostname: string; ip: string | null; asset_type: string; os: string | null
-  owner_id: string | null; owner_name: string | null; criticality: number; environment: string
-  is_active: boolean; auto_created: boolean
-}
 interface AssetList { items: Asset[]; total: number }
 
 const PAGE = 50
@@ -41,6 +36,7 @@ export default function Assets() {
   const [f, setF] = useState({ q: search.get('q') ?? '', environment: '', criticality: '' })
   const [page, setPage] = useState(0)
   const [editing, setEditing] = useState<Asset | 'new' | null>(null)
+  const [sel, setSel] = useState<Asset | null>(null)
 
   const params = { ...f, limit: PAGE, offset: page * PAGE }
   const list = useQuery({ queryKey: ['assets', params], queryFn: () => api.get<AssetList>('/assets', params) })
@@ -72,6 +68,30 @@ export default function Assets() {
   const exportAs = (fmt: 'csv' | 'xlsx') => download('/assets/export', { ...f, fmt }, `activos.${fmt}`).catch((e: Error) => toast.error(e.message))
 
   const total = list.data?.total ?? 0
+
+  const columns: Column<Asset>[] = [
+    {
+      key: 'host', header: 'Hostname',
+      cell: (a) => <>
+        <span className="font-mono text-[12px] font-medium">{a.hostname}</span>
+        {a.auto_created && <span className="ml-2"><Meta icon={Warning}>Por completar</Meta></span>}
+        {!a.is_active && <span className="ml-2"><Meta>Inactivo</Meta></span>}
+        {a.os && <div className="text-[12px] text-muted">{a.os}</div>}
+      </>,
+    },
+    { key: 'ip', header: 'IP', className: 'font-mono text-[12px]', cell: (a) => a.ip ?? '—' },
+    { key: 'type', header: 'Tipo', cell: (a) => ASSET_TYPE[a.asset_type] },
+    { key: 'owner', header: 'Responsable', cell: (a) => a.owner_name ?? '—' },
+    { key: 'crit', header: 'Criticidad', cell: (a) => <Meta>{CRITICALITY[a.criticality]}</Meta> },
+    { key: 'env', header: 'Entorno', cell: (a) => ENVIRONMENT[a.environment] },
+    {
+      key: 'actions', header: <span className="sr-only">Acciones</span>, className: 'text-right whitespace-nowrap',
+      cell: (a) => <span onClick={stop} onKeyDown={stop} className="inline-flex">
+        {can('assets', 'edit') && <Button variant="ghost" onClick={() => open(a)}>Editar</Button>}
+        {can('assets', 'delete') && <Button variant="ghost" onClick={() => toggle.mutate(a)}>{a.is_active ? 'Desactivar' : 'Reactivar'}</Button>}
+      </span>,
+    },
+  ]
   return (
     <>
       <PageHeader
@@ -93,51 +113,19 @@ export default function Assets() {
           {[4, 3, 2, 1].map((c) => <option key={c} value={c}>{CRITICALITY[c]}</option>)}
         </Select>
       </div>
-      <Panel className="overflow-x-auto">
-        {list.isPending ? <Skeleton cols={7} /> : list.isError ? (
-          <ErrorState message={list.error.message} onRetry={() => void list.refetch()} />
-        ) : list.data.items.length === 0 ? (
-          <EmptyState title="No hay activos" hint="Registre un activo o importe hallazgos de un escáner para crearlos automáticamente."
-            action={can('assets', 'create') ? <Button variant="primary" onClick={() => open('new')}>Nuevo activo</Button> : undefined} />
-        ) : (
-          <table className="w-full text-[13px]">
-            <thead><tr>
-              <th className={th}>Hostname</th><th className={th}>IP</th><th className={th}>Tipo</th><th className={th}>Responsable</th>
-              <th className={th}>Criticidad</th><th className={th}>Entorno</th><th className={th}><span className="sr-only">Acciones</span></th>
-            </tr></thead>
-            <tbody>
-              {list.data.items.map((a) => (
-                <tr key={a.id} className={a.is_active ? '' : 'opacity-60'}>
-                  <td className={td}>
-                    <span className="font-mono text-[12px] font-medium">{a.hostname}</span>
-                    {a.auto_created && <span className="ml-2"><StatusBadge kind="warn">Por completar</StatusBadge></span>}
-                    {!a.is_active && <span className="ml-2"><StatusBadge kind="neutral">Inactivo</StatusBadge></span>}
-                    {a.os && <div className="text-[12px] text-muted">{a.os}</div>}
-                  </td>
-                  <td className={`${td} font-mono text-[12px]`}>{a.ip ?? '—'}</td>
-                  <td className={td}>{ASSET_TYPE[a.asset_type]}</td>
-                  <td className={td}>{a.owner_name ?? '—'}</td>
-                  <td className={td}><StatusBadge kind={criticalityKind(a.criticality)}>{CRITICALITY[a.criticality]}</StatusBadge></td>
-                  <td className={td}>{ENVIRONMENT[a.environment]}</td>
-                  <td className={`${td} text-right whitespace-nowrap`}>
-                    {can('assets', 'edit') && <Button variant="ghost" onClick={() => open(a)}>Editar</Button>}
-                    {can('assets', 'delete') && <Button variant="ghost" onClick={() => toggle.mutate(a)}>{a.is_active ? 'Desactivar' : 'Reactivar'}</Button>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
-      {total > PAGE && (
-        <div className="mt-3 flex items-center justify-between text-[13px] text-muted">
-          <span>{page * PAGE + 1}–{Math.min((page + 1) * PAGE, total)} de {total}</span>
-          <div className="flex gap-2">
-            <Button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</Button>
-            <Button disabled={(page + 1) * PAGE >= total} onClick={() => setPage(page + 1)}>Siguiente</Button>
-          </div>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        rows={list.data?.items}
+        rowKey={(a) => a.id}
+        loading={list.isPending}
+        error={list.isError ? list.error.message : undefined}
+        onRetry={() => void list.refetch()}
+        rowProps={(a) => rowOpen(() => setSel(a), a.is_active ? '' : 'opacity-60')}
+        empty={<EmptyState title="No hay activos" hint="Registre un activo o importe hallazgos de un escáner para crearlos automáticamente."
+          action={can('assets', 'create') ? <Button variant="primary" onClick={() => open('new')}>Nuevo activo</Button> : undefined} />}
+      />
+      <Pagination page={page} total={total} pageSize={PAGE} onPage={setPage} />
+      <AssetDrawer a={sel} onClose={() => setSel(null)} />
       <Dialog open={editing !== null} onClose={() => setEditing(null)} title={editing === 'new' ? 'Nuevo activo' : 'Editar activo'}>
         <form className="space-y-3" noValidate onSubmit={handleSubmit((v) => save.mutate(v))}>
           <div className="grid grid-cols-2 gap-3">

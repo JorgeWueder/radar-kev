@@ -21,7 +21,7 @@ describe('mensajes de login', () => {
   it('distingue bloqueo, límite de intentos y credenciales', () => {
     expect(loginErrorMessage(new ApiError(423, ''))).toMatch(/bloqueada/)
     expect(loginErrorMessage(new ApiError(429, ''))).toMatch(/Demasiados/)
-    expect(loginErrorMessage(new ApiError(401, ''))).toBe('Credenciales inválidas.')
+    expect(loginErrorMessage(new ApiError(401, ''))).toBe('Correo o contraseña incorrectos.')
     expect(loginErrorMessage(new Error('red'))).toMatch(/conexión/)
   })
 })

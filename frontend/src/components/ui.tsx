@@ -1,6 +1,6 @@
 import { CheckCircle, Minus, Warning, XCircle } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
+import { useEffect, useRef, type ButtonHTMLAttributes, type ComponentType, type InputHTMLAttributes, type ReactNode, type RefObject, type SelectHTMLAttributes } from 'react'
 
 const press =
   'transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100'
@@ -94,9 +94,38 @@ export function Skeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number 
   )
 }
 
-export function EmptyState({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  hint,
+  action,
+  icon: Icon,
+  compact = false,
+}: {
+  title: string
+  hint?: string
+  action?: ReactNode
+  icon?: ComponentType<{ size?: number; weight?: 'regular'; 'aria-hidden'?: boolean }>
+  /** Versión corta para dentro de una tarjeta: alineada a la izquierda y sin el relleno de página. */
+  compact?: boolean
+}) {
+  if (compact) {
+    return (
+      <div className="mt-2 flex items-start gap-2 text-[12px] text-muted">
+        {Icon && <Icon size={15} weight="regular" aria-hidden />}
+        <p>
+          <span className="font-medium text-ink">{title}</span>
+          {hint && <span className="block">{hint}</span>}
+        </p>
+      </div>
+    )
+  }
   return (
-    <div className="px-4 py-10 text-center">
+    <div className="flex flex-col items-center px-4 py-10 text-center">
+      {Icon && (
+        <span className="mb-3 grid size-11 place-items-center rounded-full bg-sunken text-muted">
+          <Icon size={22} weight="regular" aria-hidden />
+        </span>
+      )}
       <p className="font-medium">{title}</p>
       {hint && <p className="mx-auto mt-1 max-w-md text-[13px] text-muted">{hint}</p>}
       {action && <div className="mt-3">{action}</div>}
@@ -119,26 +148,13 @@ export function Panel({ children, className = '' }: { children: ReactNode; class
   return <div className={`rounded-lg border border-line bg-surface ${className}`}>{children}</div>
 }
 
-export const th = 'px-3 py-2 text-left text-[12px] font-medium text-muted border-b border-line whitespace-nowrap first:pl-5 last:pr-5'
+export const th = 'sticky top-0 z-[1] bg-surface px-3 py-2 text-left text-[12px] font-medium text-muted border-b border-line whitespace-nowrap first:pl-5 last:pr-5'
 export const td = 'px-3 py-2 border-b border-line align-middle first:pl-5 last:pr-5'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-/** Diálogo modal accesible: foco dentro (trampa de Tab), Escape lo cierra y el foco vuelve a quien lo abrió.
- *  Ocurre pocas veces al día: puede animarse (≤200 ms); con movimiento reducido solo cambia la opacidad. */
-export function Dialog({
-  open,
-  onClose,
-  title,
-  children,
-}: {
-  open: boolean
-  onClose: () => void
-  title: string
-  children: ReactNode
-}) {
-  const reduce = useReducedMotion()
-  const box = useRef<HTMLDivElement>(null)
+/** Foco dentro del panel modal (trampa de Tab), Escape lo cierra y el foco vuelve a quien lo abrió. */
+export function useModalFocus(open: boolean, onClose: () => void, box: RefObject<HTMLElement | null>) {
   const close = useRef(onClose)
   useEffect(() => {
     close.current = onClose // el efecto de teclado siempre llama a la versión actual
@@ -163,7 +179,25 @@ export function Dialog({
       document.removeEventListener('keydown', onKey)
       opener?.focus?.()
     }
-  }, [open])
+  }, [open, box])
+}
+
+/** Diálogo modal accesible: foco dentro (trampa de Tab), Escape lo cierra y el foco vuelve a quien lo abrió.
+ *  Ocurre pocas veces al día: puede animarse (≤200 ms); con movimiento reducido solo cambia la opacidad. */
+export function Dialog({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean
+  onClose: () => void
+  title: string
+  children: ReactNode
+}) {
+  const reduce = useReducedMotion()
+  const box = useRef<HTMLDivElement>(null)
+  useModalFocus(open, onClose, box)
 
   return (
     <AnimatePresence>

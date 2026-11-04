@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+import { Tabs } from '../components/kit'
 import { Button, ErrorState, Field, Input, PageHeader, Panel, Skeleton, StatusBadge } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -31,10 +32,48 @@ function useDebounced<T>(value: T, ms = 300): T {
   return v
 }
 
+type Tab = 'score' | 'sla' | 'canales'
+const TABS: Array<{ id: Tab; label: string }> = [
+  { id: 'score', label: 'Score' },
+  { id: 'sla', label: 'SLA' },
+  { id: 'canales', label: 'Canales' },
+]
+
+const n = (v: number) => String(Math.round(v * 1000) / 1000).replace('.', ',')
+const T = ({ children }: { children: React.ReactNode }) => <span className="whitespace-nowrap rounded bg-sunken px-1.5 py-0.5 font-mono text-[13px]">{children}</span>
+
+/** La fórmula con los valores vigentes, escrita para leerse (no el texto crudo de la API). */
+function Formula({ p, raw }: { p: Params; raw: string }) {
+  return (
+    <Panel className="p-4">
+      <h2 className="mb-3 text-[14px] font-semibold">Fórmula vigente</h2>
+      <dl className="space-y-3 text-[14px] leading-8">
+        <div>
+          <dt className="text-[12px] font-medium text-muted">1. Base (de 0 a 1)</dt>
+          <dd><T>{n(p.w_epss)} × EPSS</T> + <T>{n(p.w_percentile)} × percentil</T> + <T>{n(p.w_cvss)} × CVSS / 10</T> + <T>{n(p.w_asset)} × criticidad / 4</T></dd>
+        </div>
+        <div>
+          <dt className="text-[12px] font-medium text-muted">2. Si está en KEV</dt>
+          <dd><T>{n(p.kev_floor)} + {n(100 - p.kev_floor)} × base</T> {p.ransomware_bonus > 0 && <>+ <T>{n(p.ransomware_bonus)} si hay ransomware</T></>} <span className="text-muted">· tope 100</span></dd>
+        </div>
+        <div>
+          <dt className="text-[12px] font-medium text-muted">3. Si no está en KEV</dt>
+          <dd><T>{n(p.kev_floor - 1)} × base</T> <span className="text-muted">· siempre por debajo de {n(p.kev_floor)}</span></dd>
+        </div>
+      </dl>
+      <details className="mt-3 text-[12px] text-muted">
+        <summary className="cursor-pointer hover:text-ink">Ver el texto original de la fórmula</summary>
+        <pre className="mt-1 overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">{raw}</pre>
+      </details>
+    </Panel>
+  )
+}
+
 export default function SettingsPage() {
   const { can } = useAuth()
   const qc = useQueryClient()
   const cur = useQuery({ queryKey: ['scoring'], queryFn: () => api.get<Scoring>('/settings/scoring') })
+  const [tab, setTab] = useState<Tab>('score')
   const [draft, setDraft] = useState<Params | null>(null)
   const [sample, setSample] = useState<Sample>({ in_kev: true, epss: 0.5, percentile: 0.9, cvss: 7.5, criticality: 3, ransomware: false })
 
@@ -89,73 +128,80 @@ export default function SettingsPage() {
       <PageHeader
         title="Configuración del score de riesgo"
         subtitle={`Versión activa ${cur.data.version} · guardada ${formatLima(cur.data.created_at)}. Cada cambio crea una versión nueva y recalcula el inventario.`}
-        actions={editable && (
+        actions={editable && tab !== 'canales' && (
           <>
             {dirty && <Button onClick={() => setDraft(null)}>Descartar cambios</Button>}
             <Button variant="primary" disabled={!dirty || !sumOk || !bandsOk || save.isPending} onClick={() => save.mutate()}>Guardar nueva versión</Button>
           </>
         )}
       />
-      <Panel className="mb-4 p-4">
-        <h2 className="mb-2 text-[14px] font-semibold">Fórmula</h2>
-        <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-muted">{cur.data.formula}</pre>
-      </Panel>
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          <Panel className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[14px] font-semibold">Pesos (deben sumar 1)</h2>
-              <StatusBadge kind={sumOk ? 'ok' : 'danger'}>Suma {sum.toFixed(2)}{sumOk ? '' : ': ajuste los pesos'}</StatusBadge>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} label="Secciones de la configuración" />
+      {tab === 'canales' ? (
+        <div role="tabpanel" id="panel-canales" aria-labelledby="tab-canales"><IntegrationsPanel /></div>
+      ) : (
+        <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
+          <div className="space-y-4">
+            {tab === 'score' ? (
+              <>
+                <Formula p={params} raw={cur.data.formula} />
+                <Panel className="p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-[14px] font-semibold">Pesos (deben sumar 1)</h2>
+                    <StatusBadge kind={sumOk ? 'ok' : 'danger'}>Suma {sum.toFixed(2)}{sumOk ? '' : ': ajuste los pesos'}</StatusBadge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{WEIGHTS.map(([k, l]) => num(k, l, 0.05))}</div>
+                </Panel>
+                <Panel className="p-4">
+                  <h2 className="mb-3 text-[14px] font-semibold">Presencia en KEV</h2>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {num('kev_floor', 'Piso del score en KEV')}{num('ransomware_bonus', 'Bono por ransomware')}
+                  </div>
+                  <p className="mt-2 text-[12px] text-muted">Todo CVE en KEV puntúa desde el piso; todo CVE fuera de KEV queda por debajo de él.</p>
+                </Panel>
+              </>
+            ) : (
+              <Panel className="p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-[14px] font-semibold">Bandas y SLA</h2>
+                  {!bandsOk && <StatusBadge kind="danger">Debe cumplirse crítico &gt; alto &gt; medio</StatusBadge>}
+                </div>
+                <div className="grid grid-cols-3 gap-3">{BANDS.map(([k, l]) => num(k, l))}</div>
+                <p className="mb-2 mt-4 text-[12px] text-muted">En KEV el SLA usa la fecha límite de CISA (dueDate). Fuera de KEV, estos días desde la detección:</p>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-5">{SLAS.map(([k, l]) => num(k, l))}</div>
+              </Panel>
+            )}
+          </div>
+          {/* Simulador fijo a la derecha: se ve el efecto de cada cambio mientras se edita. */}
+          <Panel className="p-4 lg:sticky lg:top-4">
+            <h2 className="mb-3 text-[14px] font-semibold">Simulador</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {sampleNum('epss', 'EPSS (0 a 1)', 1, 0.05)}{sampleNum('percentile', 'Percentil (0 a 1)', 1, 0.05)}
+              {sampleNum('cvss', 'CVSS (0 a 10)', 10, 0.1)}
+              <Field label="Criticidad">
+                <select className="h-8 pointer-coarse:h-11 w-full rounded-md border border-line-strong bg-surface px-2 text-[13px]" value={sample.criticality} onChange={(e) => setSample({ ...sample, criticality: Number(e.target.value) })}>
+                  {[4, 3, 2, 1].map((c) => <option key={c} value={c}>{['', 'Baja', 'Media', 'Alta', 'Crítica'][c]}</option>)}
+                </select>
+              </Field>
             </div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{WEIGHTS.map(([k, l]) => num(k, l, 0.05))}</div>
-          </Panel>
-          <Panel className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Presencia en KEV</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {num('kev_floor', 'Piso del score en KEV')}{num('ransomware_bonus', 'Bono por ransomware')}
+            <div className="mt-3 space-y-1 text-[13px]">
+              <label className="flex items-center gap-1.5"><input type="checkbox" className="accent-[var(--accent)]" checked={sample.in_kev} onChange={(e) => setSample({ ...sample, in_kev: e.target.checked })} /> Está en KEV</label>
+              <label className="flex items-center gap-1.5"><input type="checkbox" className="accent-[var(--accent)]" checked={sample.ransomware} onChange={(e) => setSample({ ...sample, ransomware: e.target.checked })} /> Uso conocido en ransomware</label>
             </div>
-            <p className="mt-2 text-[12px] text-muted">Todo CVE en KEV puntúa desde el piso; todo CVE fuera de KEV queda por debajo de él.</p>
-          </Panel>
-          <Panel className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[14px] font-semibold">Bandas y SLA</h2>
-              {!bandsOk && <StatusBadge kind="danger">Debe cumplirse crítico &gt; alto &gt; medio</StatusBadge>}
+            <div className="mt-4 rounded-md border border-line p-3" aria-live="polite">
+              {preview.data ? (
+                <>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[12px] text-muted">Score de riesgo</span>
+                    <StatusBadge kind={BAND[preview.data.band][0]}>{BAND[preview.data.band][1]}</StatusBadge>
+                  </div>
+                  <p className="text-[28px] font-semibold leading-tight tabular-nums">{preview.data.score.toFixed(1)}</p>
+                  <p className="text-[12px] text-muted">Base {preview.data.base.toFixed(3)}{!sample.in_kev && ` · SLA de ${preview.data.sla_days_from_detection} días`}</p>
+                </>
+              ) : <p className="text-[13px] text-muted">{sumOk && bandsOk ? 'Calculando…' : 'Corrija los valores para simular.'}</p>}
             </div>
-            <div className="grid grid-cols-3 gap-3">{BANDS.map(([k, l]) => num(k, l))}</div>
-            <p className="mb-2 mt-4 text-[12px] text-muted">En KEV el SLA usa la fecha límite de CISA (dueDate). Fuera de KEV, estos días desde la detección:</p>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5">{SLAS.map(([k, l]) => num(k, l))}</div>
           </Panel>
         </div>
-        <Panel className="h-fit p-4">
-          <h2 className="mb-3 text-[14px] font-semibold">Simulador</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {sampleNum('epss', 'EPSS (0 a 1)', 1, 0.05)}{sampleNum('percentile', 'Percentil (0 a 1)', 1, 0.05)}
-            {sampleNum('cvss', 'CVSS (0 a 10)', 10, 0.1)}
-            <Field label="Criticidad">
-              <select className="h-8 pointer-coarse:h-11 w-full rounded-md border border-line-strong bg-surface px-2 text-[13px]" value={sample.criticality} onChange={(e) => setSample({ ...sample, criticality: Number(e.target.value) })}>
-                {[4, 3, 2, 1].map((c) => <option key={c} value={c}>{['', 'Baja', 'Media', 'Alta', 'Crítica'][c]}</option>)}
-              </select>
-            </Field>
-          </div>
-          <div className="mt-3 space-y-1 text-[13px]">
-            <label className="flex items-center gap-1.5"><input type="checkbox" className="accent-[var(--accent)]" checked={sample.in_kev} onChange={(e) => setSample({ ...sample, in_kev: e.target.checked })} /> Está en KEV</label>
-            <label className="flex items-center gap-1.5"><input type="checkbox" className="accent-[var(--accent)]" checked={sample.ransomware} onChange={(e) => setSample({ ...sample, ransomware: e.target.checked })} /> Uso conocido en ransomware</label>
-          </div>
-          <div className="mt-4 rounded-md border border-line p-3" aria-live="polite">
-            {preview.data ? (
-              <>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[12px] text-muted">Score de riesgo</span>
-                  <StatusBadge kind={BAND[preview.data.band][0]}>{BAND[preview.data.band][1]}</StatusBadge>
-                </div>
-                <p className="text-[28px] font-semibold leading-tight tabular-nums">{preview.data.score.toFixed(1)}</p>
-                <p className="text-[12px] text-muted">Base {preview.data.base.toFixed(3)}{!sample.in_kev && ` · SLA de ${preview.data.sla_days_from_detection} días`}</p>
-              </>
-            ) : <p className="text-[13px] text-muted">{sumOk && bandsOk ? 'Calculando…' : 'Corrija los valores para simular.'}</p>}
-          </div>
-        </Panel>
-      </div>
-      <IntegrationsPanel />
+      )}
     </>
   )
 }

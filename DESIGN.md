@@ -213,6 +213,7 @@ Motion reveals state; it never decorates. Applies to the public site (`frontend/
 - **Sequence over spectacle:** one idea per section — sweep (hero), count and ring (SLA), bars then swap (CVE comparison), sticky chips with crossfade (close-look), drawn line (pipeline), gauge (calculator), broken chain (audit log), lit dots (thousand-dot grid, staggered opacity), gauge 0→94 % (EPSS tile), weight bars (inventory chips).
 - **Reading order:** layout animations (`layout="position"`) are used only to show a reorder, and the new order is also stated in text (`aria-live="polite"`).
 - **Reduced motion:** `MotionConfig reducedMotion="user"` plus explicit branches: with `prefers-reduced-motion`, no sweep rotation, no sticky pinning, no counters, no layout swaps — the final state renders immediately. Opacity and color feedback may remain (≤120 ms).
+- **Panel (app):** no motion inside tables; the only exceptions are the loading skeleton and the `DetailDrawer` opening (0.4 s, ease-out, opacity only under reduced motion). Hover and press feedback stay under 200 ms.
 - **Contrast over media:** text on photographs always sits over a flat dark overlay (no gradient) that keeps AA contrast.
 - **Color:** Battery Green appears only on performance metrics (the SLA number and ring, and the ~5 % exploited-CVE dots and figure in the thousand-dot grid); broken-chain red uses the app's danger token, never Battery Green.
 

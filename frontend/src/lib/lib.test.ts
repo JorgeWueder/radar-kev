@@ -1,4 +1,4 @@
-import { formatDate, formatDuration, formatLima, formatPct, limaInputToIso } from './format'
+import { daysUntil, dueText, slaProgress, formatDate, formatDuration, formatLima, formatPct, limaInputToIso } from './format'
 import { hasPermission } from './permissions'
 import { ModuleTracker, moduleForPath, type NavigationEvent } from './tracking'
 
@@ -92,5 +92,37 @@ describe('seguimiento de módulos', () => {
     expect(moduleForPath('/importacion')).toBe('imports')
     expect(moduleForPath('/vulnerabilidades')).toBe('vulnerabilities')
     expect(moduleForPath('/login')).toBeNull()
+  })
+})
+
+describe('plazos', () => {
+  const now = new Date('2026-11-04T15:00:00Z') // 10:00 en Lima
+  it('cuenta días enteros desde hoy en Lima', () => {
+    expect(daysUntil('2026-11-04', now)).toBe(0)
+    expect(daysUntil('2026-11-07', now)).toBe(3)
+    expect(daysUntil('2026-11-02', now)).toBe(-2)
+    expect(daysUntil(null, now)).toBeNull()
+  })
+  it('usa el día de Lima y no el de UTC', () => {
+    expect(daysUntil('2026-11-04', new Date('2026-11-05T02:00:00Z'))).toBe(0) // 21:00 del 4 en Lima
+  })
+  it('redacta el plazo', () => {
+    expect(dueText(3)).toBe('vence en 3 días')
+    expect(dueText(1)).toBe('vence mañana')
+    expect(dueText(0)).toBe('vence hoy')
+    expect(dueText(-1)).toBe('vencido hace 1 día')
+    expect(dueText(-5)).toBe('vencido hace 5 días')
+  })
+})
+
+describe('avance del SLA', () => {
+  it('va de 0 a 1 entre la creación y el vencimiento y se acota', () => {
+    const created = '2026-11-01T15:00:00Z'
+    const due = '2026-11-05' // vence a las 23:59:59 de Lima
+    expect(slaProgress(created, due, new Date('2026-10-31T00:00:00Z').getTime())).toBe(0)
+    const mid = slaProgress(created, due, new Date('2026-11-03T15:00:00Z').getTime())
+    expect(mid).toBeGreaterThan(0.3)
+    expect(mid).toBeLessThan(0.7)
+    expect(slaProgress(created, due, new Date('2026-12-01T00:00:00Z').getTime())).toBe(1)
   })
 })

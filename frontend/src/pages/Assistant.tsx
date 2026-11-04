@@ -1,10 +1,10 @@
-import { PaperPlaneRight, Warning } from '@phosphor-icons/react'
+import { Bug, HardDrives, PaperPlaneRight, Sparkle, Target, Ticket, Warning } from '@phosphor-icons/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { AiBadge } from '../components/AiBadge'
-import { Button, PageHeader, Panel, StatusBadge } from '../components/ui'
+import { Button, EmptyState, PageHeader, Panel, StatusBadge } from '../components/ui'
 import { api, ApiError } from '../lib/api'
 
 interface Answer {
@@ -15,11 +15,11 @@ interface Answer {
 }
 interface Turn { role: 'user' | 'assistant'; content: string; answer?: Answer; error?: string }
 
-const EXAMPLES = [
-  '¿Qué activos críticos tienen CVEs en KEV con SLA vencido?',
-  '¿Cuáles son los 3 activos más expuestos?',
-  '¿Cuántos CVEs de KEV hay presentes en mi entorno y cuántos son nuevos esta semana?',
-  '¿Qué tickets críticos están abiertos?',
+const EXAMPLES: Array<[typeof Warning, string]> = [
+  [Warning, '¿Qué activos críticos tienen CVEs en KEV con SLA vencido?'],
+  [HardDrives, '¿Cuáles son los 3 activos más expuestos?'],
+  [Target, '¿Cuántos CVEs de KEV hay presentes en mi entorno y cuántos son nuevos esta semana?'],
+  [Ticket, '¿Qué tickets críticos están abiertos?'],
 ]
 
 export default function Assistant() {
@@ -61,14 +61,26 @@ export default function Assistant() {
       <Panel className="flex min-h-[420px] flex-col">
         <div className="flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite">
           {turns.length === 0 && (
-            <div>
-              <p className="mb-2 text-[13px] text-muted">Pruebe con una de estas preguntas:</p>
-              <div className="flex flex-wrap gap-2">
-                {EXAMPLES.map((e) => (
-                  <button key={e} onClick={() => send(e)} className="rounded-md border border-line-strong px-2.5 py-1.5 text-left text-[13px] transition-[transform,background-color] duration-150 hover:bg-sunken active:scale-[0.98]">{e}</button>
-                ))}
-              </div>
-            </div>
+            <EmptyState
+              icon={Sparkle}
+              title="Pregunte sobre su exposición"
+              hint="Responde solo con datos del radar y cita de dónde salen. Pruebe con una de estas preguntas:"
+              action={
+                <div className="mt-2 grid w-full max-w-[760px] gap-3 text-left sm:grid-cols-2">
+                  {EXAMPLES.map(([Icon, e]) => (
+                    <button
+                      key={e}
+                      type="button"
+                      onClick={() => send(e)}
+                      className="flex items-start gap-3 rounded-[20px] border border-line bg-surface p-4 text-left text-[13px] transition-[transform,background-color,border-color] duration-150 hover:border-line-strong hover:bg-sunken active:scale-[0.98] pointer-coarse:min-h-11"
+                    >
+                      <Icon size={18} className="mt-0.5 shrink-0 text-muted" aria-hidden />
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              }
+            />
           )}
           {turns.map((t, i) => (
             <div key={i} className={t.role === 'user' ? 'flex justify-end' : ''}>
@@ -87,12 +99,19 @@ export default function Assistant() {
                     </ul>
                   )}
                   {t.answer && t.answer.citas.length > 0 && (
-                    <p className="flex flex-wrap items-center gap-1.5 text-[12px] text-muted">
-                      Fuentes:
+                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-muted">
+                      <span>Fuentes citadas:</span>
                       {t.answer.citas.map((c) => (
-                        <Link key={`${c.cve_id}${c.hostname}`} to={c.cve_id ? `/kev?q=${c.cve_id}` : `/activos?q=${c.hostname}`} className="rounded bg-sunken px-1.5 py-0.5 font-mono text-ink hover:underline">{c.cve_id ?? c.hostname}</Link>
+                        <Link
+                          key={`${c.cve_id}${c.hostname}`}
+                          to={c.cve_id ? `/kev?q=${c.cve_id}` : `/activos?q=${c.hostname}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-sunken px-2 py-0.5 font-mono text-ink transition-colors duration-150 hover:bg-control"
+                        >
+                          {c.cve_id ? <Bug size={12} aria-hidden /> : <HardDrives size={12} aria-hidden />}
+                          {c.cve_id ?? c.hostname}
+                        </Link>
                       ))}
-                    </p>
+                    </div>
                   )}
                 </div>
               )}

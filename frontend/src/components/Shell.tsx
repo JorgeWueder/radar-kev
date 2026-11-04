@@ -37,21 +37,42 @@ interface NavItem {
   action: Action
 }
 
-const NAV: NavItem[] = [
-  { to: '/resumen', label: 'Resumen', icon: Gauge, module: 'dashboard', action: 'view' },
-  { to: '/asistente', label: 'Asistente IA', icon: Sparkle, module: 'ai', action: 'view' },
-  { to: '/alertas', label: 'Alertas', icon: Bell, module: 'alerts', action: 'view' },
-  { to: '/tickets', label: 'Tickets', icon: Ticket, module: 'tickets', action: 'view' },
-  { to: '/activos', label: 'Activos', icon: HardDrives, module: 'assets', action: 'view' },
-  { to: '/importacion', label: 'Importación', icon: UploadSimple, module: 'imports', action: 'view' },
-  { to: '/vulnerabilidades', label: 'Vulnerabilidades', icon: Bug, module: 'vulnerabilities', action: 'view' },
-  { to: '/reportes', label: 'Reportes', icon: FileText, module: 'reports', action: 'view' },
-  { to: '/kev', label: 'Catálogo KEV', icon: Target, module: 'kev', action: 'view' },
-  { to: '/ejecuciones', label: 'Ejecuciones', icon: ArrowsClockwise, module: 'workflow', action: 'view' },
-  { to: '/configuracion', label: 'Configuración', icon: SlidersHorizontal, module: 'settings', action: 'view' },
-  { to: '/usuarios', label: 'Usuarios', icon: Users, module: 'users', action: 'view' },
-  { to: '/roles', label: 'Roles y permisos', icon: ShieldCheck, module: 'roles', action: 'view' },
-  { to: '/bitacora', label: 'Bitácora', icon: ClipboardText, module: 'audit', action: 'view' },
+// Sidebar agrupada con títulos. La visibilidad sigue dependiendo de los permisos del usuario (el backend es quien valida).
+const GROUPS: Array<{ title: string; items: NavItem[] }> = [
+  {
+    title: 'Operación',
+    items: [
+      { to: '/resumen', label: 'Resumen', icon: Gauge, module: 'dashboard', action: 'view' },
+      { to: '/alertas', label: 'Alertas', icon: Bell, module: 'alerts', action: 'view' },
+      { to: '/tickets', label: 'Tickets', icon: Ticket, module: 'tickets', action: 'view' },
+      { to: '/asistente', label: 'Asistente IA', icon: Sparkle, module: 'ai', action: 'view' },
+    ],
+  },
+  {
+    title: 'Inventario',
+    items: [
+      { to: '/activos', label: 'Activos', icon: HardDrives, module: 'assets', action: 'view' },
+      { to: '/importacion', label: 'Importación', icon: UploadSimple, module: 'imports', action: 'view' },
+      { to: '/vulnerabilidades', label: 'Vulnerabilidades', icon: Bug, module: 'vulnerabilities', action: 'view' },
+      { to: '/kev', label: 'Catálogo KEV', icon: Target, module: 'kev', action: 'view' },
+    ],
+  },
+  {
+    title: 'Gestión',
+    items: [
+      { to: '/reportes', label: 'Reportes', icon: FileText, module: 'reports', action: 'view' },
+      { to: '/ejecuciones', label: 'Ejecuciones', icon: ArrowsClockwise, module: 'workflow', action: 'view' },
+    ],
+  },
+  {
+    title: 'Administración',
+    items: [
+      { to: '/configuracion', label: 'Configuración', icon: SlidersHorizontal, module: 'settings', action: 'view' },
+      { to: '/usuarios', label: 'Usuarios', icon: Users, module: 'users', action: 'view' },
+      { to: '/roles', label: 'Roles y permisos', icon: ShieldCheck, module: 'roles', action: 'view' },
+      { to: '/bitacora', label: 'Bitácora', icon: ClipboardText, module: 'audit', action: 'view' },
+    ],
+  },
 ]
 
 function useModuleTracking(enabled: boolean) {
@@ -117,7 +138,7 @@ export function Shell() {
     refetchInterval: 30_000,
     enabled: can('alerts', 'view'),
   }).data?.unread ?? 0
-  const items = NAV.filter((n) => can(n.module, n.action))
+  const groups = GROUPS.map((g) => ({ ...g, items: g.items.filter((n) => can(n.module, n.action)) })).filter((g) => g.items.length > 0)
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 pointer-coarse:py-2.5 text-[13px] transition-colors duration-150 ${
       isActive ? 'bg-sunken font-medium text-ink' : 'text-muted hover:bg-sunken hover:text-ink'
@@ -136,15 +157,20 @@ export function Shell() {
             <div className="text-[11px] text-muted">Explotación activa</div>
           </div>
         </div>
-        <nav aria-label="Principal" className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-1 md:flex-col md:overflow-visible">
-          {items.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={link}>
-              <Icon size={18} weight="regular" />
-              {label}
-              {to === '/alertas' && unread > 0 && (
-                <span className="ml-auto rounded-full bg-danger px-1.5 text-[11px] font-semibold leading-[18px] text-bg" aria-label={`${unread} sin leer`}>{unread > 99 ? '99+' : unread}</span>
-              )}
-            </NavLink>
+        <nav aria-label="Principal" className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-1 md:flex-col md:gap-0 md:overflow-visible">
+          {groups.map((g, gi) => (
+            <div key={g.title} role="group" aria-label={g.title} className={`flex gap-1 md:flex-col ${gi > 0 ? 'md:mt-3' : ''}`}>
+              <div className="hidden px-3 pb-1 text-[11px] font-semibold text-muted md:block">{g.title}</div>
+              {g.items.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to} className={link}>
+                  <Icon size={18} weight="regular" />
+                  {label}
+                  {to === '/alertas' && unread > 0 && (
+                    <span className="ml-auto rounded-full bg-danger px-1.5 text-[11px] font-semibold leading-[18px] text-bg" aria-label={`${unread} sin leer`}>{unread > 99 ? '99+' : unread}</span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="flex items-center gap-1 border-t border-line p-2">

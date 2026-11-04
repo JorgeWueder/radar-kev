@@ -57,6 +57,12 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fotos de Unsplash en `frontend/public/img/*-1200.webp|*-2400.webp` (los JPG originales de 2400 px no se versionan), servidas con `src/landing/Photo.tsx` (srcset/sizes; gris + contraste salvo `servers-*` y `fiber-*`). En uso: hero-1-baborak (hero), hero-3-dittrich-bn (destacados), servers-1-tyler (inventario), fiber-1-muller (pipeline), soc-1-kostyuk (alertas); el crédito va en el pie. La foto RT-70 de `public/fotos` ya no se usa. Sin imágenes remotas (CSP `img-src 'self' data:`). Los fragmentos de interfaz usan datos de demostración. El botón "Pedir una demostración" solo aparece si se compila con `VITE_CONTACT_EMAIL`.
 - Animaciones (`motion/react`): reglas en la sección Motion de `DESIGN.md`; `MotionConfig reducedMotion="user"` en la raíz de `Landing.tsx`. Con el panel del navegador oculto los reveals no corren: mostrar el panel antes de verificar capturas.
 
+## Panel (frontend tras /login)
+- Componentes compartidos en `src/components/kit.tsx` (`Meta`, `KpiCard`, `DataTable` con header fijo, `Pagination`, `DetailDrawer`, `Tabs`, `rowOpen`) y paneles de detalle en `detail.tsx` (CVE, activo, KEV, ticket). Tipos de filas en `src/lib/types.ts`.
+- Regla de color: en tablas, una sola pill por fila (la del riesgo); criticidad, KEV, ransomware y estado van en `Meta` gris, y solo el SLA vencido se pone rojo.
+- Sidebar agrupada (Operación, Inventario, Gestión, Administración) en `Shell.tsx`, filtrada por permisos. Los KPI del Resumen enlazan a listas filtradas por URL (`?kev=1`, `?overdue=1`, `?status=resolved`).
+- Login partido con `hero-1-baborak`; el error 401 es genérico ("Correo o contraseña incorrectos"). Verificar la UI con la sesión de demostración en :8080 (reconstruir con `docker compose up -d --build frontend`).
+
 ## Fase 3: cruce y score
 - Actualizar a mano con datos reales: `docker compose exec backend python -m app.refresh` (descarga KEV y EPSS, ingesta y cruza).
 - Lógica en `backend/app/services/`: `scoring.py` (fórmula y SLA, funciones puras), `intel.py` (ingesta KEV/EPSS, config versionada),

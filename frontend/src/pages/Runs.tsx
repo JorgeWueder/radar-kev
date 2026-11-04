@@ -1,9 +1,10 @@
+import { CaretDown, CaretRight } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Fragment, useState } from 'react'
-
+import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { Button, rowToggle, EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
+import { DataTable, Meta, rowOpen, type Column } from '../components/kit'
+import { Button, EmptyState, PageHeader, Panel, StatusBadge } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatDuration, formatLima } from '../lib/format'
@@ -17,6 +18,38 @@ interface Run {
 
 const STATUS: Record<string, [Kind, string]> = {
   success: ['ok', 'Correcta'], partial: ['warn', 'Con avisos'], failed: ['danger', 'Fallida'], running: ['neutral', 'En curso'],
+}
+
+const durationMs = (r: Run) => (r.finished_at ? new Date(r.finished_at).getTime() - new Date(r.started_at).getTime() : null)
+
+/** Mini-gráfica de la duración de las últimas ejecuciones (de la más antigua a la más reciente). Las fallidas, en rojo. */
+function DurationChart({ runs }: { runs: Run[] }) {
+  const pts = runs.filter((r) => durationMs(r) !== null).slice(0, 20).reverse()
+  if (pts.length < 2) return null
+  const max = Math.max(...pts.map((r) => durationMs(r) ?? 0), 1)
+  const W = 10
+  const H = 44
+  const last = pts[pts.length - 1]
+  return (
+    <Panel className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+      <div>
+        <h2 className="text-[14px] font-semibold">Duración de las últimas {pts.length} ejecuciones</h2>
+        <p className="text-[12px] text-muted">
+          Última: <span className="tabular-nums text-ink">{formatDuration(durationMs(last))}</span> · máxima: <span className="tabular-nums text-ink">{formatDuration(max)}</span>
+        </p>
+      </div>
+      <svg viewBox={`0 0 ${pts.length * W} ${H}`} className="h-11 min-w-[160px] flex-1 text-muted" preserveAspectRatio="none" role="img" aria-label={`Duración de las últimas ${pts.length} ejecuciones; la última tardó ${formatDuration(durationMs(last))}`}>
+        {pts.map((r, i) => {
+          const h = Math.max(2, ((durationMs(r) ?? 0) / max) * (H - 4))
+          return (
+            <rect key={r.id} x={i * W + 1.5} y={H - h} width={W - 3} height={h} rx={1.5} fill={r.status === 'failed' ? 'var(--danger)' : 'currentColor'}>
+              <title>{`${formatLima(r.started_at)} · ${formatDuration(durationMs(r))} · ${STATUS[r.status]?.[1] ?? r.status}`}</title>
+            </rect>
+          )
+        })}
+      </svg>
+    </Panel>
+  )
 }
 
 export default function Runs() {
@@ -34,6 +67,29 @@ export default function Runs() {
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const columns: Column<Run>[] = [
+    { key: 'start', header: 'Inicio (Lima)', className: 'font-mono text-[12px] whitespace-nowrap', cell: (r) => formatLima(r.started_at) },
+    { key: 'trigger', header: 'Disparo', cell: (r) => (r.trigger === 'cron' ? 'Programado' : 'Manual') },
+    {
+      key: 'status', header: 'Estado',
+      cell: (r) => {
+        const [kind, label] = STATUS[r.status] ?? (['neutral', r.status] as [Kind, string])
+        const n = r.errors.length
+        return (
+          <span className="inline-flex items-center gap-2">
+            <StatusBadge kind={kind}>{label}</StatusBadge>
+            {n > 0 && <Meta icon={open === r.id ? CaretDown : CaretRight}>{n} {n === 1 ? 'error' : 'errores'}</Meta>}
+          </span>
+        )
+      },
+    },
+    { key: 'kev', header: 'Catálogo KEV', className: 'font-mono text-[12px]', cell: (r) => <>{r.kev_catalog_version ?? '—'}{r.kev_total > 0 && <span className="text-muted"> · {r.kev_total}</span>}</> },
+    { key: 'epss', header: 'EPSS', className: 'text-right tabular-nums', cell: (r) => r.epss_scored },
+    { key: 'new', header: 'Nuevas en KEV', className: 'text-right tabular-nums', cell: (r) => r.new_matches },
+    { key: 'alerts', header: 'Alertas', className: 'text-right tabular-nums', cell: (r) => r.alerts_created },
+    { key: 'dur', header: 'Duración', className: 'text-right tabular-nums', cell: (r) => formatDuration(durationMs(r)) },
+  ]
+
   return (
     <>
       <PageHeader
@@ -41,47 +97,27 @@ export default function Runs() {
         subtitle="Cruce diario de KEV y EPSS con el inventario, orquestado por n8n. Un fallo de una fuente externa aparece aquí en rojo."
         actions={can('workflow', 'create') && <Button variant="primary" disabled={trigger.isPending} onClick={() => trigger.mutate()}>{trigger.isPending ? 'Iniciando…' : 'Ejecutar ahora'}</Button>}
       />
-      <Panel className="overflow-x-auto">
-        {list.isPending ? <Skeleton cols={7} rows={5} /> : list.isError ? (
-          <ErrorState message={list.error.message} onRetry={() => void list.refetch()} />
-        ) : list.data.items.length === 0 ? (
-          <EmptyState title="Aún no hay ejecuciones" hint="La primera corre a las 06:00 (hora de Lima) cuando el workflow de n8n esté importado y activo." />
-        ) : (
-          <table className="w-full text-[13px]">
-            <thead><tr>
-              <th className={th}>Inicio (Lima)</th><th className={th}>Disparo</th><th className={th}>Estado</th><th className={th}>Catálogo KEV</th>
-              <th className={`${th} text-right`}>EPSS</th><th className={`${th} text-right`}>Nuevas en KEV</th><th className={`${th} text-right`}>Alertas</th><th className={`${th} text-right`}>Duración</th>
-            </tr></thead>
-            <tbody>
-              {list.data.items.map((r) => {
-                const [kind, label] = STATUS[r.status] ?? ['neutral', r.status]
-                const ms = r.finished_at ? new Date(r.finished_at).getTime() - new Date(r.started_at).getTime() : null
-                return (
-                  <Fragment key={r.id}>
-                    <tr {...(r.errors.length ? rowToggle(open === r.id, () => setOpen(open === r.id ? null : r.id)) : {})}>
-                      <td className={`${td} font-mono text-[12px] whitespace-nowrap`}>{formatLima(r.started_at)}</td>
-                      <td className={td}>{r.trigger === 'cron' ? 'Programado' : 'Manual'}</td>
-                      <td className={td}><StatusBadge kind={kind}>{label}</StatusBadge></td>
-                      <td className={`${td} font-mono text-[12px]`}>{r.kev_catalog_version ?? '—'}{r.kev_total > 0 && <span className="text-muted"> · {r.kev_total}</span>}</td>
-                      <td className={`${td} text-right tabular-nums`}>{r.epss_scored}</td>
-                      <td className={`${td} text-right tabular-nums`}>{r.new_matches}</td>
-                      <td className={`${td} text-right tabular-nums`}>{r.alerts_created}</td>
-                      <td className={`${td} text-right tabular-nums`}>{formatDuration(ms)}</td>
-                    </tr>
-                    {open === r.id && (
-                      <tr><td colSpan={8} className="border-b border-line bg-sunken px-4 py-3">
-                        <ul className="space-y-1 text-[12px]">
-                          {r.errors.map((e, i) => <li key={i}><span className="font-mono font-medium">{e.node}</span>: {e.message} <span className="text-muted">({formatLima(e.at)})</span></li>)}
-                        </ul>
-                      </td></tr>
-                    )}
-                  </Fragment>
-                )
-              })}
-            </tbody>
-          </table>
+      {list.data && <DurationChart runs={list.data.items} />}
+      <DataTable
+        columns={columns}
+        rows={list.data?.items}
+        rowKey={(r) => r.id}
+        loading={list.isPending}
+        error={list.isError ? list.error.message : undefined}
+        onRetry={() => void list.refetch()}
+        skeletonRows={5}
+        // Solo las ejecuciones con errores se expanden: el detalle del error está en la fila, no en otra pantalla.
+        rowProps={(r) => (r.errors.length ? { ...rowOpen(() => setOpen(open === r.id ? null : r.id)), 'aria-expanded': open === r.id } : {})}
+        expanded={(r) => open === r.id && (
+          <div>
+            <p className="mb-1 text-[12px] font-medium text-muted">Detalle del error</p>
+            <ul className="space-y-1 text-[12px]">
+              {r.errors.map((e, i) => <li key={i}><span className="font-mono font-medium">{e.node}</span>: {e.message} <span className="text-muted">({formatLima(e.at)})</span></li>)}
+            </ul>
+          </div>
         )}
-      </Panel>
+        empty={<EmptyState title="Aún no hay ejecuciones" hint="La primera corre a las 06:00 (hora de Lima) cuando el workflow de n8n esté importado y activo." />}
+      />
     </>
   )
 }
