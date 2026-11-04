@@ -65,7 +65,7 @@ export default function Assistant() {
               <p className="mb-2 text-[13px] text-muted">Pruebe con una de estas preguntas:</p>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLES.map((e) => (
-                  <button key={e} onClick={() => send(e)} className="rounded-md border border-line px-2.5 py-1.5 text-left text-[13px] transition-[transform,background-color] duration-150 hover:bg-sunken active:scale-[0.98]">{e}</button>
+                  <button key={e} onClick={() => send(e)} className="rounded-md border border-line-strong px-2.5 py-1.5 text-left text-[13px] transition-[transform,background-color] duration-150 hover:bg-sunken active:scale-[0.98]">{e}</button>
                 ))}
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function Assistant() {
           <div ref={end} />
         </div>
         <form className="flex gap-2 border-t border-line p-3" onSubmit={(e) => { e.preventDefault(); send(q) }}>
-          <input aria-label="Pregunta" value={q} maxLength={500} onChange={(e) => setQ(e.target.value)} placeholder="Escriba su pregunta…" className="h-9 flex-1 rounded-md border border-line bg-surface px-3 text-[13px]" />
+          <input aria-label="Pregunta" value={q} maxLength={500} onChange={(e) => setQ(e.target.value)} placeholder="Escriba su pregunta…" className="h-9 pointer-coarse:h-11 flex-1 rounded-md border border-line-strong bg-surface px-3 text-[13px]" />
           <Button type="submit" variant="primary" disabled={!q.trim() || ask.isPending} className="!h-9"><PaperPlaneRight size={15} weight="bold" /> Enviar</Button>
         </form>
       </Panel>

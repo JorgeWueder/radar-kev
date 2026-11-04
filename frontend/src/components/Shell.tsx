@@ -80,10 +80,27 @@ function useModuleTracking(enabled: boolean) {
   }, [pathname, enabled])
 }
 
+const TITLES: Record<string, string> = {
+  '/perfil': 'Mi perfil', '/resumen': 'Resumen', '/asistente': 'Asistente IA', '/alertas': 'Alertas', '/tickets': 'Tickets',
+  '/reportes': 'Reportes', '/activos': 'Activos', '/importacion': 'Importación', '/vulnerabilidades': 'Vulnerabilidades',
+  '/kev': 'Catálogo KEV', '/ejecuciones': 'Ejecuciones', '/configuracion': 'Configuración', '/usuarios': 'Usuarios',
+  '/roles': 'Roles y permisos', '/bitacora': 'Bitácora',
+}
+
+/** Título de la pestaña por pantalla (WCAG 2.4.2) y foco al contenido en cada cambio de ruta. */
+function usePageTitle() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const key = Object.keys(TITLES).find((p) => pathname === p || pathname.startsWith(`${p}/`))
+    document.title = key ? `${TITLES[key]} · Radar KEV/EPSS` : 'Radar KEV/EPSS'
+  }, [pathname])
+}
+
 export function Shell() {
   const { user, logout, can, setUser } = useAuth()
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   useModuleTracking(Boolean(user))
+  usePageTitle()
 
   const toggleTheme = () => {
     const next = !dark
@@ -102,12 +119,13 @@ export function Shell() {
   }).data?.unread ?? 0
   const items = NAV.filter((n) => can(n.module, n.action))
   const link = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors duration-150 ${
+    `flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 pointer-coarse:py-2.5 text-[13px] transition-colors duration-150 ${
       isActive ? 'bg-sunken font-medium text-ink' : 'text-muted hover:bg-sunken hover:text-ink'
     }`
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[232px_1fr]">
+      <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-md focus:bg-accent focus:px-3 focus:py-2 focus:text-accent-ink">Saltar al contenido</a>
       <aside className="flex flex-col border-b border-line bg-surface md:min-h-screen md:border-r md:border-b-0">
         <div className="flex items-center gap-2 px-4 py-3.5">
           <span className="grid size-7 place-items-center rounded-md bg-accent text-accent-ink" aria-hidden>
@@ -153,7 +171,7 @@ export function Shell() {
           </button>
         </div>
       </aside>
-      <main className="min-w-0 px-4 py-5 md:px-7">
+      <main id="contenido" tabIndex={-1} className="min-w-0 px-4 py-5 outline-none md:px-7">
         <Outlet />
       </main>
     </div>

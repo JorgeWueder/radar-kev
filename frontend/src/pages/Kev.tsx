@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { Button, EmptyState, ErrorState, Input, PageHeader, Panel, Select, Skeleton, StatusBadge, td, th } from '../components/ui'
+import { Button, rowToggle, EmptyState, ErrorState, Input, PageHeader, Panel, Select, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
 import { formatDate, formatPct } from '../lib/format'
 
@@ -75,7 +75,7 @@ export default function Kev() {
             <tbody>
               {list.data.items.map((k) => (
                 <Fragment key={k.cve_id}>
-                  <tr className="cursor-pointer hover:bg-sunken" onClick={() => setOpen(open === k.cve_id ? null : k.cve_id)}>
+                  <tr {...rowToggle(open === k.cve_id, () => setOpen(open === k.cve_id ? null : k.cve_id))}>
                     <td className={`${td} font-mono text-[12px] font-medium whitespace-nowrap`}>{k.cve_id}</td>
                     <td className={td}><div className="font-medium">{k.vendor_project} · {k.product}</div><div className="max-w-md truncate text-[12px] text-muted">{k.vulnerability_name}</div></td>
                     <td className={`${td} whitespace-nowrap tabular-nums`}>{formatDate(k.date_added)}</td>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import {
-  Button, EmptyState, ErrorState, Input, PageHeader, Panel, Select, Skeleton, StatusBadge, td, th,
+  Button, rowToggle, EmptyState, ErrorState, Input, PageHeader, Panel, Select, Skeleton, StatusBadge, td, th,
 } from '../components/ui'
 import { api, download } from '../lib/api'
 import { useAuth, type User } from '../lib/auth'
@@ -118,7 +118,7 @@ export default function Audit() {
                 const hasDetail = Object.keys(e.detail).length > 0
                 return (
                   <>
-                    <tr key={e.id} className={hasDetail ? 'cursor-pointer hover:bg-sunken' : ''} onClick={() => hasDetail && setOpen(open === e.id ? null : e.id)}>
+                    <tr key={e.id} {...(hasDetail ? rowToggle(open === e.id, () => setOpen(open === e.id ? null : e.id)) : {})}>
                       <td className={`${td} font-mono text-[12px] whitespace-nowrap`}>{formatLima(e.ts)}</td>
                       <td className={td}>{e.user_email ?? (e.actor === 'user' ? '—' : e.actor)}</td>
                       <td className={td}>{moduleLabel(e.module)}</td>

@@ -132,7 +132,7 @@ export default function SettingsPage() {
             {sampleNum('epss', 'EPSS (0 a 1)', 1, 0.05)}{sampleNum('percentile', 'Percentil (0 a 1)', 1, 0.05)}
             {sampleNum('cvss', 'CVSS (0 a 10)', 10, 0.1)}
             <Field label="Criticidad">
-              <select className="h-8 w-full rounded-md border border-line bg-surface px-2 text-[13px]" value={sample.criticality} onChange={(e) => setSample({ ...sample, criticality: Number(e.target.value) })}>
+              <select className="h-8 pointer-coarse:h-11 w-full rounded-md border border-line-strong bg-surface px-2 text-[13px]" value={sample.criticality} onChange={(e) => setSample({ ...sample, criticality: Number(e.target.value) })}>
                 {[4, 3, 2, 1].map((c) => <option key={c} value={c}>{['', 'Baja', 'Media', 'Alta', 'Crítica'][c]}</option>)}
               </select>
             </Field>
@@ -208,7 +208,7 @@ function IntegrationsPanel() {
         {f('smtp_host', 'Servidor SMTP')}{f('smtp_port', 'Puerto', 'number')}{f('smtp_user', 'Usuario SMTP')}{f('smtp_password', 'Contraseña SMTP', 'password', 'Sin cambios')}
         {f('smtp_from', 'Remitente')}<div className="md:col-span-1 xl:col-span-3">{f('alert_email_to', 'Destinatarios (separados por coma)')}</div>
         <Field label="Tipo de webhook">
-          <select className="h-8 w-full rounded-md border border-line bg-surface px-2 text-[13px]" value={v.webhook_kind} disabled={!editable} onChange={set('webhook_kind')}>
+          <select className="h-8 pointer-coarse:h-11 w-full rounded-md border border-line-strong bg-surface px-2 text-[13px]" value={v.webhook_kind} disabled={!editable} onChange={set('webhook_kind')}>
             {KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </Field>

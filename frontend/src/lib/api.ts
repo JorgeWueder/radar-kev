@@ -50,6 +50,25 @@ export function refreshAccessToken(): Promise<string | null> {
   return refreshing
 }
 
+/** Restaura la sesión al abrir la app. Un 401 es definitivo; un fallo de red o un 5xx (backend reiniciándose) se reintenta,
+ *  para no mandar al usuario al login por una caída momentánea. */
+export async function bootstrapSession(): Promise<string | null> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const r = await fetch(`${BASE}/auth/refresh`, { method: 'POST', credentials: 'include' })
+      if (r.ok) {
+        accessToken = ((await r.json()) as { access_token: string }).access_token
+        return accessToken
+      }
+      if (r.status < 500) return null
+    } catch {
+      /* sin red: se reintenta */
+    }
+    await new Promise((res) => setTimeout(res, 1000 * (attempt + 1)))
+  }
+  return null
+}
+
 interface Options {
   method?: string
   body?: unknown

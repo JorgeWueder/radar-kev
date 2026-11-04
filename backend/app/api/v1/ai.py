@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from app.ai.enrichment import EnrichmentError, Ungrounded, enrich_ticket
 from app.ai.schemas import AssistantAnswer
 from app.ai.summary import executive_summary
 from app.api.deps import require
+from app.core.ratelimit import limiter
 from app.db.session import get_db
 from app.models.auth import User
 from app.models.ops import AiInteraction, Ticket
@@ -72,7 +73,8 @@ def ai_status(_: User = Depends(require("ai", "view"))) -> StatusOut:
 
 
 @router.post("/assistant/chat", response_model=AssistantAnswer)
-def chat(body: ChatIn, user: User = Depends(require("ai", "view")), db: Session = Depends(get_db)) -> AssistantAnswer:
+@limiter.limit("30/minute")
+def chat(request: Request, body: ChatIn, user: User = Depends(require("ai", "view")), db: Session = Depends(get_db)) -> AssistantAnswer:
     try:
         answer = assistant.ask(db, user, body.question, [t.model_dump() for t in body.history])
     except (providers.AIUnavailable, EnrichmentError) as e:

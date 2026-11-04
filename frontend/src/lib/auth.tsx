@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { api, refreshAccessToken, setAccessToken, setAuthLostHandler } from './api'
+import { api, bootstrapSession, setAccessToken, setAuthLostHandler } from './api'
 import { hasPermission, type Action } from './permissions'
 
 export interface User {
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     // Restaura la sesión con la cookie de refresco (el access token vive solo en memoria).
     void (async () => {
-      const token = await refreshAccessToken()
+      const token = await bootstrapSession()
       if (token) {
         try {
           setUser(await api.get<User>('/auth/me'))

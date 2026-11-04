@@ -14,6 +14,7 @@
   --color-surface: var(--surface);
   --color-sunken: var(--sunken);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -32,6 +33,7 @@
   --surface: #ffffff;
   --sunken: #efefea;
   --line: #dcdcd4;
+  --line-strong: #85867f; /* bordes de controles: >= 3:1 (WCAG 1.4.11) */
   --ink: #1b1c1a;
   --muted: #5a5c56;
   --accent: #1d5bb8;
@@ -48,6 +50,7 @@
   --surface: #191c1a;
   --sunken: #202421;
   --line: #2d322e;
+  --line-strong: #737974;
   --ink: #ecede9;
   --muted: #a3a8a1;
   --accent: #7aaaf2;
@@ -74,6 +77,13 @@ body {
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Movimiento reducido: sin desplazamientos ni escalas ni animaciones continuas, pero se conservan los cambios de
+   color y opacidad (son la retroalimentación del estado: hover, foco, selección). */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, ::before, ::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-property: color, background-color, border-color, opacity !important;
+    transition-duration: 120ms !important;
+  }
 }

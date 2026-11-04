@@ -8,6 +8,7 @@ from app.ai import providers
 from app.ai.enrichment import EnrichmentError
 from app.ai.summary import executive_summary
 from app.api.deps import audit, require, user_permissions
+from app.core.ratelimit import limiter
 from app.db.session import get_db
 from app.models.auth import User
 from app.services import reports
@@ -25,6 +26,7 @@ def catalog(_: User = Depends(require("reports", "view"))) -> list[dict[str, Any
 
 
 @router.post("/{rtype}")
+@limiter.limit("20/minute")
 def generate(
     request: Request,
     rtype: TYPES,

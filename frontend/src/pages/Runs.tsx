@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 
 import { toast } from 'sonner'
 
-import { Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
+import { Button, rowToggle, EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatDuration, formatLima } from '../lib/format'
@@ -58,7 +58,7 @@ export default function Runs() {
                 const ms = r.finished_at ? new Date(r.finished_at).getTime() - new Date(r.started_at).getTime() : null
                 return (
                   <Fragment key={r.id}>
-                    <tr className={r.errors.length ? 'cursor-pointer hover:bg-sunken' : ''} onClick={() => r.errors.length && setOpen(open === r.id ? null : r.id)}>
+                    <tr {...(r.errors.length ? rowToggle(open === r.id, () => setOpen(open === r.id ? null : r.id)) : {})}>
                       <td className={`${td} font-mono text-[12px] whitespace-nowrap`}>{formatLima(r.started_at)}</td>
                       <td className={td}>{r.trigger === 'cron' ? 'Programado' : 'Manual'}</td>
                       <td className={td}><StatusBadge kind={kind}>{label}</StatusBadge></td>

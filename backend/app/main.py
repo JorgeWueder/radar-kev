@@ -1,6 +1,8 @@
 import uuid
 
+from cryptography.fernet import Fernet
 from fastapi import APIRouter, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
@@ -27,7 +29,7 @@ from app.api.v1 import (
     vulnerabilities,
     workflow,
 )
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.ratelimit import limiter
 
 SECURITY_HEADERS = {
@@ -36,12 +38,55 @@ SECURITY_HEADERS = {
     "Referrer-Policy": "no-referrer",
     "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
     "Cache-Control": "no-store",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Cross-Origin-Resource-Policy": "same-origin",
 }
+
+API_DESCRIPTION = (
+    "API del **Radar de explotación activa (KEV/EPSS)**: cruce diario del inventario propio con el catálogo KEV de CISA "
+    "y los scores EPSS de FIRST (NIST CSF ID.RA-1).\n\n"
+    "**Autenticación:** `POST /api/v1/auth/login` devuelve un JWT; úselo con *Authorize* (esquema Bearer). Los permisos "
+    "(`módulo:acción`) se validan siempre en el servidor. Los endpoints `/api/v1/internal/*` son solo para n8n y no se documentan aquí."
+)
+TAGS = [
+    {"name": "autenticación", "description": "Inicio y cierre de sesión, refresco y perfil."},
+    {"name": "usuarios", "description": "Cuentas de usuario."}, {"name": "roles", "description": "Roles y matriz de permisos."},
+    {"name": "bitácora", "description": "Auditoría solo de añadir, encadenada por hash; filtros, exportación y verificación."},
+    {"name": "activos", "description": "Inventario de activos."}, {"name": "importación", "description": "Importación CSV y Nessus con previsualización."},
+    {"name": "vulnerabilidades", "description": "Hallazgos por activo con KEV, EPSS, score y SLA."},
+    {"name": "catálogo KEV", "description": "Catálogo de CISA y su presencia en el entorno."},
+    {"name": "tickets", "description": "Remediación: estados, responsables, historial."}, {"name": "alertas", "description": "Alertas urgentes y su entrega."},
+    {"name": "ejecuciones", "description": "Historial del workflow de n8n y disparo manual."},
+    {"name": "configuración", "description": "Fórmula del score (versionada), SLA y canales de alerta."},
+    {"name": "dashboard", "description": "KPIs, tendencia y activos más expuestos."}, {"name": "reportes", "description": "Reportes en PDF, Word y Excel."},
+    {"name": "IA", "description": "Asistente de consulta, enriquecimiento de tickets y resumen ejecutivo. Todo contenido generado va marcado."},
+    {"name": "sistema", "description": "Salud y disponibilidad."},
+]
+
+
+def validate_runtime_settings(cfg: Settings) -> None:
+    """Falla al arrancar, con un mensaje claro, si falta un secreto o quedó un valor de ejemplo."""
+    problems: list[str] = []
+    for name, value, minimum in (
+        ("JWT_SECRET", cfg.jwt_secret.get_secret_value(), 32),
+        ("RADAR_SERVICE_KEY", cfg.radar_service_key.get_secret_value(), 24),
+        ("FERNET_KEY", cfg.fernet_key.get_secret_value(), 32),
+    ):
+        if len(value) < minimum or "CHANGE_ME" in value:
+            problems.append(f"{name} falta, es muy corto (mínimo {minimum}) o es el valor de ejemplo")
+    try:
+        Fernet(cfg.fernet_key.get_secret_value().encode())
+    except Exception:  # noqa: BLE001
+        problems.append("FERNET_KEY no es una clave Fernet válida (base64 urlsafe de 32 bytes)")
+    if problems:
+        raise RuntimeError("Configuración insegura: " + "; ".join(dict.fromkeys(problems)) + ". Genere los secretos con scripts/gen-secrets.")
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
+        if get_settings().environment == "production":
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")  # solo con TLS delante
         for key, value in SECURITY_HEADERS.items():
             # Swagger UI necesita sus propios recursos; no se le aplica la CSP estricta.
             is_docs = request.url.path.startswith(("/docs", "/redoc"))
@@ -53,12 +98,17 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 def create_app() -> FastAPI:
     cfg = get_settings()
-    if cfg.environment != "test" and len(cfg.jwt_secret.get_secret_value()) < 32:
-        raise RuntimeError("JWT_SECRET debe tener al menos 32 caracteres (ver .env.example)")
+    if cfg.environment != "test":
+        validate_runtime_settings(cfg)
+    docs_on = cfg.enable_docs_explicit or (cfg.enable_docs and cfg.environment != "production")
     app = FastAPI(
         title="Radar de explotación activa (KEV/EPSS)",
-        version="0.2.0",
-        description="API del radar: cruce diario de inventario con CISA KEV y FIRST EPSS.",
+        version="1.0.0",
+        description=API_DESCRIPTION,
+        openapi_tags=TAGS,
+        docs_url="/docs" if docs_on else None,
+        redoc_url="/redoc" if docs_on else None,
+        openapi_url="/openapi.json" if docs_on else None,
     )
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
@@ -70,6 +120,12 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid(_: Request, exc: RequestValidationError) -> JSONResponse:
+        # Se omite `input`: FastAPI reenvía el valor enviado, que podría ser una contraseña o un token.
+        errors = [{"loc": e.get("loc"), "msg": e.get("msg"), "type": e.get("type")} for e in exc.errors()]
+        return JSONResponse(status_code=422, content={"detail": errors})
 
     @app.exception_handler(Exception)
     async def unhandled(_: Request, __: Exception) -> JSONResponse:

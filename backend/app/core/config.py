@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     environment: str = "development"
+    enable_docs: bool = True  # Swagger/ReDoc en desarrollo
+    enable_docs_explicit: bool = False  # ENABLE_DOCS_EXPLICIT=true los habilita también en producción
     database_url: str = "postgresql+psycopg://radar_app:radar_app@postgres:5432/radar"
     jwt_secret: SecretStr = Field(default=SecretStr(""), min_length=0)
     fernet_key: SecretStr = SecretStr("")

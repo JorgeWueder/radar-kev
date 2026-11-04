@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 
-import { Button, EmptyState, ErrorState, Panel, Select, Skeleton, StatusBadge, td, th } from '../components/ui'
+import { Button, rowToggle, EmptyState, ErrorState, Panel, Select, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
 import { formatLima } from '../lib/format'
 import type { Kind } from '../lib/labels'
@@ -50,7 +50,7 @@ export default function AiLog() {
                 const [k, l] = STATUS[i.status] ?? ['neutral', i.status]
                 return (
                   <Fragment key={i.id}>
-                    <tr className="cursor-pointer hover:bg-sunken" onClick={() => setOpen(open === i.id ? null : i.id)}>
+                    <tr {...rowToggle(open === i.id, () => setOpen(open === i.id ? null : i.id))}>
                       <td className={`${td} font-mono text-[12px] whitespace-nowrap`}>{formatLima(i.created_at)}</td>
                       <td className={td}>{i.user ?? <span className="text-muted">Sistema (n8n)</span>}</td>
                       <td className={td}>{FEATURE[i.feature] ?? i.feature}</td>

@@ -109,7 +109,7 @@ export default function TicketDetail() {
             <h2 className="mb-3 text-[14px] font-semibold">Historial</h2>
             {editable && (
               <form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (comment.trim()) post.mutate() }}>
-                <input aria-label="Comentario" placeholder="Agregar un comentario…" maxLength={2000} value={comment} onChange={(e) => setComment(e.target.value)} className="h-8 flex-1 rounded-md border border-line bg-surface px-2.5 text-[13px]" />
+                <input aria-label="Comentario" placeholder="Agregar un comentario…" maxLength={2000} value={comment} onChange={(e) => setComment(e.target.value)} className="h-8 pointer-coarse:h-11 flex-1 rounded-md border border-line-strong bg-surface px-2.5 text-[13px]" />
                 <Button type="submit" variant="primary" disabled={!comment.trim() || post.isPending}>Comentar</Button>
               </form>
             )}

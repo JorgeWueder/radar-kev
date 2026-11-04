@@ -134,6 +134,7 @@ def login(
 
 
 @router.post("/refresh", response_model=TokenOut)
+@limiter.limit("60/minute")
 def refresh(request: Request, response: Response, db: Session = Depends(get_db)) -> TokenOut:
     token = request.cookies.get(COOKIE)
     if not token:

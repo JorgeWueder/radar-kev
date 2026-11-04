@@ -3,6 +3,7 @@ from collections.abc import Callable
 
 import jwt
 from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -48,7 +49,14 @@ def audit(
     )
 
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+_bearer = HTTPBearer(auto_error=False, description="Token de acceso (JWT) obtenido en POST /api/v1/auth/login")
+
+
+def get_current_user(
+    request: Request,
+    db: Session = Depends(get_db),
+    _credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),  # registra el esquema en OpenAPI
+) -> User:
     header = request.headers.get("authorization", "")
     scheme, _, token = header.partition(" ")
     unauthorized = HTTPException(status.HTTP_401_UNAUTHORIZED, "No autenticado")
