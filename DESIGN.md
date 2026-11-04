@@ -210,11 +210,11 @@ Motion reveals state; it never decorates. Applies to the public site (`frontend/
 - **Duration and easing:** 400–700 ms, ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`). Micro-feedback (hover, press) may be shorter (≤200 ms). The radar sweep is the only continuous loop: 6 s, linear.
 - **Properties:** animate only `transform` and `opacity`. Allowed exceptions, all paint-only on small SVG strokes with no layout cost: `pathLength` on the SLA ring and the score gauge; color swaps inside the hash-chain blocks.
 - **Once:** every entrance runs once (`viewport={{ once: true }}`, `useInView({ once: true })`). Nothing re-triggers on scroll back. Scroll-linked motion (pipeline line, close-look) follows scroll position and is not an entrance.
-- **Sequence over spectacle:** one idea per section — sweep (hero), count and ring (SLA), bars then swap (CVE comparison), sticky chips with crossfade (close-look), drawn line (pipeline), gauge (calculator), broken chain (audit log).
+- **Sequence over spectacle:** one idea per section — sweep (hero), count and ring (SLA), bars then swap (CVE comparison), sticky chips with crossfade (close-look), drawn line (pipeline), gauge (calculator), broken chain (audit log), lit dots (thousand-dot grid, staggered opacity), gauge 0→94 % (EPSS tile), weight bars (inventory chips).
 - **Reading order:** layout animations (`layout="position"`) are used only to show a reorder, and the new order is also stated in text (`aria-live="polite"`).
 - **Reduced motion:** `MotionConfig reducedMotion="user"` plus explicit branches: with `prefers-reduced-motion`, no sweep rotation, no sticky pinning, no counters, no layout swaps — the final state renders immediately. Opacity and color feedback may remain (≤120 ms).
 - **Contrast over media:** text on photographs always sits over a flat dark overlay (no gradient) that keeps AA contrast.
-- **Color:** Battery Green appears only on performance metrics (the SLA number and ring); broken-chain red uses the app's danger token, never Battery Green.
+- **Color:** Battery Green appears only on performance metrics (the SLA number and ring, and the ~5 % exploited-CVE dots and figure in the thousand-dot grid); broken-chain red uses the app's danger token, never Battery Green.
 
 ## Imagery
 

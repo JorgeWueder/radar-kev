@@ -8,12 +8,9 @@ import { Link } from 'react-router-dom'
 import {
   BandTag,
   ComparisonFragment,
-  CvssFragment,
-  EpssFragment,
-  InventoryFragment,
-  KevFragment,
   RankingFragment,
 } from '../landing/Fragments'
+import { BayGravedad, BayInventario, BayKevEpss, BayRadar } from '../landing/Bays'
 import { Photo } from '../landing/Photo'
 import { buy, CloseLook, Highlights, HeroStage } from '../landing/Stage'
 import { useAuth } from '../lib/auth'
@@ -137,62 +134,6 @@ function Header() {
         </nav>
       </div>
     </header>
-  )
-}
-
-/* ───────────────────────── Fundamentos ───────────────────────── */
-
-const FUNDAMENTOS: Array<{ title: string; body: string; pic: ReactNode }> = [
-  {
-    title: 'La gravedad no basta',
-    body: 'Cada año se publican decenas de miles de CVE. CVSS mide qué tan grave sería una falla en teoría, no si alguien ya la usa. Parchar por CVSS deja al equipo corriendo detrás de listas que casi nadie ataca.',
-    pic: <CvssFragment />,
-  },
-  {
-    title: 'KEV y EPSS: lo que se explota y lo que se explotará',
-    body: 'El catálogo KEV de CISA reúne los CVE con explotación activa confirmada, con fecha de alta y plazo de remediación. EPSS, de FIRST, estima de 0 a 100 % la probabilidad de explotación en 30 días y sirve para ordenar lo que aún no está en KEV.',
-    pic: (
-      <div className="space-y-3">
-        <KevFragment />
-        <EpssFragment />
-      </div>
-    ),
-  },
-  {
-    title: 'Su inventario: lo que le afecta',
-    body: 'Un CVE solo importa si está en un activo suyo. El radar cruza cada hallazgo con su inventario y pondera la criticidad del activo y su entorno, para que un servidor de producción pese más que uno de pruebas.',
-    pic: (
-      <div className="space-y-3">
-        <div className="aspect-[4/3] overflow-hidden rounded-[28px] bg-surface">
-          <Photo name="servers-1-tyler" alt="Pasillo de un centro de datos con racks de servidores iluminados" sizes="(min-width: 1024px) 25vw, 100vw" className="size-full" />
-        </div>
-        <InventoryFragment />
-      </div>
-    ),
-  },
-]
-
-function Fundamentos() {
-  return (
-    <section id="fundamentos" className={`scroll-mt-24 ${gutter} ${section}`}>
-      <div className="grid gap-y-10 lg:grid-cols-12 lg:gap-x-6">
-        <Reveal className="lg:col-span-8 lg:col-start-5">
-          <h2 className={h2}>Qué es el radar</h2>
-          <p className="mt-5 max-w-2xl text-[20px] leading-snug">Una herramienta que responde, cada mañana, una sola pregunta: de todo lo que tengo expuesto, ¿qué ya está siendo atacado?</p>
-        </Reveal>
-        {FUNDAMENTOS.map((f) => (
-          <div key={f.title} className="lg:col-span-12 lg:grid lg:grid-cols-12 lg:gap-x-6 lg:py-[clamp(12px,2vw,28px)]">
-            <Reveal className="lg:col-span-5 lg:col-start-5">
-              <h3 className="max-w-[22ch] text-[clamp(26px,2.8vw,44px)] font-semibold leading-[1.05] tracking-[-0.01em]">{f.title}</h3>
-              <p className="mt-3 max-w-[42ch] text-[17px] leading-relaxed">{f.body}</p>
-            </Reveal>
-            <Reveal delay={0.08} className="mt-5 lg:col-span-3 lg:col-start-10 lg:mt-0">
-              {f.pic}
-            </Reveal>
-          </div>
-        ))}
-      </div>
-    </section>
   )
 }
 
@@ -716,7 +657,10 @@ export default function Landing() {
         <HeroStage contact={CONTACT} />
         <Highlights />
         <CloseLook />
-        <Fundamentos />
+        <BayRadar />
+        <BayGravedad />
+        <BayKevEpss />
+        <BayInventario />
         <Contraste />
         <Funcionamiento />
         <Calculadora />
