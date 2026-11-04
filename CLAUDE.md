@@ -29,6 +29,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - La IA solo responde con datos recuperados (grounding), con salida estructurada y registro en bitácora.
 - `audit_log` es solo de añadir (trigger + hash encadenado). Sin endpoints de edición/borrado.
 - Antes de cerrar una fase: lint + tipos + tests + build, demostración y commit. Sin errores pendientes.
+- Sistema visual: `DESIGN.md` (estilo Apple: Carbon/Black/Polar White, Purchase Blue solo en botones, botones e inputs en píldora, tarjetas de 28 px, sin sombras). Tokens en `frontend/src/index.css`; tipografía SF Pro con respaldo de sistema (Inter/Segoe UI), sin dependencia nueva.
 - Diseño: skills en `.claude/skills` (emil-design-eng, impeccable, design-taste-frontend). Modo "Operate": densidad legible,
   severidad con color + texto/icono, animaciones <300 ms, `prefers-reduced-motion`.
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
@@ -41,6 +42,12 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Tests del backend usan un esquema PostgreSQL temporal (`tests/conftest.py::isolated_schema`); nunca tocan `public`.
 - Nota de herramienta: heredocs de Bash con comillas simples/`
 ` fallan en este entorno; crear archivos con la herramienta Write.
+
+## Sitio público (landing)
+- `/` es una página pública (`frontend/src/pages/Landing.tsx`, fragmentos de interfaz en `src/landing/Fragments.tsx`); `/login` y el panel siguen igual y `*` vuelve a `/`.
+- Dirección de la skill design-taste-frontend: "la frase es el layout" (frase partida con un fragmento vivo del producto en medio), con la paleta y la tipografía de la app.
+- La calculadora usa `src/lib/score.ts`, réplica de `scoring.py` con los pesos por defecto: si cambia la fórmula del backend, actualizar ambos (hay test).
+- Una sola foto libre (RT-70, Wikimedia Commons, CC BY 4.0) en `frontend/public/fotos` con su crédito en `credits.json` y en el pie; sin imágenes remotas (CSP `img-src 'self' data:`). Los fragmentos de interfaz usan datos de demostración. El botón "Pedir una demostración" solo aparece si se compila con `VITE_CONTACT_EMAIL`.
 
 ## Fase 3: cruce y score
 - Actualizar a mano con datos reales: `docker compose exec backend python -m app.refresh` (descarga KEV y EPSS, ingesta y cruza).
@@ -89,3 +96,6 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - `n8n-import` corre DESPUÉS de que n8n esté sano (en una instalación nueva n8n registra su clave de cifrado en el primer arranque).
 - Frontend: bordes de controles con `border-line-strong` (≥3:1), `pointer-coarse:` para objetivos táctiles, `rowToggle` para filas expandibles con teclado, `Dialog` accesible.
 - No versionar descargas de prueba (`radar_*.pdf|docx|xlsx` están en `.gitignore`).
+
+## Diseño
+Toda la UI sigue @DESIGN.md. Usa sus tokens (colores, tipografía, espaciado, radios) y respeta sus reglas de uso. No inventes colores ni fuentes fuera de ese archivo.

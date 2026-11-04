@@ -21,13 +21,13 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex h-8 pointer-coarse:h-11 items-center justify-center gap-1.5 rounded-md px-3 text-[13px] font-medium ${press} ${variants[variant]} ${className}`}
+      className={`inline-flex h-8 pointer-coarse:h-11 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-medium ${press} ${variants[variant]} ${className}`}
     />
   )
 }
 
 const control =
-  'h-8 pointer-coarse:h-11 w-full rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink placeholder:text-muted'
+  'h-8 pointer-coarse:h-11 w-full rounded-full border border-line-strong bg-surface px-4 text-[13px] text-ink placeholder:text-muted'
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${control} ${props.className ?? ''}`} />
@@ -73,7 +73,7 @@ export function StatusBadge({ kind, children }: { kind: 'ok' | 'warn' | 'danger'
   }[kind]
   const Icon = { ok: CheckCircle, warn: Warning, danger: XCircle, neutral: Minus }[kind]
   return (
-    <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[12px] font-medium ${styles}`}>
+    <span className={`inline-flex items-center gap-1 rounded-[5px] px-1.5 py-0.5 text-[12px] font-medium ${styles}`}>
       <Icon size={13} weight="bold" aria-hidden />
       {children}
     </span>
@@ -119,8 +119,8 @@ export function Panel({ children, className = '' }: { children: ReactNode; class
   return <div className={`rounded-lg border border-line bg-surface ${className}`}>{children}</div>
 }
 
-export const th = 'px-3 py-2 text-left text-[12px] font-medium text-muted border-b border-line whitespace-nowrap'
-export const td = 'px-3 py-2 border-b border-line align-middle'
+export const th = 'px-3 py-2 text-left text-[12px] font-medium text-muted border-b border-line whitespace-nowrap first:pl-5 last:pr-5'
+export const td = 'px-3 py-2 border-b border-line align-middle first:pl-5 last:pr-5'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 

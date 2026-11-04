@@ -13,6 +13,7 @@ import Runs from './pages/Runs'
 import SettingsPage from './pages/Settings'
 import TicketDetail from './pages/TicketDetail'
 import Tickets from './pages/Tickets'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Overview from './pages/Overview'
 import Profile from './pages/Profile'
@@ -33,6 +34,7 @@ export default function App() {
   if (loading) return <div className="grid min-h-screen place-items-center text-muted" role="status">Cargando…</div>
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route element={user ? <Shell /> : <Navigate to="/login" replace />}>
         <Route path="/resumen" element={<Protected module="dashboard"><Overview /></Protected>} />
@@ -52,7 +54,7 @@ export default function App() {
         <Route path="/bitacora" element={<Protected module="audit"><Audit /></Protected>} />
         <Route path="/perfil" element={<Protected><Profile /></Protected>} />
       </Route>
-      <Route path="*" element={<Navigate to="/resumen" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

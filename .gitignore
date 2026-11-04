@@ -16,3 +16,6 @@ __pycache__/
 radar_*.pdf
 radar_*.docx
 radar_*.xlsx
+
+# Salidas del inspector de diseño
+.taste-skill/

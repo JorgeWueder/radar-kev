@@ -119,7 +119,7 @@ export function Shell() {
   }).data?.unread ?? 0
   const items = NAV.filter((n) => can(n.module, n.action))
   const link = ({ isActive }: { isActive: boolean }) =>
-    `flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-2.5 py-1.5 pointer-coarse:py-2.5 text-[13px] transition-colors duration-150 ${
+    `flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 pointer-coarse:py-2.5 text-[13px] transition-colors duration-150 ${
       isActive ? 'bg-sunken font-medium text-ink' : 'text-muted hover:bg-sunken hover:text-ink'
     }`
 

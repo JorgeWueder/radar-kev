@@ -102,7 +102,7 @@ export default function TicketDetail() {
               {ai.por_que_urgente && <ul className="mb-2 list-disc pl-5 text-[13px]">{ai.por_que_urgente.map((x) => <li key={x}>{x}</li>)}</ul>}
               {ai.pasos_remediacion && <><p className="text-[12px] font-medium text-muted">Pasos de remediación</p><ol className="list-decimal pl-5 text-[13px]">{ai.pasos_remediacion.map((x) => <li key={x}>{x}</li>)}</ol></>}
               {ai.fuentes && <p className="mt-2 text-[12px] text-muted">Fuentes: {ai.fuentes.join(', ')}</p>}
-              {ai.referencias && ai.referencias.length > 0 && <p className="mt-1 break-all text-[12px]">{ai.referencias.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer noopener" className="mr-3 text-accent hover:underline">{u}</a>)}</p>}
+              {ai.referencias && ai.referencias.length > 0 && <p className="mt-1 break-all text-[12px]">{ai.referencias.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer noopener" className="mr-3 text-link hover:underline">{u}</a>)}</p>}
             </Panel>
           )}
           <Panel className="p-4">

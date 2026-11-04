@@ -71,7 +71,7 @@ export default function Overview() {
       {empty ? (
         <Panel>
           <EmptyState title="Aún no hay hallazgos abiertos" hint="Importe el reporte de un escáner y deje correr el cruce diario para ver aquí su exposición."
-            action={<Link to="/importacion" className="text-[13px] font-medium text-accent underline underline-offset-2">Ir a Importación</Link>} />
+            action={<Link to="/importacion" className="text-[13px] font-medium text-link underline underline-offset-2">Ir a Importación</Link>} />
         </Panel>
       ) : (
         <>
@@ -124,7 +124,7 @@ export default function Overview() {
                   </li>
                 ))}
               </ul>
-              <Link to="/vulnerabilidades" className="mt-2 inline-block text-[13px] font-medium text-accent hover:underline">Ver todas las vulnerabilidades</Link>
+              <Link to="/vulnerabilidades" className="mt-2 inline-block text-[13px] font-medium text-link hover:underline">Ver todas las vulnerabilidades</Link>
             </Panel>
           </div>
 

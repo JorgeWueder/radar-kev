@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Crosshair } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { z } from 'zod'
 
 import { Button, Field, Input } from '../components/ui'
@@ -48,7 +48,7 @@ export default function Login() {
           </div>
         </div>
         <form
-          className="space-y-3 rounded-lg border border-line bg-surface p-5"
+          className="space-y-3 rounded-lg border border-line bg-surface p-6"
           noValidate
           onSubmit={handleSubmit(async (v) => {
             setError('')
@@ -74,6 +74,9 @@ export default function Login() {
             {isSubmitting ? 'Ingresando…' : 'Ingresar'}
           </Button>
         </form>
+        <Link to="/" className="mt-4 inline-block text-[13px] text-muted underline underline-offset-4 hover:text-ink">
+          Volver al sitio
+        </Link>
       </div>
     </div>
   )

@@ -73,7 +73,7 @@ export default function Alerts() {
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
-                    {a.ticket_id && <Link to={`/tickets/${a.ticket_id}`} className="rounded-md px-2 py-1 text-[13px] font-medium text-accent hover:bg-sunken" onClick={() => !a.is_read && read.mutate(a.id)}>Ver ticket</Link>}
+                    {a.ticket_id && <Link to={`/tickets/${a.ticket_id}`} className="rounded-md px-2 py-1 text-[13px] font-medium text-link hover:bg-sunken" onClick={() => !a.is_read && read.mutate(a.id)}>Ver ticket</Link>}
                     {!a.is_read && <Button variant="ghost" onClick={() => read.mutate(a.id)}>Marcar leída</Button>}
                   </div>
                 </li>

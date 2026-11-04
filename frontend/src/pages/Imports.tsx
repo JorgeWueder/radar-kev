@@ -64,7 +64,7 @@ export default function Imports() {
             className="flex flex-col items-center gap-2 rounded-md border border-dashed border-line px-4 py-8 text-center"
           >
             <UploadSimple size={22} className="text-muted" aria-hidden />
-            <p className="text-[13px]">Arrastre un archivo aquí o <button className="font-medium text-accent underline underline-offset-2" onClick={() => input.current?.click()}>seleccione uno</button></p>
+            <p className="text-[13px]">Arrastre un archivo aquí o <button className="font-medium text-link underline underline-offset-2" onClick={() => input.current?.click()}>seleccione uno</button></p>
             <p className="text-[12px] text-muted">.csv o .nessus · máximo 10 MB · hasta 20.000 filas</p>
             <input ref={input} type="file" accept=".csv,.nessus" className="sr-only" aria-label="Archivo de hallazgos" onChange={(e) => pick(e.target.files?.[0])} />
             <Button variant="ghost" onClick={() => void download('/imports/template.csv', {}, 'plantilla_hallazgos.csv')}><DownloadSimple size={15} /> Descargar plantilla CSV</Button>
