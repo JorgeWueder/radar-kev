@@ -203,3 +203,18 @@ def test_epss_csv_fallback_parsing_filters_to_inventory() -> None:
     assert {i["cve"] for i in items} == {"CVE-2021-44228", "CVE-2022-0778"}
     with pytest.raises(IntelError, match="metadatos"):
         parse_epss_csv(gzip.compress(b"cve,epss,percentile\nCVE-2021-44228,0.9,0.9\n"))
+
+
+def test_closed_findings_are_frozen_by_recalculation(sm: sessionmaker[Session]) -> None:
+    """Mitigados y falsos positivos conservan su score y SLA: cambiar la fórmula no reescribe el MTTR ni el cumplimiento."""
+    with sm() as db:
+        seed(db)
+        correlate(db, today=TODAY)
+        mitigated = vuln(db, "srv-a", "CVE-2023-4966")
+        mitigated.risk_score, mitigated.sla_due_date = 12, date(2026, 1, 15)  # valores históricos al momento de cerrarse
+        db.commit()
+        correlate(db, today=TODAY)
+        db.commit()
+        again = vuln(db, "srv-a", "CVE-2023-4966")
+        assert float(again.risk_score) == 12.0 and again.sla_due_date == date(2026, 1, 15)  # type: ignore[arg-type]
+        assert float(vuln(db, "srv-a", "CVE-2021-44228").risk_score) == 100.0  # los activos sí se recalculan  # type: ignore[arg-type]

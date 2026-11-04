@@ -3,7 +3,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /srv
 # Librerías de sistema para WeasyPrint (reportes PDF, fase 6)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b fonts-dejavu-core curl \
+      libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libharfbuzz-subset0 fonts-dejavu-core curl \
     && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt requirements-dev.txt ./
 ARG INSTALL_DEV=true

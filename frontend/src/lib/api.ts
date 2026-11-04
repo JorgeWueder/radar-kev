@@ -122,13 +122,15 @@ export async function download(
   path: string,
   params: Options['params'],
   filename: string,
+  method: 'GET' | 'POST' = 'GET',
 ): Promise<void> {
-  const res = await request<Response>(path, { params, raw: true })
+  const res = await request<Response>(path, { params, raw: true, method })
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = filename
+  // El servidor propone el nombre (radar_<reporte>_<fecha>.<formato>).
+  a.download = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? filename
   a.click()
   URL.revokeObjectURL(url)
 }

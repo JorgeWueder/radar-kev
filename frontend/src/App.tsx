@@ -16,6 +16,7 @@ import Tickets from './pages/Tickets'
 import Login from './pages/Login'
 import Overview from './pages/Overview'
 import Profile from './pages/Profile'
+import Reports from './pages/Reports'
 import Roles from './pages/Roles'
 import Users from './pages/Users'
 import Vulnerabilities from './pages/Vulnerabilities'
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/ejecuciones" element={<Protected module="workflow"><Runs /></Protected>} />
         <Route path="/configuracion" element={<Protected module="settings"><SettingsPage /></Protected>} />
         <Route path="/usuarios" element={<Protected module="users"><Users /></Protected>} />
+        <Route path="/reportes" element={<Protected module="reports"><Reports /></Protected>} />
         <Route path="/roles" element={<Protected module="roles"><Roles /></Protected>} />
         <Route path="/bitacora" element={<Protected module="audit"><Audit /></Protected>} />
         <Route path="/perfil" element={<Protected><Profile /></Protected>} />

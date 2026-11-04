@@ -14,6 +14,7 @@ from app.services.intel import get_active_config
 from app.services.scoring import ScoringParams, band_of, risk_score, sla_due, sla_state
 
 ACTIVE = ("open", "in_progress")
+FROZEN = ("mitigated", "false_positive")
 
 
 @dataclass
@@ -97,10 +98,14 @@ def correlate(db: Session, *, mark_matches: bool = True, today: date | None = No
 
     now = datetime.now(UTC)
     fresh = df["in_kev"] & df["kev_matched_at"].isna() & df["status"].isin(ACTIVE)
+    # Los hallazgos ya cerrados (mitigados o falsos positivos) quedan congelados: recalcular su score o su SLA
+    # alteraría retroactivamente el MTTR y el cumplimiento de SLA históricos (p. ej. al cambiar los pesos).
+    frozen = df["status"].isin(FROZEN)
     updates = [
         {"id": r.vuln_id, "risk_score": r.risk_score, "risk_band": r.risk_band, "sla_due_date": r.sla_due_date,
          **({"kev_matched_at": now} if mark_matches and f else {})}
-        for r, f in zip(df.itertuples(index=False), fresh, strict=True)
+        for r, f, fz in zip(df.itertuples(index=False), fresh, frozen, strict=True)
+        if not fz
     ]  # fmt: skip
     db.execute(update(Vulnerability), updates)
     if mark_matches:
@@ -116,6 +121,9 @@ def correlate(db: Session, *, mark_matches: bool = True, today: date | None = No
                 }
             )  # fmt: skip
     _snapshot(db, df, today)
+    from app.services.stats import ensure_history
+
+    ensure_history(db, today)
     return result
 
 

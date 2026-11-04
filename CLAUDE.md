@@ -34,7 +34,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
 
 ## Estado de fases
-- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) 4 (n8n, alertas, tickets, integraciones) y 5 (módulo de IA) completas.
+- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) 4 (n8n, alertas, tickets, integraciones) 5 (módulo de IA) y 6 (dashboard y reportes) completas.
 - Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
 - Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
 - Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
@@ -73,3 +73,12 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Modelo pequeño: se limitan tokens (`num_predict`), se penaliza la repetición y los esquemas llevan `max_length` (evita bucles). Las herramientas del asistente normalizan argumentos sucios.
 - IMPORTANTE en `.env`: no poner comentarios en la misma línea de una variable vacía (Docker Compose los toma como valor). Comentarios en línea aparte.
 - Tests de IA con modelos simulados (`tests/ai_fakes.py`); el LLM real solo se usa en verificaciones manuales.
+
+## Fase 6: dashboard y reportes
+- `services/stats.py` es la fuente única de cifras (dashboard, reportes, asistente y resumen ejecutivo). `ensure_history` reconstruye el historial de
+  tendencia desde `first_seen`/`resolved_at`/alta en KEV (no inventa; nunca antes del primer hallazgo ni sobre la foto de hoy).
+- El cruce NO recalcula score ni SLA de hallazgos cerrados (`mitigated`, `false_positive`): así el MTTR y el cumplimiento históricos no cambian al editar la fórmula.
+- Reportes en `services/reports/` (modelo común `Report` + `builders.py` + `render_pdf|docx|xlsx.py`). PDF con WeasyPrint (fuente DejaVu; Jinja2 con autoescape),
+  Excel con openpyxl (formato, filtros, paneles fijos, gráfico nativo; texto externo escapado contra inyección de fórmulas), Word con python-docx.
+- `POST /api/v1/reports/{tipo}?fmt=pdf|docx|xlsx&date_from&date_to&ai_summary&cve_id` (permiso `reports:export`); cada exportación queda en la bitácora.
+  El resumen con IA solo aplica a los 4 de gestión y, si la IA falla, el reporte sale igual con un aviso.

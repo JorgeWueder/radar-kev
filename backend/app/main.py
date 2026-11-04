@@ -16,8 +16,10 @@ from app.api.v1 import (
     assets,
     audit,
     auth,
+    dashboard,
     imports,
     kev,
+    reports,
     roles,
     settings,
     tickets,
@@ -80,7 +82,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     api = APIRouter(prefix="/api/v1")
     for module in (
-        auth, users, roles, audit, assets, imports, vulnerabilities, kev, settings, workflow, alerts, tickets, ai, internal,
+        auth, users, roles, audit, assets, imports, vulnerabilities, kev, settings, workflow, alerts, tickets, ai, dashboard, reports, internal,
     ):
         api.include_router(module.router)
     app.include_router(api)
