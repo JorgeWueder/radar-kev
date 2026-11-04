@@ -34,7 +34,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
 
 ## Estado de fases
-- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) 4 (n8n, alertas, tickets, integraciones) 5 (módulo de IA) y 6 (dashboard y reportes) completas.
+- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) 4 (n8n, alertas, tickets, integraciones) 5 (módulo de IA) 6 (dashboard y reportes) y 7 (auditoría visual, endurecimiento, README) completas.
 - Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
 - Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
 - Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
@@ -82,3 +82,10 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
   Excel con openpyxl (formato, filtros, paneles fijos, gráfico nativo; texto externo escapado contra inyección de fórmulas), Word con python-docx.
 - `POST /api/v1/reports/{tipo}?fmt=pdf|docx|xlsx&date_from&date_to&ai_summary&cve_id` (permiso `reports:export`); cada exportación queda en la bitácora.
   El resumen con IA solo aplica a los 4 de gestión y, si la IA falla, el reporte sale igual con un aviso.
+
+## Fase 7: endurecimiento y cierre
+- Límite de uso por IP real (`core/ratelimit.py::client_key`, respeta `TRUST_PROXY_HEADERS`). Solo el frontend (8080) se publica a la red; lo demás en 127.0.0.1.
+- `main.py::validate_runtime_settings` impide arrancar con secretos ausentes, cortos o de ejemplo. En `ENVIRONMENT=production` se desactiva Swagger (salvo `ENABLE_DOCS_EXPLICIT=true`) y se añade HSTS.
+- `n8n-import` corre DESPUÉS de que n8n esté sano (en una instalación nueva n8n registra su clave de cifrado en el primer arranque).
+- Frontend: bordes de controles con `border-line-strong` (≥3:1), `pointer-coarse:` para objetivos táctiles, `rowToggle` para filas expandibles con teclado, `Dialog` accesible.
+- No versionar descargas de prueba (`radar_*.pdf|docx|xlsx` están en `.gitignore`).
