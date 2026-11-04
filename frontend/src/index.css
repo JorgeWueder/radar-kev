@@ -27,10 +27,12 @@
   --color-warn-soft: var(--warn-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
+  --color-battery-green: #00d959; /* DESIGN.md: solo métricas de desempeño */
+  --color-chip: rgba(66, 66, 69, 0.72); /* selector chip oscuro */
 }
 
 /* Tonos con contraste AA verificado sobre su fondo en ambos modos. */
-:root {
+:root, .light {
   /* DESIGN.md (Apple): claro = Polar White / White / Graphite. Los tonos derivados (--sunken, --muted, --link oscuro) se
      ajustaron para mantener contraste AA (4.5:1 el texto, 3:1 los bordes de control). */
   --bg: #f5f5f7;
@@ -86,6 +88,9 @@ body {
 }
 
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; }
+
+/* Sitio público: Inter en lugar de SF Pro (DESIGN.md). */
+.landing-font, .landing-font :is(h1, h2, h3) { font-family: 'Inter', var(--font-sans); }
 
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }

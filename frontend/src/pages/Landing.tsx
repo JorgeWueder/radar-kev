@@ -1,6 +1,8 @@
-import { ArrowRight, CaretDown, Crosshair } from '@phosphor-icons/react'
-import { motion, useMotionValueEvent, useReducedMotion, useScroll } from 'motion/react'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import '@fontsource/inter/400.css'
+import '@fontsource/inter/600.css'
+import { CaretDown, Crosshair } from '@phosphor-icons/react'
+import { motion, useReducedMotion } from 'motion/react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -11,9 +13,8 @@ import {
   InventoryFragment,
   KevFragment,
   RankingFragment,
-  RunFragment,
-  TicketFragment,
 } from '../landing/Fragments'
+import { buy, CloseLook, Highlights, HeroStage } from '../landing/Stage'
 import { useAuth } from '../lib/auth'
 import { bandOf, BAND_LABEL, PARAMS, riskScore, type ScoreInput } from '../lib/score'
 
@@ -22,8 +23,6 @@ const EASE = [0.23, 1, 0.32, 1] as const
 // Correo para pedir una demostración: se define al compilar (VITE_CONTACT_EMAIL). Sin él, el botón no se muestra.
 const CONTACT = (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_CONTACT_EMAIL
 
-const btn =
-  'inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-[15px] font-medium text-accent-ink transition-[transform,opacity] duration-150 ease-out hover:opacity-90 active:scale-[0.97]'
 const FLOAT = 'shadow-lg' // taste-skill-ignore: el menú flotante sí lleva sombra
 const gutter = 'px-4 md:px-8'
 const section = 'py-[clamp(88px,12vw,180px)]'
@@ -106,124 +105,37 @@ function MobileMenu({ active }: { active: string }) {
 function Header() {
   const { user } = useAuth()
   const active = useActiveSection()
+  const to = user ? '/resumen' : '/login'
   return (
-    <header className={`sticky top-0 z-30 flex h-14 items-center justify-between bg-bg ${gutter}`}>
-      <a href="#inicio" className="flex items-center gap-2 text-[15px] font-semibold">
-        <span className="grid size-7 place-items-center rounded-[10px] bg-accent text-accent-ink" aria-hidden>
-          <Crosshair size={18} weight="bold" />
-        </span>
-        Radar KEV/EPSS
-      </a>
-      <nav aria-label="Principal" className="flex items-center gap-3 text-[15px] lg:gap-5">
-        <MobileMenu active={active} />
-        {NAV.map(([label, href]) => (
-          <a
-            key={href}
-            href={href}
-            aria-current={active === href.slice(1) ? 'location' : undefined}
-            className={`hidden transition-colors hover:text-link lg:inline ${active === href.slice(1) ? 'font-medium text-link' : ''}`}
-          >
-            {label}
-          </a>
-        ))}
-        <Link to={user ? '/resumen' : '/login'} className={`${btn} !py-1.5`}>
+    <header className="dark sticky top-0 z-30 bg-bg text-ink/80">
+      <div className={`flex h-11 items-center justify-between ${gutter}`}>
+        <a href="#inicio" className="flex items-center gap-2 text-[12px] leading-none tracking-[-0.01em] pointer-coarse:min-h-[44px]">
+          <Crosshair size={16} weight="bold" aria-hidden />
+          Radar de explotación activa
+        </a>
+        <Link to={to} className={buy}>
           {user ? 'Ir al panel' : 'Ingresar'}
         </Link>
-      </nav>
-    </header>
-  )
-}
-
-/* ───────────────────────── Portada ───────────────────────── */
-
-const TABS = ['Lista priorizada', 'Ejecución diaria', 'Ticket con plazo']
-const CAPTIONS = ['Lo ya explotado queda arriba de la lista.', 'Cada día se cruza el catálogo con su inventario.', 'Cada coincidencia nueva abre un ticket con plazo.']
-
-function Hero() {
-  const { user } = useAuth()
-  const reduce = useReducedMotion()
-  const ref = useRef<HTMLElement>(null)
-  const [step, setStep] = useState(0)
-  const [pinned, setPinned] = useState(false)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
-  const pin = pinned && !reduce
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    const sync = () => setPinned(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-
-  useMotionValueEvent(scrollYProgress, 'change', (p) => {
-    if (pin) setStep(Math.min(TABS.length - 1, Math.floor(p * TABS.length)))
-  })
-
-  const go = (i: number) => {
-    if (pin && ref.current) {
-      const range = ref.current.offsetHeight - window.innerHeight
-      window.scrollTo({ top: ref.current.offsetTop + ((i + 0.02) / TABS.length) * range, behavior: reduce ? 'auto' : 'smooth' })
-    }
-    setStep(i)
-  }
-
-  const frames = [<RankingFragment key="r" compact={!pinned} />, <RunFragment key="e" />, <TicketFragment key="t" />]
-
-  return (
-    <section id="inicio" ref={ref} className={reduce ? '' : 'lg:h-[220svh]'}>
-      <div className={`${gutter} flex flex-col gap-8 pb-12 pt-4 lg:grid lg:grid-cols-[5fr_6fr] lg:items-center lg:gap-14 lg:pb-8 ${pin ? 'lg:sticky lg:top-14 lg:h-[calc(100svh-3.5rem)]' : 'lg:min-h-[calc(100svh-3.5rem)]'}`}>
-        <div>
-          <h1 className="text-[clamp(40px,5.4vw,92px)] font-semibold leading-[1] tracking-[-0.01em]">Parche primero lo que ya explotan</h1>
-          <p className="mt-8 max-w-[34ch] text-[18px] leading-snug">
-            Cruza cada día su inventario con el catálogo KEV de CISA (las vulnerabilidades que ya se atacan) y con EPSS de FIRST (la probabilidad de que se ataquen), y le dice qué arreglar primero.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Link to={user ? '/resumen' : '/login'} className={btn}>
-              {user ? 'Ir al panel' : 'Ingresar al radar'} <ArrowRight weight="bold" />
-            </Link>
-            {CONTACT && (
-              <a href={`mailto:${CONTACT}?subject=Demostración del Radar KEV/EPSS`} className="text-[15px] underline underline-offset-4 transition-colors hover:text-link">
-                Pedir una demostración
-              </a>
-            )}
-          </div>
-        </div>
-        <div>
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-surface sm:aspect-[16/10] lg:aspect-[16/11]" role="img" aria-label="Ejemplo de la interfaz del radar con datos de demostración">
-            {frames.map((f, i) => (
-              <motion.div
-                key={i}
-                className="absolute inset-0 grid place-items-center p-3 lg:p-6"
-                aria-hidden
-                initial={false}
-                animate={{ opacity: i === step ? 1 : 0, y: reduce ? 0 : i === step ? 0 : i < step ? -40 : 40 }}
-                transition={{ duration: 0.35, ease: EASE }}
-              >
-                <div className="w-full">{f}</div>
-              </motion.div>
-            ))}
-          </div>
-          <div role="tablist" aria-label="Ejemplos de la interfaz" className="mt-3 flex flex-wrap gap-1.5">
-            {TABS.map((t, i) => (
-              <button
-                key={t}
-                type="button"
-                role="tab"
-                aria-selected={i === step}
-                onClick={() => go(i)}
-                className={`min-h-[44px] rounded-full px-4 text-[15px] transition-[background-color,transform] duration-150 ease-out active:scale-[0.97] ${i === step ? 'bg-control font-medium' : 'hover:bg-sunken'}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <p className="mt-2 text-[15px] text-muted">
-            {CAPTIONS[step]} Datos de demostración.
-          </p>
-        </div>
       </div>
-    </section>
+      <div className={`flex h-[52px] items-center justify-between ${gutter}`}>
+        <a href="#inicio" className="text-[17px] font-semibold leading-[21px] tracking-[-0.022em]">
+          Radar KEV/EPSS
+        </a>
+        <nav aria-label="Principal" className="flex items-center gap-5 text-[12px] leading-none tracking-[-0.01em]">
+          <MobileMenu active={active} />
+          {NAV.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              aria-current={active === href.slice(1) ? 'location' : undefined}
+              className={`hidden py-1 transition-colors hover:text-ink lg:inline ${active === href.slice(1) ? 'text-ink underline decoration-1 underline-offset-[10px]' : ''}`}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
   )
 }
 
@@ -277,7 +189,7 @@ const FUNDAMENTOS: Array<{ title: string; body: string; pic: ReactNode }> = [
 
 function Fundamentos() {
   return (
-    <section id="fundamentos" className={`scroll-mt-14 ${gutter} ${section}`}>
+    <section id="fundamentos" className={`scroll-mt-24 ${gutter} ${section}`}>
       <div className="grid gap-y-10 lg:grid-cols-12 lg:gap-x-6">
         <Reveal className="lg:col-span-8 lg:col-start-5">
           <h2 className={h2}>Qué es el radar</h2>
@@ -326,7 +238,7 @@ const STAGES = [
 
 function Funcionamiento() {
   return (
-    <section id="funcionamiento" className={`scroll-mt-14 ${gutter} ${section}`}>
+    <section id="funcionamiento" className={`scroll-mt-24 ${gutter} ${section}`}>
       <Reveal>
         <h2 className="max-w-[14ch] text-[clamp(44px,6vw,96px)] font-semibold leading-[0.98] tracking-[-0.01em]">Cada día, sin que nadie lo pida</h2>
       </Reveal>
@@ -392,10 +304,10 @@ function Calculadora() {
     : `Sin KEV: ${PARAMS.kevFloor - 1} × ${fmt(base)} = ${fmt(score)}`
 
   return (
-    <section id="calculadora" className="scroll-mt-14 bg-sunken">
+    <section id="calculadora" className="scroll-mt-24 bg-sunken">
       <div className={`${gutter} flex flex-col gap-8 py-[clamp(56px,8vw,120px)] lg:grid lg:grid-cols-2 lg:gap-x-16`}>
-        <div className="sticky top-14 z-10 -mx-4 bg-sunken px-4 py-3 lg:static lg:col-start-2 lg:row-start-1 lg:mx-0 lg:p-0">
-          <div className="lg:sticky lg:top-24">
+        <div className="sticky top-24 z-10 -mx-4 bg-sunken px-4 py-3 lg:static lg:col-start-2 lg:row-start-1 lg:mx-0 lg:p-0">
+          <div className="lg:sticky lg:top-32">
             <p className="flex items-baseline gap-2 font-semibold leading-[0.85] tabular-nums tracking-[-0.01em]" aria-live="polite" aria-atomic>
               <span className="text-[clamp(64px,9vw,150px)]">{Math.round(score)}</span>
               <span className="text-[clamp(20px,2.4vw,36px)] text-muted">/100</span>
@@ -480,7 +392,7 @@ function Incluye() {
     <section className={`${gutter} ${section}`}>
       <div className="grid gap-12 lg:grid-cols-12 lg:gap-x-6">
         <Reveal className="lg:col-span-5">
-          <div className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-32">
             <h2 className={h2}>Todo en un solo panel</h2>
             <div className="mt-8 max-w-[520px]">
               <RankingFragment />
@@ -552,7 +464,7 @@ const FAQ: Array<[string, string]> = [
 
 function Preguntas() {
   return (
-    <section id="preguntas" className={`scroll-mt-14 ${gutter} ${section}`}>
+    <section id="preguntas" className={`scroll-mt-24 ${gutter} ${section}`}>
       <Reveal>
         <h2 className="max-w-[18ch] text-[clamp(40px,5.5vw,88px)] font-semibold leading-[1] tracking-[-0.01em]">Preguntas frecuentes</h2>
       </Reveal>
@@ -568,6 +480,39 @@ function Preguntas() {
             </details>
           ))}
         </div>
+      </div>
+    </section>
+  )
+}
+
+/* ───────────────────────── Información (baldosas blancas) ───────────────────────── */
+
+const INFO: Array<{ title: string; body: string; link: [string, string]; external?: boolean }> = [
+  { title: 'Fuentes públicas', body: 'El catálogo KEV lo publica CISA y los valores EPSS, FIRST. El radar solo los descarga y los cruza con su inventario.', link: ['Ver el catálogo KEV de CISA', 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog'], external: true },
+  { title: 'Una fórmula que puede revisar', body: 'El puntaje combina KEV, EPSS, percentil, CVSS y la criticidad del activo con pesos configurables y versionados.', link: ['Probar la calculadora', '#calculadora'] },
+  { title: 'Probabilidad, no certeza', body: 'EPSS estima de 0 a 100 % la probabilidad de explotación en 30 días y se actualiza a diario.', link: ['Conocer EPSS de FIRST', 'https://www.first.org/epss/'], external: true },
+]
+
+function Informacion() {
+  return (
+    <section className={`light bg-bg text-ink ${gutter} pb-[clamp(48px,8vw,96px)]`}>
+      <div className="mx-auto grid max-w-[1100px] gap-6 md:grid-cols-3">
+        {INFO.map((t, i) => (
+          <Reveal key={t.title} delay={i * 0.06}>
+            <article className="flex h-full flex-col rounded-[28px] bg-surface p-6 text-[#1d1d1f]">
+              <h3 className="text-[21px] font-semibold leading-[1.19] tracking-[0.011em]">{t.title}</h3>
+              <p className="mt-3 text-[17px] leading-[1.47] tracking-[-0.022em]">{t.body}</p>
+              <a
+                href={t.link[1]}
+                {...(t.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                className="mt-auto inline-flex min-h-[44px] items-end pt-4 text-[17px] text-link hover:underline"
+              >
+                {t.link[0]}
+                {t.external && <span className="sr-only"> (se abre en otra pestaña)</span>}
+              </a>
+            </article>
+          </Reveal>
+        ))}
       </div>
     </section>
   )
@@ -607,7 +552,7 @@ function Cierre() {
 function Pie() {
   const { user } = useAuth()
   return (
-    <footer className="bg-ink text-bg">
+    <footer className="light bg-bg text-ink">
       <div className={`${gutter} flex min-h-[60svh] flex-col justify-between gap-16 py-10`}>
         <div className="grid gap-4 text-[15px] md:grid-cols-[1fr_1fr_1fr_auto] md:gap-8">
           <p className="max-w-[30ch]">Radar de explotación activa: cruza a diario el inventario propio con CISA KEV y FIRST EPSS.</p>
@@ -648,13 +593,15 @@ export default function Landing() {
     }
   }, [])
   return (
-    <div className="bg-bg text-ink [font-size:16px]">
+    <div className="landing-font bg-bg text-ink [font-size:16px]">
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-surface focus:p-2">
         Saltar al contenido
       </a>
       <Header />
       <main id="contenido">
-        <Hero />
+        <HeroStage contact={CONTACT} />
+        <Highlights />
+        <CloseLook />
         <Fundamentos />
         <Contraste />
         <Funcionamiento />
@@ -662,6 +609,7 @@ export default function Landing() {
         <Incluye />
         <Confianza />
         <Preguntas />
+        <Informacion />
         <Cierre />
       </main>
       <Pie />
