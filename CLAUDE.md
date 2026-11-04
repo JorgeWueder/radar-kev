@@ -3,6 +3,11 @@
 Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan completo en
 `C:\Users\Jorge\.claude\plans\pasted-content-id-f06a-rol-act-a-iridescent-kurzweil.md`.
 
+## Sistema visual
+- El sistema de diseño oficial del proyecto es @DESIGN.md (raíz).
+- Tiene prioridad sobre cualquier otro DESIGN.md, incluido el de la skill stitch-design-taste.
+- Fuente: Inter (sustituye a SF Pro). No usar colores, radios ni fuentes fuera de @DESIGN.md.
+
 ## Stack
 - Backend: Python 3.12, FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, pandas (`backend/`)
 - BD: PostgreSQL 16 con tres bases aisladas: `radar` (app), `n8n`, `langflow`
@@ -45,9 +50,12 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 
 ## Sitio público (landing)
 - `/` es una página pública (`frontend/src/pages/Landing.tsx`, fragmentos de interfaz en `src/landing/Fragments.tsx`); `/login` y el panel siguen igual y `*` vuelve a `/`.
-- Dirección de la skill design-taste-frontend: "la frase es el layout" (frase partida con un fragmento vivo del producto en medio), con la paleta y la tipografía de la app.
+- Estructura (Layout de DESIGN.md): barra global 44 px + barra local 52 px (Carbon); portada negra con titular centrado en mayúsculas, fragmento vivo del dashboard flotando (3 ejemplos con chips) y botón azul compacto; `Highlights` (banda Carbon con baldosa de 28 px, foto B/N y métrica en Battery Green: cumplimiento de SLA, cifra de demostración); `CloseLook` (negro, chips-acordeón a la izquierda y render recortado a la derecha); luego Fundamentos…Preguntas (tema de la app), `Informacion` (baldosas blancas con enlaces Link Blue) y pie Polar White. Portada, destacados y close-look viven en `src/landing/Stage.tsx`.
+- Las secciones oscuras usan la clase `dark` y las claras fijas `light` (definida en `index.css`) para no depender del tema del usuario. Battery Green solo para métricas de desempeño.
+- Inter (`@fontsource/inter`, 400/600) solo en el sitio público, con la clase `.landing-font`; la app sigue con SF Pro y respaldo de sistema.
 - La calculadora usa `src/lib/score.ts`, réplica de `scoring.py` con los pesos por defecto: si cambia la fórmula del backend, actualizar ambos (hay test).
-- Una sola foto libre (RT-70, Wikimedia Commons, CC BY 4.0) en `frontend/public/fotos` con su crédito en `credits.json` y en el pie; sin imágenes remotas (CSP `img-src 'self' data:`). Los fragmentos de interfaz usan datos de demostración. El botón "Pedir una demostración" solo aparece si se compila con `VITE_CONTACT_EMAIL`.
+- Fotos de Unsplash en `frontend/public/img/*-1200.webp|*-2400.webp` (los JPG originales de 2400 px no se versionan), servidas con `src/landing/Photo.tsx` (srcset/sizes; gris + contraste salvo `servers-*` y `fiber-*`). En uso: hero-1-baborak (hero), hero-3-dittrich-bn (destacados), servers-1-tyler (inventario), fiber-1-muller (pipeline), soc-1-kostyuk (alertas); el crédito va en el pie. La foto RT-70 de `public/fotos` ya no se usa. Sin imágenes remotas (CSP `img-src 'self' data:`). Los fragmentos de interfaz usan datos de demostración. El botón "Pedir una demostración" solo aparece si se compila con `VITE_CONTACT_EMAIL`.
+- Animaciones (`motion/react`): reglas en la sección Motion de `DESIGN.md`; `MotionConfig reducedMotion="user"` en la raíz de `Landing.tsx`. Con el panel del navegador oculto los reveals no corren: mostrar el panel antes de verificar capturas.
 
 ## Fase 3: cruce y score
 - Actualizar a mano con datos reales: `docker compose exec backend python -m app.refresh` (descarga KEV y EPSS, ingesta y cruza).

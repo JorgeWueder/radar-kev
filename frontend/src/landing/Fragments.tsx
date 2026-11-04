@@ -1,5 +1,10 @@
 // Fragmentos de la interfaz real del radar, con datos de demostración. Los puntajes salen de la misma fórmula del backend.
+import { motion, useInView, useReducedMotion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+
 import { bandOf, BAND_LABEL, riskScore, type Band } from '../lib/score'
+
+const EASE = [0.23, 1, 0.32, 1] as const
 
 const BAND_CLASS: Record<Band, string> = {
   critical: 'bg-danger-soft text-danger',
@@ -65,6 +70,48 @@ export function RankingFragment({ compact = false }: { compact?: boolean }) {
               <BandTag band={r.band} />
             </div>
           </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/* Lista de la portada: aparece ordenada por CVSS y, a los 1,5 s, se reordena por puntaje con animación de layout (una sola vez). */
+export function RankingLive() {
+  const reduce = useReducedMotion()
+  const [byScore, setByScore] = useState(!!reduce)
+  useEffect(() => {
+    if (reduce) return
+    const t = setTimeout(() => setByScore(true), 1500)
+    return () => clearTimeout(t)
+  }, [reduce])
+  const rows = byScore ? SCORED : [...SCORED].sort((a, b) => b.cvss - a.cvss)
+  return (
+    <div data-ui className={shell}>
+      <div className="flex items-center justify-between bg-sunken px-3 py-2">
+        <span className="font-medium">Vulnerabilidades priorizadas</span>
+        <span className="text-muted" aria-live="polite">
+          {byScore ? 'Orden del radar' : 'Orden por CVSS'}
+        </span>
+      </div>
+      <ul>
+        {rows.map((r) => (
+          <motion.li key={r.cve} layout="position" transition={{ duration: 0.6, ease: EASE }} className={`grid grid-cols-[1fr_auto] items-center gap-x-3 ${SEP} bg-surface px-3 py-2`}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2">
+                <span className="font-medium">{r.cve}</span>
+                {r.inKev && <span className="rounded bg-danger px-1.5 text-[13px] font-medium text-bg">KEV</span>}
+                {r.ransomware && <span className="text-[13px] text-danger">Ransomware</span>}
+              </div>
+              <div className="truncate text-[13px] text-muted">
+                {r.host} · EPSS {Math.round(r.epss * 100)} % · CVSS {r.cvss}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[20px] font-semibold leading-none tabular-nums">{Math.round(r.score)}</div>
+              <BandTag band={r.band} />
+            </div>
+          </motion.li>
         ))}
       </ul>
     </div>
@@ -215,7 +262,15 @@ export function FormulaFragment() {
 const A = { inKev: false, ransomware: false, epss: 0.03, percentile: 0.35, cvss: 9.8, criticality: 3 }
 const B = { inKev: true, ransomware: false, epss: 0.91, percentile: 0.99, cvss: 7.2, criticality: 3 }
 
-function Case({ cve, i, note }: { cve: string; i: typeof A; note: string }) {
+function Bar({ value, on, delay = 0 }: { value: number; on: boolean; delay?: number }) {
+  return (
+    <div className="h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
+      <motion.div className="h-full origin-left rounded-full bg-ink" initial={false} animate={{ scaleX: on ? value : 0 }} transition={{ duration: 0.7, ease: EASE, delay }} />
+    </div>
+  )
+}
+
+function Case({ cve, i, note, bars }: { cve: string; i: typeof A; note: string; bars: boolean }) {
   const score = riskScore(i)
   const band = bandOf(score)
   return (
@@ -238,6 +293,10 @@ function Case({ cve, i, note }: { cve: string; i: typeof A; note: string }) {
           <dt className="mt-1">Puntaje</dt>
         </div>
       </dl>
+      <div className="space-y-2">
+        <Bar value={i.cvss / 10} on={bars} />
+        <Bar value={i.epss} on={bars} delay={0.12} />
+      </div>
       <div className="flex flex-wrap items-center gap-3 text-[16px]">
         <BandTag band={band} />
         <span>{note}</span>
@@ -246,12 +305,35 @@ function Case({ cve, i, note }: { cve: string; i: typeof A; note: string }) {
   )
 }
 
+/* Las barras de CVSS y EPSS se llenan y, después, las tarjetas intercambian lugar: del orden por gravedad al orden del radar. */
 export function ComparisonFragment() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, margin: '0px 0px -15% 0px' })
+  const reduce = useReducedMotion()
+  const [swapped, setSwapped] = useState(!!reduce)
+  const bars = inView || !!reduce
+  useEffect(() => {
+    if (!inView || reduce) return
+    const t = setTimeout(() => setSwapped(true), 1800)
+    return () => clearTimeout(t)
+  }, [inView, reduce])
+
+  const cards = [
+    { id: 'A', node: <Case cve="CVE-2023-38545" i={A} note="Grave en el papel; casi nadie la usa." bars={bars} />, cls: '' },
+    { id: 'B', node: <Case cve="CVE-2021-44228" i={B} note="Menos grave, pero ya la explotan." bars={bars} />, cls: 'bg-sunken' },
+  ]
+  const ordered = swapped ? [cards[1], cards[0]] : cards
   return (
-    <div data-ui className="grid w-full overflow-hidden rounded-[28px] border border-line bg-surface text-ink md:grid-cols-2">
-      <Case cve="CVE-2023-38545" i={A} note="Grave en el papel; casi nadie la usa." />
-      <div className="bg-sunken">
-        <Case cve="CVE-2021-44228" i={B} note="Menos grave, pero ya la explotan." />
+    <div ref={ref} data-ui className="w-full overflow-hidden rounded-[28px] border border-line bg-surface text-ink">
+      <p className="px-5 pt-4 text-[14px] text-muted md:px-7" aria-live="polite">
+        {swapped ? 'Orden del radar: primero lo que ya se explota' : 'Orden por gravedad (CVSS)'}
+      </p>
+      <div className="grid md:grid-cols-2">
+        {ordered.map((c) => (
+          <motion.div key={c.id} layout="position" transition={{ duration: 0.7, ease: EASE }} className={c.cls}>
+            {c.node}
+          </motion.div>
+        ))}
       </div>
     </div>
   )

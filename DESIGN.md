@@ -203,6 +203,19 @@ Use Link Blue #0066cc as unfilled text links; reserve the color for references a
 
 Avoid box shadows entirely on cards and media. Depth comes from the switch between #111111 page bands, #000000 image stages, clipped 28px tile edges, and the occasional white surface.
 
+## Motion
+
+Motion reveals state; it never decorates. Applies to the public site (`frontend/src/landing`, `frontend/src/pages/Landing.tsx`) built with `motion/react`.
+
+- **Duration and easing:** 400–700 ms, ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`). Micro-feedback (hover, press) may be shorter (≤200 ms). The radar sweep is the only continuous loop: 6 s, linear.
+- **Properties:** animate only `transform` and `opacity`. Allowed exceptions, all paint-only on small SVG strokes with no layout cost: `pathLength` on the SLA ring and the score gauge; color swaps inside the hash-chain blocks.
+- **Once:** every entrance runs once (`viewport={{ once: true }}`, `useInView({ once: true })`). Nothing re-triggers on scroll back. Scroll-linked motion (pipeline line, close-look) follows scroll position and is not an entrance.
+- **Sequence over spectacle:** one idea per section — sweep (hero), count and ring (SLA), bars then swap (CVE comparison), sticky chips with crossfade (close-look), drawn line (pipeline), gauge (calculator), broken chain (audit log).
+- **Reading order:** layout animations (`layout="position"`) are used only to show a reorder, and the new order is also stated in text (`aria-live="polite"`).
+- **Reduced motion:** `MotionConfig reducedMotion="user"` plus explicit branches: with `prefers-reduced-motion`, no sweep rotation, no sticky pinning, no counters, no layout swaps — the final state renders immediately. Opacity and color feedback may remain (≤120 ms).
+- **Contrast over media:** text on photographs always sits over a flat dark overlay (no gradient) that keeps AA contrast.
+- **Color:** Battery Green appears only on performance metrics (the SLA number and ring); broken-chain red uses the app's danger token, never Battery Green.
+
 ## Imagery
 
 Imagery is product-first and cinematic: large isolated Apple Watch renders float on pure black, tightly cropped to show case edges, crown texture, straps, and illuminated watch faces. Feature media includes high-contrast black-and-white athletic photography with overlaid white copy and restrained Battery Green data emphasis. Visuals occupy more area than prose, remain contained in 28px rounded tiles when framed, and use no decorative illustration layer; icons are small monochrome utility glyphs while watch-face content supplies the only dense multicolor detail.

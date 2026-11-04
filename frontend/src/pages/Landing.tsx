@@ -1,8 +1,8 @@
 import '@fontsource/inter/400.css'
 import '@fontsource/inter/600.css'
 import { CaretDown, Crosshair } from '@phosphor-icons/react'
-import { motion, useReducedMotion } from 'motion/react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { MotionConfig, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -14,6 +14,7 @@ import {
   KevFragment,
   RankingFragment,
 } from '../landing/Fragments'
+import { Photo } from '../landing/Photo'
 import { buy, CloseLook, Highlights, HeroStage } from '../landing/Stage'
 import { useAuth } from '../lib/auth'
 import { bandOf, BAND_LABEL, PARAMS, riskScore, type ScoreInput } from '../lib/score'
@@ -25,7 +26,7 @@ const CONTACT = (import.meta as { env?: Record<string, string | undefined> }).en
 
 const FLOAT = 'shadow-lg' // taste-skill-ignore: el menú flotante sí lleva sombra
 const gutter = 'px-4 md:px-8'
-const section = 'py-[clamp(88px,12vw,180px)]'
+const section = 'py-[clamp(56px,7vw,104px)]'
 const h2 = 'text-[clamp(40px,5vw,80px)] font-semibold leading-[1] tracking-[-0.01em]'
 const fmt = (n: number, d = 2) => n.toFixed(d).replace('.', ',')
 
@@ -38,7 +39,7 @@ function Reveal({ children, delay = 0, className = '', kind = 'rise' }: { childr
       className={className}
       initial={hidden}
       whileInView={shown}
-      viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+      viewport={{ once: true, margin: '0px 0px -4% 0px' }}
       transition={{ duration: kind === 'wipe' ? 0.6 : 0.4, ease: EASE, delay }}
     >
       {children}
@@ -139,29 +140,6 @@ function Header() {
   )
 }
 
-/* ───────────────────────── Fotografía (una, con el tono de la app) ───────────────────────── */
-
-function Radar({ className = '' }: { className?: string }) {
-  return (
-    <Reveal className={className}>
-      <figure>
-        <Reveal kind="wipe" className="aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-accent md:aspect-[21/9]">
-          <img
-            src="/fotos/radar-rt70.jpg"
-            width={1920}
-            height={1280}
-            alt="Gran antena parabólica del radar planetario RT-70 bajo un cielo despejado, en tono azul"
-            loading="lazy"
-            decoding="async"
-            className="size-full object-cover mix-blend-multiply grayscale"
-          />
-        </Reveal>
-        <figcaption className="mt-3 max-w-[60ch] text-[15px] opacity-80">Radar planetario RT-70, Crimea: una antena que mira lejos para ver lo que se acerca.</figcaption>
-      </figure>
-    </Reveal>
-  )
-}
-
 /* ───────────────────────── Fundamentos ───────────────────────── */
 
 const FUNDAMENTOS: Array<{ title: string; body: string; pic: ReactNode }> = [
@@ -183,7 +161,14 @@ const FUNDAMENTOS: Array<{ title: string; body: string; pic: ReactNode }> = [
   {
     title: 'Su inventario: lo que le afecta',
     body: 'Un CVE solo importa si está en un activo suyo. El radar cruza cada hallazgo con su inventario y pondera la criticidad del activo y su entorno, para que un servidor de producción pese más que uno de pruebas.',
-    pic: <InventoryFragment />,
+    pic: (
+      <div className="space-y-3">
+        <div className="aspect-[4/3] overflow-hidden rounded-[28px] bg-surface">
+          <Photo name="servers-1-tyler" alt="Pasillo de un centro de datos con racks de servidores iluminados" sizes="(min-width: 1024px) 25vw, 100vw" className="size-full" />
+        </div>
+        <InventoryFragment />
+      </div>
+    ),
   },
 ]
 
@@ -213,11 +198,11 @@ function Fundamentos() {
 
 function Contraste() {
   return (
-    <section className={`${gutter} pb-[clamp(64px,10vw,140px)]`}>
+    <section className={`${gutter} pb-[clamp(40px,6vw,88px)]`}>
       <Reveal>
         <h2 className="max-w-[18ch] text-[clamp(30px,3.6vw,52px)] font-semibold leading-[1.05] tracking-[-0.01em]">Dos CVE, dos prioridades</h2>
         <p className="mb-8 mt-4 max-w-[60ch] text-[17px] leading-relaxed">
-          Con el mismo activo, el CVE de la izquierda es más grave en el papel; el de la derecha ya está en el catálogo KEV. El radar pone primero el segundo.
+          Con el mismo activo, uno es más grave en el papel y el otro ya está en el catálogo KEV. Primero se ordenan por gravedad (CVSS); después, por el puntaje del radar, y el que ya se explota pasa al primer lugar.
         </p>
       </Reveal>
       <Reveal delay={0.08}>
@@ -236,26 +221,63 @@ const STAGES = [
   { time: 'Hasta su plazo', text: 'Por último, el equipo remedia dentro del plazo: de 15 a 180 días según la banda, o la fecha límite de CISA si está en KEV.', cls: 'bg-ink text-bg' },
 ]
 
-function Funcionamiento() {
+/* Línea del pipeline: se dibuja con el scroll (scaleX) y cada paso se enciende cuando la línea lo alcanza. */
+function PipelineLine({ progress }: { progress: MotionValue<number> }) {
+  const fill = useTransform(progress, [0.05, 0.85], [0, 1])
   return (
-    <section id="funcionamiento" className={`scroll-mt-24 ${gutter} ${section}`}>
-      <Reveal>
-        <h2 className="max-w-[14ch] text-[clamp(44px,6vw,96px)] font-semibold leading-[0.98] tracking-[-0.01em]">Cada día, sin que nadie lo pida</h2>
-      </Reveal>
-      <div className="mt-16 grid gap-[6px] md:grid-cols-4" data-ui>
+    <div className="relative mt-10 hidden h-3 md:block" aria-hidden>
+      <div className="absolute left-1.5 right-[calc(25%+0.375rem)] top-1/2 h-px bg-ink/25" />
+      <motion.div className="absolute left-1.5 right-[calc(25%+0.375rem)] top-1/2 h-px origin-left bg-ink" style={{ scaleX: fill }} />
+      <div className="absolute inset-0 grid grid-cols-4">
         {STAGES.map((s, i) => (
-          <Reveal key={s.time} kind="wipe" delay={i * 0.12} className={`min-h-[72px] rounded-[28px] p-5 md:h-[22vh] ${s.cls}`}>
-            <span className="text-[clamp(20px,2vw,30px)] font-semibold leading-tight">{s.time}</span>
-          </Reveal>
+          <PipelineDot key={s.time} fill={fill} at={i / (STAGES.length - 1)} />
         ))}
       </div>
-      <ol className="mt-5 grid gap-5 md:grid-cols-4 md:gap-[6px]">
-        {STAGES.map((s) => (
-          <li key={s.time} className="max-w-[28ch] text-[17px] leading-snug md:pr-4">
-            {s.text}
-          </li>
-        ))}
-      </ol>
+    </div>
+  )
+}
+
+function PipelineDot({ fill, at }: { fill: MotionValue<number>; at: number }) {
+  const on = useTransform(fill, [Math.max(0, at - 0.04), at], [0, 1])
+  return (
+    <div className="relative size-3">
+      <span className="absolute inset-0 rounded-full bg-ink/25" />
+      <motion.span className="absolute inset-0 rounded-full bg-ink" style={{ opacity: on }} />
+    </div>
+  )
+}
+
+function Funcionamiento() {
+  const reduce = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 80%', 'center 40%'] })
+  const done = useMotionValue(1)
+  return (
+    <section id="funcionamiento" className={`dark scroll-mt-24 bg-transparent ${gutter} ${section}`}>
+      <div ref={ref} className="relative overflow-hidden rounded-[28px] bg-surface p-6 text-ink md:p-12">
+        <Photo name="fiber-1-muller" alt="Haces de fibra óptica con puntas luminosas de colores sobre fondo oscuro" sizes="(min-width: 1100px) 1300px, 100vw" className="absolute inset-0 size-full" />
+        <div className="absolute inset-0 bg-black/70" aria-hidden />
+        <div className="relative">
+          <Reveal>
+            <h2 className="max-w-[14ch] text-[clamp(44px,6vw,96px)] font-semibold leading-[0.98] tracking-[-0.01em]">Cada día, sin que nadie lo pida</h2>
+          </Reveal>
+          <PipelineLine progress={reduce ? done : scrollYProgress} />
+          <div className="mt-4 grid gap-[6px] md:grid-cols-4 md:mt-4" data-ui>
+            {STAGES.map((s, i) => (
+              <Reveal key={s.time} kind="wipe" delay={i * 0.12} className={`min-h-[72px] rounded-[28px] p-5 md:h-[22vh] ${s.cls}`}>
+                <span className="text-[clamp(20px,2vw,30px)] font-semibold leading-tight">{s.time}</span>
+              </Reveal>
+            ))}
+          </div>
+          <ol className="mt-5 grid gap-5 md:grid-cols-4 md:gap-[6px]">
+            {STAGES.map((s) => (
+              <li key={s.time} className="max-w-[28ch] text-[17px] leading-snug md:pr-4">
+                {s.text}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
     </section>
   )
 }
@@ -291,6 +313,39 @@ function Check({ label, checked, onChange, disabled }: { label: string; checked:
   )
 }
 
+/* Puntaje de la calculadora: el número y el gauge semicircular transicionan suavemente entre valores. */
+function ScoreGauge({ score, band }: { score: number; band: ReturnType<typeof bandOf> }) {
+  const reduce = useReducedMotion()
+  const mv = useSpring(score, { stiffness: 110, damping: 26, mass: 0.9 })
+  const [shown, setShown] = useState(Math.round(score))
+  const arc = useTransform(mv, (v) => Math.min(1, Math.max(0, v / 100)))
+  useEffect(() => {
+    if (reduce) mv.jump(score)
+    else mv.set(score)
+  }, [score, reduce, mv])
+  useMotionValueEvent(mv, 'change', (v) => setShown(Math.round(v)))
+  return (
+    <div>
+      <div className="relative w-full max-w-[220px] lg:max-w-[420px]">
+        <svg viewBox="0 0 200 108" className="w-full" aria-hidden>
+          <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="10" strokeLinecap="round" />
+          <motion.path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="currentColor" strokeWidth="10" strokeLinecap="round" style={{ pathLength: arc }} />
+        </svg>
+        <p className="absolute inset-x-0 bottom-0 flex items-baseline justify-center gap-1 font-semibold leading-[0.85] tabular-nums tracking-[-0.01em]" aria-hidden>
+          <span className="text-[clamp(44px,6.5vw,96px)]">{shown}</span>
+          <span className="text-[clamp(16px,2vw,28px)] text-muted">/100</span>
+        </p>
+      </div>
+      <p className="mt-3 text-[18px]" aria-live="polite" aria-atomic>
+        <BandTag band={band} />
+        <span className="sr-only">
+          {Math.round(score)} de 100, {BAND_LABEL[band]}
+        </span>
+      </p>
+    </div>
+  )
+}
+
 function Calculadora() {
   const [v, setV] = useState<ScoreInput>(PRESETS[0].v)
   const set = (patch: Partial<ScoreInput>) => setV((s) => ({ ...s, ...patch }))
@@ -308,14 +363,7 @@ function Calculadora() {
       <div className={`${gutter} flex flex-col gap-8 py-[clamp(56px,8vw,120px)] lg:grid lg:grid-cols-2 lg:gap-x-16`}>
         <div className="sticky top-24 z-10 -mx-4 bg-sunken px-4 py-3 lg:static lg:col-start-2 lg:row-start-1 lg:mx-0 lg:p-0">
           <div className="lg:sticky lg:top-32">
-            <p className="flex items-baseline gap-2 font-semibold leading-[0.85] tabular-nums tracking-[-0.01em]" aria-live="polite" aria-atomic>
-              <span className="text-[clamp(64px,9vw,150px)]">{Math.round(score)}</span>
-              <span className="text-[clamp(20px,2.4vw,36px)] text-muted">/100</span>
-              <span className="ml-3 self-center text-[18px] tracking-normal">
-                <BandTag band={band} />
-                <span className="sr-only">{BAND_LABEL[band]}</span>
-              </span>
-            </p>
+            <ScoreGauge score={score} band={band} />
             <p className="mt-4 hidden max-w-[40ch] text-[17px] leading-snug lg:block">
               Plazo de remediación: {sla}. Un CVE en KEV nunca baja de {PARAMS.kevFloor}; uno fuera de KEV nunca lo alcanza.
             </p>
@@ -417,6 +465,16 @@ function Incluye() {
           ))}
         </div>
       </div>
+      <Reveal className="mt-[clamp(40px,6vw,80px)]">
+        <figure className="dark relative flex min-h-[clamp(320px,40vw,480px)] flex-col justify-end overflow-hidden rounded-[28px] bg-surface text-ink">
+          <Photo name="soc-1-kostyuk" alt="Analista frente a varias pantallas en un centro de operaciones de seguridad, en blanco y negro" sizes="(min-width: 1100px) 1300px, 100vw" className="absolute inset-0 size-full" />
+          <div className="absolute inset-0 bg-black/55" aria-hidden />
+          <figcaption className="relative max-w-[52ch] p-6 md:p-12">
+            <h3 className="text-[clamp(28px,3.4vw,48px)] font-semibold leading-none tracking-[-0.003em]">{MODULOS[3][0]}</h3>
+            <p className="mt-4 text-[17px] leading-[25px] tracking-[-0.022em]">{MODULOS[3][1]}</p>
+          </figcaption>
+        </figure>
+      </Reveal>
     </section>
   )
 }
@@ -430,6 +488,61 @@ const REGLAS: Array<[string, string]> = [
   ['Cada parte tiene un solo trabajo', 'n8n orquesta pero nunca escribe en la base de datos: llama a una API interna con clave de servicio.'],
 ]
 
+/* Bitácora: bloques encadenados por hash. Al pasar el cursor (o enfocar) sobre uno, se "altera" y la cadena se rompe desde ahí. Ejemplo ilustrativo. */
+const CHAIN = [
+  { what: 'Importación de hallazgos', hash: '3fa9c1', bad: '7b02e4' },
+  { what: 'Cruce diario con KEV y EPSS', hash: 'b21c58', bad: 'e9d0a3' },
+  { what: 'Ticket resuelto', hash: '7de0f6', bad: '41c7b9' },
+  { what: 'Exportación de reporte', hash: 'c85a2d', bad: '0aa5f1' },
+  { what: 'Cambio de configuración', hash: '19f4b7', bad: 'd36c80' },
+]
+
+function Bitacora() {
+  const [alt, setAlt] = useState<number | null>(null)
+  return (
+    <div className="dark mt-[clamp(32px,5vw,72px)] rounded-[28px] bg-surface p-5 text-ink md:p-8">
+      <h3 className="text-[clamp(22px,2.4vw,32px)] font-semibold leading-tight tracking-[-0.003em]">Una cadena que no se puede reescribir</h3>
+      <p className="mt-2 max-w-[60ch] text-[15px] leading-snug text-muted">
+        Cada registro guarda el hash del anterior. Pase el cursor o enfoque un bloque para simular una alteración: la cadena se rompe desde ahí. Ejemplo ilustrativo.
+      </p>
+      <ol className="mt-6 grid gap-3 md:grid-cols-5" onMouseLeave={() => setAlt(null)}>
+        {CHAIN.map((b, i) => {
+          const broken = alt !== null && i >= alt
+          const self = alt === i
+          return (
+            <motion.li key={b.hash} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '0px 0px -4% 0px' }} transition={{ duration: 0.5, ease: EASE, delay: i * 0.08 }}>
+              <button
+                type="button"
+                onMouseEnter={() => setAlt(i)}
+                onFocus={() => setAlt(i)}
+                onBlur={() => setAlt(null)}
+                onClick={() => setAlt((a) => (a === i ? null : i))}
+                aria-pressed={self}
+                className="relative block min-h-[44px] w-full overflow-hidden rounded-[20px] bg-control p-4 text-left"
+              >
+                <span aria-hidden className={`pointer-events-none absolute inset-0 rounded-[20px] bg-danger-soft ring-1 ring-danger transition-opacity duration-500 ease-out ${broken ? 'opacity-100' : 'opacity-0'}`} />
+                <span className="relative block text-[12px] text-muted">Bloque {i + 1}</span>
+                <span className="relative mt-1 block text-[15px] font-semibold leading-snug">{b.what}</span>
+                <span className="relative mt-3 block font-mono text-[12px]">
+                  <span className="text-muted">hash </span>
+                  <span className={broken ? 'text-danger' : ''}>{self ? b.bad : b.hash}</span>
+                </span>
+                <span className="relative block font-mono text-[12px]">
+                  <span className="text-muted">previo </span>
+                  <span className={broken && !self ? 'text-danger' : ''}>{i === 0 ? '000000' : CHAIN[i - 1].hash}</span>
+                </span>
+                <span className={`relative mt-2 block text-[12px] font-semibold ${broken ? 'text-danger' : 'text-muted'}`}>
+                  {self ? 'Contenido alterado' : broken ? 'Cadena rota' : 'Íntegro'}
+                </span>
+              </button>
+            </motion.li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
+
 function Confianza() {
   return (
     <section className="bg-ink text-bg">
@@ -437,7 +550,7 @@ function Confianza() {
         <Reveal>
           <h2 className={`${h2} max-w-[16ch]`}>Una decisión que puede explicar</h2>
         </Reveal>
-        <div className="mt-[clamp(48px,8vw,120px)] grid gap-x-10 gap-y-14 md:grid-cols-2">
+        <div className="mt-[clamp(32px,5vw,72px)] grid gap-x-10 gap-y-14 md:grid-cols-2">
           {REGLAS.map(([t, d], i) => (
             <Reveal key={t} delay={(i % 2) * 0.07}>
               <h3 className="text-[clamp(26px,3vw,44px)] font-semibold leading-[1.05] tracking-[-0.01em]">{t}</h3>
@@ -445,7 +558,7 @@ function Confianza() {
             </Reveal>
           ))}
         </div>
-        <Radar className="mt-[clamp(48px,8vw,120px)]" />
+        <Bitacora />
       </div>
     </section>
   )
@@ -468,7 +581,7 @@ function Preguntas() {
       <Reveal>
         <h2 className="max-w-[18ch] text-[clamp(40px,5.5vw,88px)] font-semibold leading-[1] tracking-[-0.01em]">Preguntas frecuentes</h2>
       </Reveal>
-      <div className="mt-16 grid md:grid-cols-12 md:gap-x-6">
+      <div className="mt-10 grid md:grid-cols-12 md:gap-x-6">
         <div className="space-y-2 md:col-span-8 md:col-start-5">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group -mx-2 rounded-[28px] px-2 transition-colors duration-200 ease-out open:bg-sunken md:-mx-6 md:px-6">
@@ -566,7 +679,7 @@ function Pie() {
           <Link to={user ? '/resumen' : '/login'} className="block text-[clamp(44px,8vw,140px)] font-semibold leading-[0.95] tracking-[-0.01em] transition-opacity duration-150 hover:opacity-85">
             {user ? 'Ir al panel' : 'Ingresar al radar'} →
           </Link>
-          <p className="mt-10 max-w-[70ch] text-[14px]">Fotografía vía Wikimedia Commons: “Vitino, RT-70 deep space radio telescope” de Vyacheslav Argenberg (CC BY 4.0), en escala de grises con tono azul.</p>
+          <p className="mt-10 max-w-[70ch] text-[14px]">Fotos: Jan Baborák, Bernd Dittrich, Tyler, Denny Müller, Tasha Kostyuk vía Unsplash.</p>
           <div className="mt-6 grid gap-1 text-[14px] md:grid-cols-3">
             <span>
               <a className="underline underline-offset-4" href="#fundamentos">Fundamentos</a>
@@ -593,6 +706,7 @@ export default function Landing() {
     }
   }, [])
   return (
+    <MotionConfig reducedMotion="user">
     <div className="landing-font bg-bg text-ink [font-size:16px]">
       <a href="#contenido" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-surface focus:p-2">
         Saltar al contenido
@@ -614,5 +728,6 @@ export default function Landing() {
       </main>
       <Pie />
     </div>
+    </MotionConfig>
   )
 }
