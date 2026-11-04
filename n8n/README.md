@@ -9,7 +9,7 @@ Archivos versionados en `n8n/workflows/`:
 
 ## Importación automática (por defecto)
 
-`docker compose up -d` ejecuta el servicio de una sola vez `n8n-import` **antes** de n8n:
+`docker compose up -d` ejecuta el servicio de una sola vez `n8n-import` **después** de que n8n arranca (en una instalación nueva n8n debe registrar antes su clave de cifrado) y n8n aplica los cambios en caliente:
 
 1. Crea la credencial `PostgreSQL de n8n (registro propio)` a partir de variables de entorno (`n8n/import.sh`; el JSON versionado no contiene secretos).
 2. Importa los dos workflows y publica `RadarDiario01`.

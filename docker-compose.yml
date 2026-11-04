@@ -52,6 +52,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-8080}:80"
 
+  # Importa credenciales y workflows DESPUÉS de que n8n haya arrancado (en una instalación nueva, n8n registra su clave de
+  # cifrado activa en el primer arranque; importar antes falla con "No active encryption key found").
   n8n-import:
     image: n8nio/n8n:3.1.0
     restart: "no"
@@ -72,7 +74,7 @@ services:
       EPSS_API_URL: ${EPSS_API_URL}
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
     depends_on:
-      postgres:
+      n8n:
         condition: service_healthy
     volumes:
       - ./n8n/workflows:/workflows:ro
@@ -85,8 +87,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      n8n-import:
-        condition: service_completed_successfully
       backend:
         condition: service_healthy
     ports:

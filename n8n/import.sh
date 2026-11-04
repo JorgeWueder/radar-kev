@@ -23,7 +23,13 @@ cat > /tmp/credentials.json <<EOF
 ]
 EOF
 
-n8n import:credentials --input=/tmp/credentials.json
+# Reintentos: n8n puede tardar unos segundos en dejar lista su clave de cifrado en una instalación nueva.
+ok=0
+for i in 1 2 3 4 5 6; do
+  if n8n import:credentials --input=/tmp/credentials.json; then ok=1; break; fi
+  echo "Reintentando la importación de credenciales ($i/6)..."; sleep 5
+done
+[ "$ok" = 1 ] || { echo "No se pudieron importar las credenciales"; exit 1; }
 rm -f /tmp/credentials.json
 n8n import:workflow --separate --input=/workflows
 # El flujo diario queda publicado (cron y webhook activos) al arrancar n8n.
