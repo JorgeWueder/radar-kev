@@ -11,3 +11,8 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 data/
+
+# Reportes descargados durante las pruebas
+radar_*.pdf
+radar_*.docx
+radar_*.xlsx
