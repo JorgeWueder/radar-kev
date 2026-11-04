@@ -54,7 +54,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 
 ## Fase 4: n8n, alertas y tickets
 - Workflow en `n8n/workflows/` (ver `n8n/README.md`). Se importa y publica solo al levantar (`n8n-import`); tras editar un JSON:
-  `docker compose up -d --force-recreate n8n-import n8n`. Los `.sh` deben tener finales de línea LF (`.gitattributes`).
+  `docker compose up -d --force-recreate n8n-import`. Los `.sh` deben tener finales de línea LF (`.gitattributes`).
 - Disparo manual: `curl -X POST localhost:5678/webhook/radar-manual -H "X-Service-Key: $RADAR_SERVICE_KEY" -d '{}'` o el botón "Ejecutar ahora".
 - `services/alerting.py`: alerta + ticket por coincidencia NUEVA (UNIQUE + ON CONFLICT DO NOTHING) y UN correo/webhook resumen por ejecución.
   Un canal caído no detiene al otro; el resultado queda en `alert_deliveries`.

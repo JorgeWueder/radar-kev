@@ -14,7 +14,7 @@ Archivos versionados en `n8n/workflows/`:
 1. Crea la credencial `PostgreSQL de n8n (registro propio)` a partir de variables de entorno (`n8n/import.sh`; el JSON versionado no contiene secretos).
 2. Importa los dos workflows y publica `RadarDiario01`.
 
-Después de cambiar un JSON: `docker compose up -d --force-recreate n8n-import n8n`.
+Después de cambiar un JSON: `docker compose up -d --force-recreate n8n-import`.
 
 ## Importación manual (alternativa)
 

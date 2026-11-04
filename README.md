@@ -70,7 +70,7 @@ Todas usan la contraseña de `SEED_DEMO_PASSWORD` en `.env` (por defecto `Radar-
 Se importa y publica **solo** al levantar (servicio `n8n-import`). Detalles, diseño nodo por nodo e importación manual en [`n8n/README.md`](n8n/README.md). Tras editar un JSON de `n8n/workflows/`:
 
 ```bash
-docker compose up -d --force-recreate n8n-import n8n
+docker compose up -d --force-recreate n8n-import
 ```
 
 ## IA
