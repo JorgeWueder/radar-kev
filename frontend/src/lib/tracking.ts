@@ -75,6 +75,7 @@ export const ROUTE_MODULES: Record<string, string> = {
   '/vulnerabilidades': 'vulnerabilities',
   '/tickets': 'tickets',
   '/alertas': 'alerts',
+  '/asistente': 'ai',
   '/kev': 'kev',
   '/ejecuciones': 'workflow',
   '/configuracion': 'settings',

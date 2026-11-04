@@ -4,6 +4,7 @@ import { Shell } from './components/Shell'
 import { useAuth } from './lib/auth'
 import type { Action } from './lib/permissions'
 import Alerts from './pages/Alerts'
+import Assistant from './pages/Assistant'
 import Assets from './pages/Assets'
 import Audit from './pages/Audit'
 import Imports from './pages/Imports'
@@ -34,6 +35,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route element={user ? <Shell /> : <Navigate to="/login" replace />}>
         <Route path="/resumen" element={<Protected module="dashboard"><Overview /></Protected>} />
+        <Route path="/asistente" element={<Protected module="ai"><Assistant /></Protected>} />
         <Route path="/alertas" element={<Protected module="alerts"><Alerts /></Protected>} />
         <Route path="/tickets" element={<Protected module="tickets"><Tickets /></Protected>} />
         <Route path="/tickets/:id" element={<Protected module="tickets"><TicketDetail /></Protected>} />

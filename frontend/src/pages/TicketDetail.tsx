@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { AiBadge } from '../components/AiBadge'
 import { Button, ErrorState, Field, Panel, Select, Skeleton, StatusBadge } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth, type User } from '../lib/auth'
@@ -45,6 +46,11 @@ export default function TicketDetail() {
     onSuccess: () => { toast.success('Ticket actualizado'); refresh() },
     onError: (e: Error) => toast.error(e.message),
   })
+  const enrich = useMutation({
+    mutationFn: () => api.post(`/ai/tickets/${id}/enrich`),
+    onSuccess: () => { toast.success('Análisis generado con IA'); refresh() },
+    onError: (e: Error) => toast.error(e.message),
+  })
   const post = useMutation({
     mutationFn: () => api.post(`/tickets/${id}/comments`, { text: comment }),
     onSuccess: () => { setComment(''); refresh() },
@@ -57,7 +63,7 @@ export default function TicketDetail() {
   const editable = can('tickets', 'edit')
   const [pk, pl] = PRIORITY[d.priority]
   const [lk, ll] = SLA[d.sla_state]
-  const ai = d.ai_enrichment as { resumen?: string; por_que_urgente?: string[]; pasos_remediacion?: string[]; fuentes?: string[] } | null
+  const ai = d.ai_enrichment as { resumen?: string; por_que_urgente?: string[]; pasos_remediacion?: string[]; fuentes?: string[]; referencias?: string[]; activos_afectados?: { hostname: string; criticidad: string }[] } | null
 
   return (
     <>
@@ -79,14 +85,24 @@ export default function TicketDetail() {
             <h2 className="mb-2 text-[14px] font-semibold">Descripción</h2>
             <p className="whitespace-pre-line break-words text-[13px]">{d.description}</p>
           </Panel>
+          {!ai && editable && can('ai', 'view') && (
+            <Panel className="flex flex-wrap items-center justify-between gap-2 p-4">
+              <p className="text-[13px] text-muted">Este ticket aún no tiene análisis. La IA redacta el contexto y los pasos usando solo los datos del radar, KEV y NVD.</p>
+              <Button disabled={enrich.isPending} onClick={() => enrich.mutate()}><Sparkle size={15} weight="fill" aria-hidden /> {enrich.isPending ? 'Generando…' : 'Generar análisis con IA'}</Button>
+            </Panel>
+          )}
           {ai && (
             <Panel className="p-4">
-              <h2 className="mb-2 flex items-center gap-1.5 text-[14px] font-semibold">
-                Análisis <span className="inline-flex items-center gap-1 rounded bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-muted"><Sparkle size={12} weight="fill" aria-hidden /> Generado por IA</span>
-              </h2>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-[14px] font-semibold">Análisis <AiBadge /></h2>
+                {editable && can('ai', 'view') && <Button variant="ghost" disabled={enrich.isPending} onClick={() => enrich.mutate()}>{enrich.isPending ? 'Regenerando…' : 'Regenerar'}</Button>}
+              </div>
               {ai.resumen && <p className="mb-2 text-[13px]">{ai.resumen}</p>}
+              {ai.activos_afectados && ai.activos_afectados.length > 0 && <p className="mb-2 text-[12px] text-muted">Equipos afectados: {ai.activos_afectados.map((a) => `${a.hostname} (${a.criticidad})`).join(', ')}</p>}
               {ai.por_que_urgente && <ul className="mb-2 list-disc pl-5 text-[13px]">{ai.por_que_urgente.map((x) => <li key={x}>{x}</li>)}</ul>}
               {ai.pasos_remediacion && <><p className="text-[12px] font-medium text-muted">Pasos de remediación</p><ol className="list-decimal pl-5 text-[13px]">{ai.pasos_remediacion.map((x) => <li key={x}>{x}</li>)}</ol></>}
+              {ai.fuentes && <p className="mt-2 text-[12px] text-muted">Fuentes: {ai.fuentes.join(', ')}</p>}
+              {ai.referencias && ai.referencias.length > 0 && <p className="mt-1 break-all text-[12px]">{ai.referencias.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer noopener" className="mr-3 text-accent hover:underline">{u}</a>)}</p>}
             </Panel>
           )}
           <Panel className="p-4">

@@ -687,12 +687,99 @@
       "onError": "continueRegularOutput"
     },
     {
+      "id": "c83e8d33-7563-551e-8ea2-93b5fc443f16",
+      "name": "¿Se crearon tickets nuevos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4940,
+        20
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "f40a6671-5d88-50f4-83ff-bec10fdd02c8",
+              "leftValue": "={{ $json.created_tickets }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4e04d472-d626-5fc7-8286-bda06036780a",
+      "name": "Un ítem por ticket",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5200,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "return ($input.first().json.tickets || []).map((t) => ({ json: { id: t.id, code: t.code } }));\n"
+      }
+    },
+    {
+      "id": "9327bd24-6bc7-51b6-9935-89a17b5c2280",
+      "name": "Enriquecer ticket (IA, opcional)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5460,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RADAR_API_URL }}/internal/tickets/{{ $json.id }}/enrich",
+        "options": {
+          "timeout": 900000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 0
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Service-Key",
+              "value": "={{ $env.RADAR_SERVICE_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "run_id",
+              "value": "={{ $('Iniciar ejecución').first().json.run_id }}"
+            }
+          ]
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
       "id": "f0af88ac-bb08-51e4-af1a-309250792143",
       "name": "Bitácora: cierre de la ejecución",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4940,
+        5740,
         100
       ],
       "parameters": {
@@ -711,7 +798,8 @@
           ]
         }
       },
-      "onError": "stopWorkflow"
+      "onError": "stopWorkflow",
+      "executeOnce": true
     }
   ],
   "connections": {
@@ -996,6 +1084,46 @@
       ]
     },
     "Alerta urgente y tickets": {
+      "main": [
+        [
+          {
+            "node": "¿Se crearon tickets nuevos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Se crearon tickets nuevos?": {
+      "main": [
+        [
+          {
+            "node": "Un ítem por ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bitácora: cierre de la ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un ítem por ticket": {
+      "main": [
+        [
+          {
+            "node": "Enriquecer ticket (IA, opcional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enriquecer ticket (IA, opcional)": {
       "main": [
         [
           {

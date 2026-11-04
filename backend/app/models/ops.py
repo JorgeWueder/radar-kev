@@ -122,3 +122,36 @@ class IntegrationSetting(Base):
     value_encrypted: Mapped[str] = mapped_column(Text, default="")
     is_secret: Mapped[bool] = mapped_column(Boolean, default=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class AiInteraction(Base):
+    """Bitácora de IA: quién, qué prompt, con qué fuentes, qué modelo, tokens y latencia."""
+
+    __tablename__ = "ai_interactions"
+    __table_args__ = (Index("ix_ai_created", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    feature: Mapped[str] = mapped_column(String(20))  # enrich | assistant | exec_summary
+    engine: Mapped[str] = mapped_column(String(20), default="langchain")  # langchain | langflow
+    provider: Mapped[str] = mapped_column(String(20))
+    model: Mapped[str] = mapped_column(String(80))
+    prompt: Mapped[str] = mapped_column(Text)
+    sources: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    output: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
+    tokens_in: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tokens_out: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(15), default="ok")  # ok | error | ungrounded
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", lazy="joined")
+
+
+class NvdCache(Base):
+    __tablename__ = "nvd_cache"
+
+    cve_id: Mapped[str] = mapped_column(String(20), primary_key=True)
+    data: Mapped[dict[str, object]] = mapped_column(JSONB)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

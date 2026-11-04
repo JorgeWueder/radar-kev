@@ -10,6 +10,7 @@ function New-Secret([int]$bytes) {
 $lines = Get-Content .env.example
 $simple = 'POSTGRES_SUPERUSER_PASSWORD','RADAR_DB_PASSWORD','N8N_DB_PASSWORD','LANGFLOW_DB_PASSWORD','RADAR_SERVICE_KEY','N8N_ENCRYPTION_KEY','LANGFLOW_SUPERUSER_PASSWORD'
 $out = foreach ($l in $lines) {
+  if ($l -like 'LANGFLOW_SECRET_KEY=*') { $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Fill($b); "LANGFLOW_SECRET_KEY=$([Convert]::ToBase64String($b).Replace('+','-').Replace('/','_'))"; continue }
   $k = ($l -split '=')[0]
   if ($simple -contains $k) { "$k=$(New-Secret 24)" }
   elseif ($k -eq 'JWT_SECRET') { "$k=$(New-Secret 48)" }

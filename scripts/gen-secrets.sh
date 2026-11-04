@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 rnd() { python3 -c "import secrets;print(secrets.token_urlsafe($1))" 2>/dev/null || openssl rand -base64 "$1" | tr -d '=+/\n'; }
 fernet() { python3 -c "import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode())" 2>/dev/null || openssl rand -base64 32 | tr '+/' '-_'; }
 cp .env.example .env
+sed -i "s|^LANGFLOW_SECRET_KEY=.*|LANGFLOW_SECRET_KEY=$(fernet)|" .env
 for k in POSTGRES_SUPERUSER_PASSWORD RADAR_DB_PASSWORD N8N_DB_PASSWORD LANGFLOW_DB_PASSWORD RADAR_SERVICE_KEY N8N_ENCRYPTION_KEY LANGFLOW_SUPERUSER_PASSWORD; do
   sed -i "s|^$k=.*|$k=$(rnd 24)|" .env
 done

@@ -103,6 +103,11 @@ services:
     environment:
       LANGFLOW_DATABASE_URL: postgresql://langflow:${LANGFLOW_DB_PASSWORD}@postgres:5432/langflow
       LANGFLOW_AUTO_LOGIN: "false"
+      LANGFLOW_SECRET_KEY: ${LANGFLOW_SECRET_KEY}
+      # El flow ticket_enrichment (langflow/flows) se carga solo al arrancar y llama a Ollama por su nombre de servicio.
+      LANGFLOW_LOAD_FLOWS_PATH: /flows
+      LANGFLOW_LOAD_FLOWS_OVERWRITE_ON_NAME_MATCH: "true"
+      LANGFLOW_SSRF_ALLOWED_HOSTS: ollama
       LANGFLOW_SUPERUSER: ${LANGFLOW_SUPERUSER}
       LANGFLOW_SUPERUSER_PASSWORD: ${LANGFLOW_SUPERUSER_PASSWORD}
     depends_on:
@@ -119,12 +124,34 @@ services:
     ports:
       - "8025:8025"
 
+  # LLM local (proveedor por defecto). Perfil "ollama": activo con COMPOSE_PROFILES=ollama en .env.
+  # Con GPU NVIDIA: añada docker-compose.gpu.yml (ver .env.example, variable COMPOSE_FILE).
   ollama:
     <<: *restart
     image: ollama/ollama:0.40.14
     profiles: ["ollama"]
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m
+      OLLAMA_MAX_LOADED_MODELS: "1"
     volumes:
       - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  # Descarga una sola vez el modelo configurado en LLM_MODEL (queda en el volumen "ollama").
+  ollama-pull:
+    image: ollama/ollama:0.40.14
+    profiles: ["ollama"]
+    restart: "no"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull ${LLM_MODEL:-qwen2.5:3b}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
 
 volumes:
   pgdata:

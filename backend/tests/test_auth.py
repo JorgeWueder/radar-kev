@@ -86,7 +86,8 @@ def test_refresh_rotation_and_reuse_detection(client: TestClient) -> None:
     r = client.post("/api/v1/auth/refresh")
     assert r.status_code == 200
     # Reutilizar el refresh anterior revoca toda la familia.
-    client.cookies.set("refresh_token", old, path="/api/v1/auth")
+    domain = next(c.domain for c in client.cookies.jar if c.name == "refresh_token")
+    client.cookies.set("refresh_token", old, domain=domain, path="/api/v1/auth")  # sustituye la cookie rotada por la vieja
     assert client.post("/api/v1/auth/refresh").status_code == 401
     assert client.post("/api/v1/auth/refresh").status_code == 401
 

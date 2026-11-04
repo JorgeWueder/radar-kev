@@ -3,6 +3,7 @@ import { DownloadSimple, Plus } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -36,7 +37,8 @@ type Form = z.infer<typeof schema>
 export default function Assets() {
   const { can } = useAuth()
   const qc = useQueryClient()
-  const [f, setF] = useState({ q: '', environment: '', criticality: '' })
+  const [search] = useSearchParams()
+  const [f, setF] = useState({ q: search.get('q') ?? '', environment: '', criticality: '' })
   const [page, setPage] = useState(0)
   const [editing, setEditing] = useState<Asset | 'new' | null>(null)
 

@@ -34,7 +34,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - Fuentes externas verificadas el 2026-11-03: ver sección 0 del plan (campos, límites, dominio del CSV de EPSS).
 
 ## Estado de fases
-- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) y 4 (n8n, alertas, tickets, integraciones) completas.
+- Fases 0 (base), 1 (identidad/RBAC/bitácora), 2 (activos, importación), 3 (KEV, EPSS, cruce, score/SLA, catálogo KEV, configuración, ejecuciones) 4 (n8n, alertas, tickets, integraciones) y 5 (módulo de IA) completas.
 - Muestras para importar en `samples/` (`hallazgos_demo.csv`, `demo.nessus`); copia en `backend/tests/data/` para los tests (mantener ambas iguales).
 - Importación: previsualiza (no escribe hallazgos) y luego confirma; un host desconocido crea un activo `auto_created` (criticidad Media, Producción) marcado "Por completar".
 - Un FQDN del escáner se asocia al activo de nombre corto existente (y no al revés).
@@ -62,3 +62,14 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 - SMTP/webhook configurables en la app (secretos cifrados con Fernet) con respaldo en `.env`. Mailpit (:8025) captura los correos en desarrollo.
 - Los tests nunca envían correo real (fixture autouse `_no_real_smtp`).
 - Los errores de fuentes externas se truncan al registrarlos (pueden ser páginas HTML enteras).
+
+## Fase 5: módulo de IA
+- **Proveedor por defecto: Ollama local** (`LLM_PROVIDER=ollama`, `LLM_MODEL=qwen2.5:3b`, servicio `ollama` + `ollama-pull` con `COMPOSE_PROFILES=ollama`).
+  GPU NVIDIA: `COMPOSE_FILE=docker-compose.yml:docker-compose.gpu.yml` (+ `COMPOSE_PATH_SEPARATOR=:` en Windows). Anthropic/OpenAI: cambiar `LLM_PROVIDER`/`LLM_MODEL` y la clave en `.env`.
+- Código en `backend/app/ai/`: `providers.py` (fábrica + `llm_slot` que serializa llamadas con Ollama), `grounding.py` (datos no confiables + validación de CVE/host/URL),
+  `enrichment.py` (LangFlow primero, LangChain de respaldo, `refine()` filtra lo no respaldado), `assistant.py` (7 herramientas de solo lectura con RBAC), `summary.py`, `audit.py` (tabla `ai_interactions`).
+- Flow de LangFlow versionado en `langflow/flows/ticket_enrichment.json`; se carga solo (`LANGFLOW_LOAD_FLOWS_PATH`). El backend lo ejecuta por la API (`/api/v1/run/ticket-enrichment`).
+  Debe fijarse `LANGFLOW_SECRET_KEY` (si cambia, se invalidan las claves de API de LangFlow) y `LANGFLOW_SSRF_ALLOWED_HOSTS=ollama`.
+- Modelo pequeño: se limitan tokens (`num_predict`), se penaliza la repetición y los esquemas llevan `max_length` (evita bucles). Las herramientas del asistente normalizan argumentos sucios.
+- IMPORTANTE en `.env`: no poner comentarios en la misma línea de una variable vacía (Docker Compose los toma como valor). Comentarios en línea aparte.
+- Tests de IA con modelos simulados (`tests/ai_fakes.py`); el LLM real solo se usa en verificaciones manuales.

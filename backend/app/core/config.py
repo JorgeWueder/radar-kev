@@ -37,8 +37,18 @@ class Settings(BaseSettings):
     alert_email_to: str = ""
     alert_webhook_url: SecretStr = SecretStr("")
 
-    llm_provider: str = "none"
-    llm_model: str = "claude-sonnet-5-5"
+    llm_provider: str = "ollama"  # ollama | anthropic | openai | none
+    llm_model: str = "qwen2.5:3b"
+    llm_timeout: int = 120
+    llm_concurrency: int = 0  # 0 = automático: 1 con Ollama (una GPU), 4 con proveedores en la nube
+    anthropic_api_key: SecretStr = SecretStr("")
+    openai_api_key: SecretStr = SecretStr("")
+    ollama_base_url: str = "http://ollama:11434"
+    langflow_url: str = "http://langflow:7860"
+    langflow_superuser: str = ""
+    langflow_superuser_password: SecretStr = SecretStr("")
+    langflow_api_key: SecretStr = SecretStr("")
+    langflow_enrich_flow: str = "ticket-enrichment"
 
 
 @lru_cache

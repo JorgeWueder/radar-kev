@@ -9,6 +9,7 @@ import {
   Moon,
   ShieldCheck,
   SlidersHorizontal,
+  Sparkle,
   Target,
   Ticket,
   SignOut,
@@ -37,6 +38,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/resumen', label: 'Resumen', icon: Gauge, module: 'dashboard', action: 'view' },
+  { to: '/asistente', label: 'Asistente IA', icon: Sparkle, module: 'ai', action: 'view' },
   { to: '/alertas', label: 'Alertas', icon: Bell, module: 'alerts', action: 'view' },
   { to: '/tickets', label: 'Tickets', icon: Ticket, module: 'tickets', action: 'view' },
   { to: '/activos', label: 'Activos', icon: HardDrives, module: 'assets', action: 'view' },

@@ -11,10 +11,13 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.ai import providers
+from app.ai.enrichment import EnrichmentError, Ungrounded, enrich_ticket
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.intel import WorkflowRun
 from app.models.inventory import Vulnerability
+from app.models.ops import Ticket
 from app.services import feeds
 from app.services.alerting import Match, dispatch_matches, source_failure_alert
 from app.services.audit import write_audit
@@ -184,6 +187,30 @@ def alerts_dispatch(body: DispatchIn, db: Session = Depends(get_db)) -> dict[str
     _sys_audit(db, "alerts_dispatch", detail={k: v for k, v in out.items() if k != "tickets"})
     db.commit()
     return out
+
+
+@router.post("/tickets/{ticket_id}/enrich")
+def enrich(ticket_id: uuid.UUID, run_id: uuid.UUID | None = None, db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Enriquece un ticket con IA. La IA es opcional: si falla, se responde 200 con el estado y el flujo continúa
+    (el fallo se anota en la ejecución, que queda "con avisos"), nunca se detiene la detección."""
+    with providers.llm_slot():  # la cola espera aquí, sin retener una conexión de base de datos
+        return _enrich(db, ticket_id, run_id)
+
+
+def _enrich(db: Session, ticket_id: uuid.UUID, run_id: uuid.UUID | None) -> dict[str, Any]:
+    ticket = db.get(Ticket, ticket_id)
+    if ticket is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Ticket no encontrado")
+    try:
+        result = enrich_ticket(db, ticket, user_id=None, actor="system:n8n")
+    except (providers.AIUnavailable, EnrichmentError) as e:
+        db.commit()  # conserva el registro de la interacción fallida
+        if run_id and (run := db.get(WorkflowRun, run_id)):
+            _add_error(run, "enriquecimiento_ia", f"{ticket.code}: {e}")
+            db.commit()
+        return {"status": "ungrounded" if isinstance(e, Ungrounded) else "unavailable", "ticket": ticket.code, "detail": str(e)[:300]}
+    db.commit()
+    return {"status": "enriched", "ticket": ticket.code, "fuentes": result.fuentes}
 
 
 @router.post("/runs/fail-latest")

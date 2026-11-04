@@ -23,7 +23,7 @@ Después de cambiar un JSON: `docker compose up -d --force-recreate n8n-import n
 3. En *Settings* del flujo principal elige `Radar: registro de errores` como *Error workflow* y **publica** el flujo.
 4. n8n necesita las variables `RADAR_SERVICE_KEY`, `RADAR_API_URL`, `KEV_URL` y `EPSS_API_URL` (ya definidas en `docker-compose.yml`) y `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`.
 
-## Diseño (27 nodos)
+## Diseño (30 nodos)
 
 ```
 Cron diario / Webhook manual (autenticado con X-Service-Key)
@@ -34,14 +34,15 @@ Cron diario / Webhook manual (autenticado con X-Service-Key)
         └─ error → Respaldo: CSV diario de EPSS
   → Cruce con inventario (pandas, en el backend)
   → ¿Hay nueva entrada KEV en mi entorno?
-        ├─ sí → Registro propio de n8n (PostgreSQL) → Alerta urgente y tickets → Bitácora: cierre
+        ├─ sí → Registro propio de n8n (PostgreSQL) → Alerta urgente y tickets
+        │        → (si hay tickets nuevos) Enriquecer ticket con IA, uno a uno, opcional → Bitácora: cierre
         └─ no → Bitácora: cierre
 Errores de KEV (descarga o ingesta) → Fallo: registrado en la app (ejecución "Fallida" + alerta interna)
 ```
 
 - **n8n no toca las tablas de la app.** Todo pasa por `/api/v1/internal/*` con `X-Service-Key` (validado y auditado en el backend). El nodo PostgreSQL escribe `radar_run_log` en la base propia de n8n.
 - **Idempotencia:** `kev_matched_at` se fija una sola vez por hallazgo y `alerts`/`tickets` tienen UNIQUE por vulnerabilidad; ejecutar el flujo dos veces el mismo día no crea alertas, tickets ni correos nuevos.
-- La detección es **determinista** (sin IA). El enriquecimiento de tickets con IA se añade en la fase 5.
+- La detección es **determinista** (sin IA). El enriquecimiento de tickets con IA es un paso **opcional** posterior: si el LLM falla o no está configurado, el flujo continúa y la ejecución queda "con avisos" (tickets sin enriquecer).
 
 ## Probar a mano
 

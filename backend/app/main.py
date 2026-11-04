@@ -11,6 +11,7 @@ from starlette.responses import Response
 from app.api import internal
 from app.api.health import router as health_router
 from app.api.v1 import (
+    ai,
     alerts,
     assets,
     audit,
@@ -79,7 +80,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     api = APIRouter(prefix="/api/v1")
     for module in (
-        auth, users, roles, audit, assets, imports, vulnerabilities, kev, settings, workflow, alerts, tickets, internal,
+        auth, users, roles, audit, assets, imports, vulnerabilities, kev, settings, workflow, alerts, tickets, ai, internal,
     ):
         api.include_router(module.router)
     app.include_router(api)

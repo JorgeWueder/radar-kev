@@ -1,6 +1,7 @@
 import { CaretDown, CaretUp } from '@phosphor-icons/react'
 import { useQuery } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Button, EmptyState, ErrorState, Input, PageHeader, Panel, Select, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
@@ -17,7 +18,8 @@ const PAGE = 50
 type Sort = 'date_added' | 'due_date' | 'cve_id' | 'vendor_project'
 
 export default function Kev() {
-  const [f, setF] = useState({ q: '', vendor: '', ransomware: false, in_environment: false, date_from: '', date_to: '' })
+  const [search] = useSearchParams()
+  const [f, setF] = useState({ q: search.get('q') ?? '', vendor: '', ransomware: false, in_environment: false, date_from: '', date_to: '' })
   const [sort, setSort] = useState<Sort>('date_added')
   const [dir, setDir] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(0)

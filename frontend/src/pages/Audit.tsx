@@ -10,6 +10,7 @@ import { api, download } from '../lib/api'
 import { useAuth, type User } from '../lib/auth'
 import { formatDuration, formatLima, limaInputToIso } from '../lib/format'
 import { moduleLabel } from '../lib/permissions'
+import AiLog from './AiLog'
 
 interface Entry {
   id: number; ts: string; user_email: string | null; actor: string; module: string; action: string
@@ -25,6 +26,7 @@ const RESULT = { success: ['ok', 'Éxito'], failure: ['danger', 'Fallo'], denied
 
 export default function Audit() {
   const { can } = useAuth()
+  const [tab, setTab] = useState<'events' | 'ai'>('events')
   const [f, setF] = useState({ user_id: '', module: '', action: '', result: '', from: '', to: '' })
   const [page, setPage] = useState(0)
   const [open, setOpen] = useState<number | null>(null)
@@ -52,6 +54,17 @@ export default function Audit() {
 
   return (
     <>
+      <div role="tablist" aria-label="Secciones de la bitácora" className="mb-3 flex gap-1 border-b border-line">
+        {([['events', 'Eventos'], ['ai', 'Uso de IA']] as const).map(([k, l]) => (
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`-mb-px border-b-2 px-3 py-2 text-[13px] font-medium transition-colors duration-150 ${tab === k ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink'}`}>{l}</button>
+        ))}
+      </div>
+      {tab === 'ai' ? (
+        <>
+          <PageHeader title="Uso de IA" subtitle="Quién pidió qué, con qué fuentes, qué modelo respondió y cuánto costó (tokens y latencia)." />
+          <AiLog />
+        </>
+      ) : (<>
       <PageHeader
         title="Bitácora de auditoría"
         subtitle="Registro solo de añadir, encadenado por hash. Las horas se muestran en America/Lima; se guardan en UTC."
@@ -135,6 +148,7 @@ export default function Audit() {
           </div>
         </div>
       )}
+      </>)}
     </>
   )
 }
