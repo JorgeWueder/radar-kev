@@ -90,6 +90,53 @@ def risk_score(
     return round((p.kev_floor - 1) * base, 2)
 
 
+def explain_score(
+    p: ScoringParams,
+    *,
+    in_kev: bool,
+    epss: float | None,
+    percentile: float | None,
+    cvss: float | None,
+    criticality: int,
+    ransomware: bool = False,
+) -> dict[str, Any]:
+    """Desglose del score: cuántos puntos aporta cada factor. Usa la misma fórmula que `risk_score` (hay test de
+    coincidencia), así que la explicación nunca puede divergir del número mostrado."""
+    inputs = [
+        ("epss", "Probabilidad de explotación (EPSS)", p.w_epss, epss or 0.0, epss, f"{(epss or 0) * 100:.1f} %"),
+        ("percentile", "Percentil EPSS", p.w_percentile, percentile or 0.0, percentile, f"{(percentile or 0) * 100:.1f} %"),
+        ("cvss", "Gravedad técnica (CVSS)", p.w_cvss, (cvss or 0.0) / 10, cvss, f"{cvss:.1f} / 10" if cvss is not None else "sin dato"),
+        ("asset", "Criticidad del activo", p.w_asset, criticality / 4, criticality, f"{criticality} / 4"),
+    ]  # fmt: skip
+    base = base_score(p, epss or 0.0, percentile or 0.0, cvss or 0.0, criticality)
+    scale = (100 - p.kev_floor) if in_kev else (p.kev_floor - 1)
+    factors: list[dict[str, Any]] = []
+    for key, label, weight, norm, raw, shown in inputs:
+        pts = round(weight * norm * scale, 2)
+        factors.append({"key": key, "label": label, "weight": weight, "value": shown, "known": raw is not None,
+                        "points": pts})  # fmt: skip
+    kev_points = p.kev_floor if in_kev else 0.0
+    bonus = p.ransomware_bonus if (in_kev and ransomware) else 0.0
+    total = risk_score(p, in_kev=in_kev, epss=epss, percentile=percentile, cvss=cvss, criticality=criticality,
+                       ransomware=ransomware)  # fmt: skip
+    top = max(factors, key=lambda f: f["points"])
+    if in_kev:
+        text = (f"Está en el catálogo KEV de CISA (explotación confirmada), lo que fija un piso de {p.kev_floor:g} puntos. "
+                f"Los otros factores suman {sum(f['points'] for f in factors):.1f}; el que más pesa es «{top['label']}».")  # fmt: skip
+        if bonus:
+            text += f" Se añaden {bonus:g} puntos por uso conocido en ransomware."
+        if total >= 100 and kev_points + sum(f["points"] for f in factors) + bonus > 100:
+            text += " El resultado se limita a 100."
+    else:
+        text = (f"No está en KEV, por eso su score no puede superar {p.kev_floor - 1:g}. "
+                f"El factor que más pesa es «{top['label']}» ({top['points']:.1f} puntos).")  # fmt: skip
+    missing = [f["label"] for f in factors if not f["known"]]
+    if missing:
+        text += f" Sin dato (cuenta 0, no se inventa): {', '.join(missing)}."
+    return {"score": total, "band": band_of(p, total), "in_kev": in_kev, "kev_points": kev_points,
+            "ransomware_bonus": bonus, "factors": factors, "base": round(base, 4), "summary": text}  # fmt: skip
+
+
 def band_of(p: ScoringParams, score: float) -> str:
     if score >= p.band_critical:
         return "critical"

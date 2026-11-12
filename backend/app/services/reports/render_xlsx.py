@@ -100,6 +100,9 @@ def render(report: Report) -> bytes:
         for i, col in enumerate(table.columns, start=1):
             longest = max([len(str(col))] + [len(str(r[i - 1])) for r in table.rows[:300]])
             sh.column_dimensions[get_column_letter(i)].width = min(60, max(10, longest + 2))
+        if table.how_to_read:
+            c = sh.cell(5 + len(table.rows) + (1 if table.note else 0) + 1, 1, "Cómo leerla: " + table.how_to_read)
+            c.font = Font(italic=True, color="333333")
         if table.note:
             sh.cell(5 + len(table.rows), 1, table.note).font = Font(italic=True, color="666666")
 
@@ -113,6 +116,9 @@ def render(report: Report) -> bytes:
         line.add_data(Reference(ch, min_col=2, max_col=1 + len(report.chart.series), min_row=1, max_row=1 + len(report.chart.labels)), titles_from_data=True)
         line.set_categories(Reference(ch, min_col=1, min_row=2, max_row=1 + len(report.chart.labels)))
         ch.add_chart(line, "E2")
+        if report.chart.how_to_read:
+            ch["E22"] = "Cómo leerlo: " + report.chart.how_to_read
+            ch["E22"].font = Font(italic=True, color="333333")
         ch.column_dimensions["A"].width = 14
 
     buf = io.BytesIO()

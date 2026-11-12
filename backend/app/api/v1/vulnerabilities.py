@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
@@ -14,7 +14,7 @@ from app.models.auth import User
 from app.models.intel import KevEntry
 from app.models.inventory import VULN_STATUSES, Asset, Vulnerability
 from app.services.intel import get_active_config
-from app.services.scoring import ScoringParams, sla_state
+from app.services.scoring import ScoringParams, explain_score, sla_state
 
 router = APIRouter(prefix="/vulnerabilities", tags=["vulnerabilidades"])
 
@@ -142,6 +142,24 @@ def get_vulnerability(
     if v is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Hallazgo no encontrado")
     return _enrich(db, [v])[0]
+
+
+@router.get("/{vuln_id}/explanation")
+def explain_vulnerability(
+    vuln_id: uuid.UUID, _: User = Depends(require("vulnerabilities", "view")), db: Session = Depends(get_db)
+) -> dict[str, Any]:
+    """Por qué el hallazgo tiene este score: puntos que aporta cada factor, con la misma fórmula que el cruce."""
+    v = db.get(Vulnerability, vuln_id)
+    if v is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Hallazgo no encontrado")
+    out = _enrich(db, [v])[0]
+    _cfg, params = get_active_config(db)
+    ex = explain_score(params, in_kev=out.in_kev, epss=out.epss, percentile=out.percentile, cvss=out.cvss_score,
+                       criticality=out.asset.criticality, ransomware=out.ransomware)  # fmt: skip
+    ex["stored_score"] = out.risk_score
+    # Si el score guardado difiere del recalculado (p. ej. hallazgo cerrado con una fórmula anterior) se dice.
+    ex["is_current"] = out.risk_score is None or abs(out.risk_score - ex["score"]) < 0.05
+    return ex
 
 
 @router.patch("/{vuln_id}", response_model=VulnOut)

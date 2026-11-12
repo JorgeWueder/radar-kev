@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
+import { ComparisonPanel } from '../components/Comparison'
 import { KpiCard, Meta } from '../components/kit'
 import { EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
@@ -127,6 +128,8 @@ export default function Overview() {
               {d.sla_compliance_pct === null && <EmptyState compact icon={CheckCircle} title="Sin datos de cumplimiento" hint={`${noClosed}: se mide sobre los que se mitigan.`} />}
             </KpiCard>
           </div>
+
+          <ComparisonPanel />
 
           <div className="mb-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
             <Panel className="p-4">

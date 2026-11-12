@@ -24,6 +24,7 @@ TEMPLATE = _env.from_string(
   tr { page-break-inside: avoid; } .note { color: #666; font-size: 8px; margin-top: 3px; }
   .ai { border: 1px solid #bbb; border-left: 3px solid #1d5bb8; padding: 6px 9px; margin: 10px 0; background: #f6f6f3; }
   .ai .badge { font-size: 8px; font-weight: bold; color: #1d5bb8; } .ai ul { margin: 2px 0 4px 14px; padding: 0; }
+  .how { border-left: 3px solid #86868b; background: #f6f6f3; padding: 4px 8px; margin-top: 5px; font-size: 8.5px; color: #333; }
   .warn { color: #8a5300; font-size: 8.5px; margin: 6px 0; }
 </style></head><body>
 <h1>{{ r.title }}</h1><div class="sub">{{ r.subtitle }}</div>
@@ -35,11 +36,11 @@ TEMPLATE = _env.from_string(
   <b>Recomendaciones</b><ul>{% for x in r.ai.summary.recomendaciones %}<li>{{ x }}</li>{% endfor %}</ul>
   <div class="note">Texto redactado por un modelo de lenguaje a partir de las cifras de este radar; revíselo antes de difundirlo.</div></div>{% endif %}
 {% for n in r.notes %}<div class="warn">{{ n }}</div>{% endfor %}
-{% if chart_svg %}<h2>{{ r.chart.title }}</h2>{{ chart_svg | safe }}{% endif %}
+{% if chart_svg %}<h2>{{ r.chart.title }}</h2>{{ chart_svg | safe }}{% if r.chart.how_to_read %}<div class="how"><b>Cómo leerlo.</b> {{ r.chart.how_to_read }}</div>{% endif %}{% endif %}
 {% for t in r.tables %}<h2>{{ t.title }}</h2>
 {% if t.rows %}<table><thead><tr>{% for c in t.columns %}<th class="{{ 'r' if loop.index0 in t.right else '' }}">{{ c }}</th>{% endfor %}</tr></thead>
 <tbody>{% for row in t.rows %}<tr>{% for cell in row %}<td class="{{ 'r' if loop.index0 in t.right else '' }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
-{% else %}<div class="note">Sin datos.</div>{% endif %}{% if t.note %}<div class="note">{{ t.note }}</div>{% endif %}{% endfor %}
+{% else %}<div class="note">Sin datos.</div>{% endif %}{% if t.how_to_read %}<div class="how"><b>Cómo leerla.</b> {{ t.how_to_read }}</div>{% endif %}{% if t.note %}<div class="note">{{ t.note }}</div>{% endif %}{% endfor %}
 </body></html>"""
 )
 

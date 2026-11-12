@@ -102,3 +102,22 @@ def test_epss_batches_respect_cve_count_and_url_limits() -> None:
     assert all(len(",".join(b)) <= EPSS_MAX_CHARS for b in batches)
     long = [f"CVE-2024-{n:012d}" for n in range(200)]  # CVEs largos: manda el límite de caracteres
     assert all(len(",".join(b)) <= EPSS_MAX_CHARS for b in epss_batches(long))
+
+
+def test_explanation_matches_score_and_adds_up() -> None:
+    from app.services.scoring import explain_score
+
+    for kw in ({}, {"in_kev": False}, {"ransomware": True}, {"epss": None, "cvss": None}):
+        base: dict[str, object] = {"in_kev": True, "epss": 0.5, "percentile": 0.9, "cvss": 7.5, "criticality": 3}
+        args = {**base, **kw}
+        ex = explain_score(P, **args)  # type: ignore[arg-type]
+        assert ex["score"] == risk_score(P, **args)  # type: ignore[arg-type]
+        parts = ex["kev_points"] + sum(f["points"] for f in ex["factors"]) + ex["ransomware_bonus"]
+        assert parts == pytest.approx(ex["score"], abs=0.05)
+
+
+def test_explanation_flags_missing_data() -> None:
+    from app.services.scoring import explain_score
+
+    ex = explain_score(P, in_kev=True, epss=None, percentile=None, cvss=None, criticality=2)
+    assert not ex["factors"][0]["known"] and "Sin dato" in ex["summary"]

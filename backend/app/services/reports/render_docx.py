@@ -1,6 +1,7 @@
 """Word con python-docx."""
 
 import io
+from typing import Any
 
 from docx import Document
 from docx.enum.section import WD_ORIENT
@@ -8,6 +9,11 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt, RGBColor
 
 from app.services.reports.model import Report, risk_suffix
+
+
+def _how(doc: Any, text: str) -> None:
+    run = doc.add_paragraph().add_run(text)
+    run.italic, run.font.size, run.font.color.rgb = True, Pt(8.5), RGBColor(0x33, 0x33, 0x33)
 
 
 def render(report: Report) -> bytes:
@@ -57,6 +63,14 @@ def render(report: Report) -> bytes:
     for n in report.notes:
         doc.add_paragraph(n).runs[0].font.color.rgb = RGBColor(0x8A, 0x53, 0x00)
 
+    if report.chart and report.chart.labels:
+        from app.services.reports.figures import line_chart_png
+
+        doc.add_heading(report.chart.title, level=1)
+        doc.add_picture(io.BytesIO(line_chart_png(report.chart)), width=Cm(16.5 if not report.wide else 22))
+        if report.chart.how_to_read:
+            _how(doc, "Cómo leerlo. " + report.chart.how_to_read)
+
     for table in report.tables:
         doc.add_heading(table.title, level=1)
         if not table.rows:
@@ -78,6 +92,8 @@ def render(report: Report) -> bytes:
                 run.font.size = Pt(8.5)
                 if i in table.right:
                     para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        if table.how_to_read:
+            _how(doc, "Cómo leerla. " + table.how_to_read)
         if table.note:
             doc.add_paragraph(table.note).runs[0].font.size = Pt(8)
 

@@ -64,6 +64,42 @@ function AffectedList({ items, loading }: { items?: Vuln[]; loading: boolean }) 
   )
 }
 
+interface Explanation {
+  score: number; in_kev: boolean; kev_points: number; ransomware_bonus: number; summary: string; is_current: boolean
+  factors: { key: string; label: string; weight: number; value: string; known: boolean; points: number }[]
+}
+
+/** Desglose del puntaje: cuántos puntos aporta cada factor (misma fórmula que el cruce; la IA no interviene). */
+function ScoreExplanation({ id, enabled }: { id: string; enabled: boolean }) {
+  const q = useQuery({ queryKey: ['vuln-explanation', id], queryFn: () => api.get<Explanation>(`/vulnerabilities/${id}/explanation`), enabled })
+  if (q.isPending) return <Skeleton cols={2} rows={3} />
+  if (q.isError) return <p className="text-[13px] text-muted">No se pudo cargar la explicación.</p>
+  const e = q.data
+  const rows = [
+    ...(e.in_kev ? [{ key: 'kev', label: 'Piso por estar en KEV', value: 'explotación confirmada', points: e.kev_points, known: true }] : []),
+    ...e.factors.map((f) => ({ key: f.key, label: f.label, value: f.value, points: f.points, known: f.known })),
+    ...(e.ransomware_bonus ? [{ key: 'rw', label: 'Uso en ransomware', value: 'conocido', points: e.ransomware_bonus, known: true }] : []),
+  ]
+  const max = Math.max(...rows.map((r) => r.points), 1)
+  return (
+    <>
+      <ul className="mb-2 space-y-1.5" aria-label="Puntos que aporta cada factor al puntaje">
+        {rows.map((r) => (
+          <li key={r.key} className="text-[12px]">
+            <div className="flex justify-between gap-2">
+              <span>{r.label} <span className="text-muted">· {r.value}</span></span>
+              <span className="tabular-nums font-medium">+{r.points.toFixed(1)}</span>
+            </div>
+            <div className="mt-0.5 h-1.5 rounded-full bg-sunken" aria-hidden><div className={`h-full rounded-full ${r.known ? 'bg-ink' : 'bg-line-strong'}`} style={{ width: `${(r.points / max) * 100}%` }} /></div>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[12px] text-muted">{e.summary}</p>
+      {!e.is_current && <p className="mt-1 text-[12px] text-muted">Este hallazgo está cerrado: conserva el puntaje calculado con la fórmula de entonces.</p>}
+    </>
+  )
+}
+
 export function VulnDrawer({ v, onClose }: { v: Vuln | null; onClose: () => void }) {
   const open = v !== null
   const affected = useAffected(v?.cve_id ?? '', open)
@@ -85,6 +121,9 @@ export function VulnDrawer({ v, onClose }: { v: Vuln | null; onClose: () => void
               <DrawerRow label="SLA"><Meta alert={v.sla_state === 'vencido'}>{SLA[v.sla_state][1]}</Meta>{v.sla_due_date && v.sla_state !== 'no_aplica' && <span className="ml-2 tabular-nums text-muted">{formatDate(v.sla_due_date)}</span>}</DrawerRow>
               <DrawerRow label="Estado">{VULN_STATUS[v.status]}</DrawerRow>
             </dl>
+          </Section>
+          <Section title="Por qué este puntaje">
+            <ScoreExplanation id={v.id} enabled={open} />
           </Section>
           <Section title="Explotación">
             <dl>

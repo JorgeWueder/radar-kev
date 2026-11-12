@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.models.intel import EpssScore, KevEntry
 from app.models.inventory import Asset, Vulnerability
 from app.models.ops import Ticket
-from app.services import stats
+from app.services import inference, stats
 from app.services.intel import get_active_config
 from app.services.reports.model import (
     BAND,
@@ -166,9 +166,15 @@ def exposure_trend(db: Session, start: date, end: date) -> Report:
         notes.append("El historial previo a la primera ejecución del flujo se reconstruye a partir de las fechas de detección, resolución y alta en KEV.")
     else:
         notes.append("No hay datos de exposición en el periodo.")
-    chart = Chart("CVEs KEV abiertos y SLA vencidos", [r[0] for r in rows], [("KEV abiertos", [float(p["kev_open"]) for p in pts]), ("SLA vencidos", [float(p["sla_overdue"]) for p in pts])]) if pts else None  # fmt: skip
+    reading = ""
+    if pts:
+        mk = inference.mann_kendall([float(p["kev_open"]) for p in pts])
+        reading = (f"Cada línea es un conteo diario: si la de KEV abiertos baja, se está remediando más rápido de lo que aparece nuevo riesgo. "
+                   f"{mk['interpretation']}")  # fmt: skip
+    chart = Chart("CVEs KEV abiertos y SLA vencidos", [r[0] for r in rows], [("KEV abiertos", [float(p["kev_open"]) for p in pts]), ("SLA vencidos", [float(p["sla_overdue"]) for p in pts])], reading) if pts else None  # fmt: skip
     return Report("exposure_trend", "Tendencia de exposición", _period(start, end), _now(), kpis=kpis, chart=chart, notes=notes,
-                  tables=[Table("Evolución diaria", ["Fecha", "KEV abiertos", "SLA vencidos", "Activos críticos expuestos", "Riesgo medio"], rows, right={1, 2, 3, 4})])  # fmt: skip
+                  tables=[Table("Evolución diaria", ["Fecha", "KEV abiertos", "SLA vencidos", "Activos críticos expuestos", "Riesgo medio"], rows, right={1, 2, 3, 4},
+                                how_to_read="Una fila por día. «Activos críticos expuestos» cuenta equipos de criticidad máxima con al menos un KEV abierto; el riesgo medio queda vacío en los días reconstruidos.")])  # fmt: skip
 
 
 def _resolved_rows(db: Session, start: date, end: date) -> list[tuple[Vulnerability, Asset]]:
@@ -204,7 +210,8 @@ def mttr(db: Session, start: date, end: date) -> Report:
     return Report("mttr", "Tiempo medio de remediación (MTTR)", _period(start, end), _now(),
                   kpis=[("MTTR del periodo (días)", fmt_num(m["mttr_days"])), ("Hallazgos mitigados", str(m["resolved"]))],  # fmt: skip
                   notes=[] if rows else ["No hubo hallazgos mitigados en el periodo."],
-                  tables=[Table("MTTR por banda de riesgo", ["Banda", "Mitigados", "MTTR (días)"], band_rows, right={1, 2}),
+                  tables=[Table("MTTR por banda de riesgo", ["Banda", "Mitigados", "MTTR (días)"], band_rows, right={1, 2},
+                                how_to_read="El MTTR es el promedio de días entre detectar y mitigar. Compare cada banda con su SLA: una banda crítica con MTTR mayor que su plazo incumple de forma sistemática. Con pocos mitigados, un solo caso lento mueve mucho el promedio."),
                           Table("Hallazgos mitigados", ["CVE", "Activo", "Banda", "Detectado", "Mitigado", "Días"], detail, right={5},
                                 note="Se muestran como máximo 200 filas." if len(rows) > 200 else "")])  # fmt: skip
 
@@ -228,7 +235,8 @@ def sla_compliance(db: Session, start: date, end: date) -> Report:
     return Report("sla_compliance", "Cumplimiento de SLA", _period(start, end), _now(),
                   kpis=[("Cumplimiento del periodo", fmt_num(m["sla_compliance_pct"], 1, " %")), ("Mitigados en el periodo", str(m["resolved"])), ("SLA vencidos hoy", str(still))],  # fmt: skip
                   notes=[] if rows else ["No hubo hallazgos mitigados en el periodo."],
-                  tables=[Table("Cumplimiento por banda", ["Banda", "Mitigados", "En plazo", "Fuera de plazo", "Cumplimiento"], band_rows, right={1, 2, 3, 4}),
+                  tables=[Table("Cumplimiento por banda", ["Banda", "Mitigados", "En plazo", "Fuera de plazo", "Cumplimiento"], band_rows, right={1, 2, 3, 4},
+                                how_to_read="Cumplimiento = mitigados dentro de su plazo ÷ mitigados. Solo cuenta lo ya cerrado; lo que sigue abierto y vencido está en «SLA vencidos hoy»."),
                           Table("Mitigados fuera de plazo", ["CVE", "Activo", "Banda", "SLA", "Mitigado", "Días de atraso"], late, right={5})])  # fmt: skip
 
 
@@ -247,9 +255,18 @@ def period_comparison(db: Session, start: date, end: date) -> Report:
     rows = [row("Nuevas entradas KEV en el entorno", "new_kev"), row("Hallazgos mitigados", "resolved"),
             row("MTTR (días)", "mttr_days", 1), row("Cumplimiento de SLA", "sla_compliance_pct", 1, " %"),
             row("KEV abiertos al cierre", "kev_open_end"), row("SLA vencidos al cierre", "sla_overdue_end")]  # fmt: skip
+    tests = stats.comparison_tests_for(db, start, end, prev_start, prev_end)
+    test_rows = [
+        ["MTTR", tests["mttr"]["test"], "—" if tests["mttr"]["p_value"] is None else fmt_num(tests["mttr"]["p_value"], 3), tests["mttr"]["interpretation"]],
+        ["Cumplimiento de SLA", tests["sla"]["test"], "—" if tests["sla"]["p_value"] is None else fmt_num(tests["sla"]["p_value"], 3), tests["sla"]["interpretation"]],
+        ["Tendencia de KEV abiertos", tests["kev_trend"]["test"], "—" if tests["kev_trend"]["p_value"] is None else fmt_num(tests["kev_trend"]["p_value"], 3), tests["kev_trend"]["interpretation"]],
+    ]  # fmt: skip
     return Report("period_comparison", "Comparativo por periodo", f"{_period(start, end)} frente a {fmt_date(prev_start)} al {fmt_date(prev_end)}", _now(),
                   kpis=[("Nuevas KEV", str(cur["new_kev"])), ("Mitigados", str(cur["resolved"])), ("Días del periodo", str(days))],  # fmt: skip
-                  tables=[Table("Indicadores", ["Indicador", f"Anterior ({fmt_date(prev_start)} a {fmt_date(prev_end)})", f"Actual ({fmt_date(start)} a {fmt_date(end)})", "Variación"], rows, right={1, 2, 3})])  # fmt: skip
+                  tables=[Table("Indicadores", ["Indicador", f"Anterior ({fmt_date(prev_start)} a {fmt_date(prev_end)})", f"Actual ({fmt_date(start)} a {fmt_date(end)})", "Variación"], rows, right={1, 2, 3},
+                                how_to_read="Una variación solo es una mejora real si la prueba estadística de abajo la respalda; un cambio chico con pocos casos suele ser azar."),
+                          Table("Pruebas estadísticas", ["Indicador", "Prueba", "Valor p", "Lectura"], test_rows, right={2},
+                                how_to_read="Valor p < 0,05 significa que la diferencia difícilmente es casualidad. Un p alto no prueba que no haya cambio: indica que los datos no alcanzan para afirmarlo.")])  # fmt: skip
 
 
 def build(db: Session, key: str, start: date, end: date, cve_id: str | None) -> Report:

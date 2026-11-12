@@ -151,6 +151,42 @@ def period_metrics(db: Session, start: date, end: date) -> dict[str, Any]:
     }  # fmt: skip
 
 
+def period_samples(db: Session, start: date, end: date) -> tuple[list[float], int]:
+    """Días hasta mitigar de cada hallazgo mitigado en [start, end] y cuántos cumplieron su SLA (para las pruebas)."""
+    lo = datetime(start.year, start.month, start.day, tzinfo=UTC)
+    hi = datetime(end.year, end.month, end.day, tzinfo=UTC) + timedelta(days=1)
+    rows = db.execute(
+        select(Vulnerability.first_seen, Vulnerability.resolved_at, Vulnerability.sla_due_date)
+        .where(Vulnerability.status == "mitigated", Vulnerability.resolved_at >= lo, Vulnerability.resolved_at < hi)
+    ).all()  # fmt: skip
+    days = [(r - f).total_seconds() / 86400 for f, r, _ in rows if r is not None]
+    on_time = sum(1 for _, r, d in rows if r is not None and d is not None and r.date() <= d)
+    return days, on_time
+
+
+def comparison_tests(db: Session, start: date, end: date) -> dict[str, Any]:
+    """Periodo [start, end] frente al anterior de igual duración, con pruebas estadísticas y su lectura en español."""
+    n_days = (end - start).days + 1
+    prev_end = start - timedelta(days=1)
+    prev_start = prev_end - timedelta(days=n_days - 1)
+    return comparison_tests_for(db, start, end, prev_start, prev_end)
+
+
+def comparison_tests_for(db: Session, start: date, end: date, prev_start: date, prev_end: date) -> dict[str, Any]:
+    from app.services import inference
+
+    d_prev, ok_prev = period_samples(db, prev_start, prev_end)
+    d_cur, ok_cur = period_samples(db, start, end)
+    series = [float(p["kev_open"]) for p in trend(db, start, end)]
+    return {
+        "current": {"start": start.isoformat(), "end": end.isoformat()},
+        "previous": {"start": prev_start.isoformat(), "end": prev_end.isoformat()},
+        "mttr": inference.mann_whitney(d_prev, d_cur),
+        "sla": inference.two_proportions(ok_prev, len(d_prev), ok_cur, len(d_cur)),
+        "kev_trend": inference.mann_kendall(series),
+    }
+
+
 def ensure_history(db: Session, today: date, days: int = 60, min_points: int = 14) -> int:
     """Reconstruye el historial de exposición de los últimos días A PARTIR DE LOS DATOS (first_seen, resolved_at y la
     fecha de alta en KEV) cuando aún hay pocos puntos. No inventa nada: es lo que el inventario habría mostrado cada día.

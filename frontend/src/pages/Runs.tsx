@@ -52,6 +52,40 @@ function DurationChart({ runs }: { runs: Run[] }) {
   )
 }
 
+/** Salud del flujo: tasa de éxito, antigüedad de la última corrida correcta y qué fuente falla más. */
+function Health({ runs }: { runs: Run[] }) {
+  const [now] = useState(() => Date.now())
+  const recent = runs.filter((r) => r.status !== 'running').slice(0, 30)
+  if (recent.length === 0) return null
+  const ok = recent.filter((r) => r.status === 'success').length
+  const lastOk = recent.find((r) => r.status === 'success')
+  const hoursAgo = lastOk ? Math.round((now - new Date(lastOk.started_at).getTime()) / 3_600_000) : null
+  const bySource = new Map<string, number>()
+  for (const r of recent) for (const e of r.errors) bySource.set(e.node, (bySource.get(e.node) ?? 0) + 1)
+  const worst = [...bySource.entries()].sort((a, b) => b[1] - a[1])[0]
+  const stale = hoursAgo === null || hoursAgo > 36 // el flujo es diario: más de 36 h sin éxito es una señal
+  const pct = Math.round((100 * ok) / recent.length)
+  return (
+    <Panel className="mb-4 grid gap-x-8 gap-y-3 px-4 py-3 sm:grid-cols-3">
+      <div>
+        <p className="text-[12px] text-muted">Éxito en las últimas {recent.length} ejecuciones</p>
+        <p className="text-[20px] font-semibold tabular-nums">{pct} %</p>
+        <p className="text-[12px] text-muted">{ok} correctas · {recent.length - ok} con avisos o fallidas</p>
+      </div>
+      <div>
+        <p className="text-[12px] text-muted">Última ejecución correcta</p>
+        <p className={`text-[20px] font-semibold tabular-nums ${stale ? 'text-danger' : ''}`}>{hoursAgo === null ? 'Ninguna' : hoursAgo < 1 ? 'Hace menos de 1 h' : `Hace ${hoursAgo} h`}</p>
+        <p className="text-[12px] text-muted">{stale ? 'Más de 36 h: revise el flujo en n8n.' : 'Dentro del ciclo diario.'}</p>
+      </div>
+      <div>
+        <p className="text-[12px] text-muted">Paso que más falla</p>
+        <p className="text-[20px] font-semibold">{worst ? <span className="font-mono text-[16px]">{worst[0]}</span> : 'Ninguno'}</p>
+        <p className="text-[12px] text-muted">{worst ? `${worst[1]} ${worst[1] === 1 ? 'error' : 'errores'} en el periodo` : 'Sin errores registrados.'}</p>
+      </div>
+    </Panel>
+  )
+}
+
 export default function Runs() {
   const { can } = useAuth()
   const qc = useQueryClient()
@@ -97,6 +131,7 @@ export default function Runs() {
         subtitle="Cruce diario de KEV y EPSS con el inventario, orquestado por n8n. Un fallo de una fuente externa aparece aquí en rojo."
         actions={can('workflow', 'create') && <Button variant="primary" disabled={trigger.isPending} onClick={() => trigger.mutate()}>{trigger.isPending ? 'Iniciando…' : 'Ejecutar ahora'}</Button>}
       />
+      {list.data && <Health runs={list.data.items} />}
       {list.data && <DurationChart runs={list.data.items} />}
       <DataTable
         columns={columns}

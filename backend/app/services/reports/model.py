@@ -17,6 +17,7 @@ class Table:
     columns: list[str]
     rows: list[list[Any]]
     note: str = ""
+    how_to_read: str = ""  # interpretación en lenguaje llano de la tabla
     right: set[int] = field(default_factory=set)  # columnas numéricas (alineadas a la derecha)
 
 
@@ -25,6 +26,7 @@ class Chart:
     title: str
     labels: list[str]
     series: list[tuple[str, list[float]]]
+    how_to_read: str = ""
 
 
 @dataclass

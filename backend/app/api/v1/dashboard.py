@@ -32,6 +32,19 @@ def trend(
     return stats.trend(db, end - timedelta(days=days), end)
 
 
+@router.get("/comparison")
+def comparison(
+    days: int = Query(30, ge=7, le=180),
+    _: User = Depends(require("dashboard", "view")),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Últimos `days` días frente a los `days` anteriores, con pruebas estadísticas (MTTR, SLA y tendencia de KEV)."""
+    from datetime import UTC, datetime, timedelta
+
+    end = datetime.now(UTC).date()
+    return stats.comparison_tests(db, end - timedelta(days=days - 1), end)
+
+
 @router.get("/top-assets")
 def top_assets(
     limit: int = Query(10, ge=1, le=25),

@@ -113,3 +113,9 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 
 ## Diseño
 Toda la UI sigue @DESIGN.md. Usa sus tokens (colores, tipografía, espaciado, radios) y respeta sus reglas de uso. No inventes colores ni fuentes fuera de ese archivo.
+
+## Mejoras del Promptuario (explicabilidad, inferencia, monitoreo)
+- `scoring.explain_score` desglosa el score por factor (test de coincidencia con `risk_score`); `GET /vulnerabilities/{id}/explanation` y sección "Por qué este puntaje" en el panel del CVE.
+- `services/inference.py` (sin SciPy): Mann-Whitney (MTTR), z de dos proporciones con Wilson (SLA) y Mann-Kendall (tendencia KEV); `GET /dashboard/comparison` y panel en el Resumen. Con pocos casos el texto lo advierte.
+- Reportes: `how_to_read` en `Table`/`Chart` ("Cómo leerla") en PDF/Word/Excel; el comparativo añade la tabla "Pruebas estadísticas"; Word usa figura PNG a 600 DPI (`reports/figures.py`, matplotlib nuevo en `requirements.txt`: reconstruir la imagen del backend), el PDF mantiene SVG vectorial.
+- Ejecuciones: panel de salud (éxito últimas 30, antigüedad de la última correcta, paso que más falla).
