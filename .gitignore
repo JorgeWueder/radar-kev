@@ -22,3 +22,6 @@ radar_*.xlsx
 jmeter/resultados/N*/
 jmeter/~$*
 jmeter.log
+
+# Caché de compilación de TypeScript (se regenera en cada build)
+*.tsbuildinfo

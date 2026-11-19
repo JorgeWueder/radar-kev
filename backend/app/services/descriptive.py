@@ -38,20 +38,23 @@ HOW_TO_READ = {
 
 _SQL = text(
     "SELECT v.cve_id, v.cvss_score AS cvss, v.risk_score, a.criticality, a.environment, "
-    " (k.cve_id IS NOT NULL) AS in_kev, e.epss, a.id::text AS asset_id, a.auto_created, e.score_date AS epss_date, e.percentile "
+    " (k.cve_id IS NOT NULL) AS in_kev, e.epss, a.id::text AS asset_id, a.auto_created, e.score_date AS epss_date, e.percentile, "
+    " (k.ransomware_use = 'Known') AS ransomware "
     "FROM vulnerabilities v JOIN assets a ON a.id = v.asset_id "
     "LEFT JOIN kev_entries k ON k.cve_id = v.cve_id "
     "LEFT JOIN (SELECT DISTINCT ON (cve_id) cve_id, epss, percentile, score_date FROM epss_scores ORDER BY cve_id, score_date DESC) e "
     " ON e.cve_id = v.cve_id "
     "WHERE v.status IN ('open','in_progress')"
 )
-COLUMNS = ["cve_id", "cvss", "risk_score", "criticality", "environment", "in_kev", "epss", "asset_id", "auto_created", "epss_date", "percentile"]
+COLUMNS = ["cve_id", "cvss", "risk_score", "criticality", "environment", "in_kev", "epss", "asset_id", "auto_created", "epss_date", "percentile",
+           "ransomware"]
 
 
 def load_frame(db: Session) -> pd.DataFrame:
     rows = db.execute(_SQL).all()
     df = pd.DataFrame(rows, columns=COLUMNS)
     df["auto_created"] = df["auto_created"].astype(bool)
+    df["ransomware"] = df["ransomware"].eq(True)  # NULL (CVE fuera de KEV) cuenta como False
     for col in ("cvss", "risk_score", "epss", "percentile"):
         df[col] = pd.to_numeric(df[col], errors="coerce").astype(float)
     df["epss"] = df["epss"] * 100.0  # se describe en %

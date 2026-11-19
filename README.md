@@ -98,10 +98,28 @@ fuera de KEV: score = (piso − 1)·base          → un CVE en KEV siempre supe
 
 SLA en KEV: el `dueDate` de CISA (si se detectó después, la misma ventana desde la detección); fuera de KEV: días por banda (15/30/90/180).
 
+## Análisis estadístico
+
+Todo se calcula en el backend con pandas/numpy (sin SciPy ni modelos entrenados) y cada tabla o figura trae su lectura
+en español («Cómo leerla»).
+
+| Dónde | Qué responde | API |
+|---|---|---|
+| Resumen → Perfil del inventario | Estadística descriptiva de score, EPSS y CVSS (mediana, cuartiles, P90, tramos), por criticidad y entorno, y KEV frente al resto | `GET /dashboard/descriptive` |
+| Resumen → Calidad de los datos | Criticidad supuesta, faltantes, EPSS desactualizado, grupos pequeños o dominantes | (incluido en el anterior) |
+| Resumen → ¿Qué criterio encuentra lo que ya explotan? | CVSS, EPSS y score sin KEV frente a KEV en el inventario: AUC con IC 95 %, curvas ROC y precisión-cobertura, matrices de confusión | `GET /dashboard/evaluation` |
+| Resumen → ¿EPSS anticipa lo que entrará a KEV? | Prueba prospectiva sobre todo el universo de CVE: el EPSS de hace 30/90/180 días frente a lo que entró a KEV después | `GET/POST /dashboard/evaluation/universe` |
+| Configuración → Sensibilidad | Cuánto cambia la prioridad si cambian los pesos: N combinaciones al azar, parecido al orden vigente, cambios de banda, importancia de cada peso | `POST /settings/scoring/sensitivity` |
+| Resumen → ¿Mejoramos de verdad? | Periodo actual frente al anterior: Mann-Whitney (MTTR), dos proporciones (SLA), Mann-Kendall (tendencia) | `GET /dashboard/comparison` |
+
+El score completo nunca se evalúa contra KEV (incluye KEV: daría un resultado perfecto por construcción). Reportes
+analíticos en PDF, Word (figuras a 600 DPI) y Excel: *Perfil del inventario*, *Evaluación de criterios frente a KEV* y
+*Prueba prospectiva de EPSS* (esta última necesita un cálculo guardado).
+
 ## Pruebas
 
 ```bash
-docker compose run --rm backend pytest              # 190 tests (crea esquemas temporales; no toca los datos)
+docker compose run --rm backend pytest              # unos 230 tests (crea esquemas temporales; no toca los datos)
 docker compose run --rm backend sh -c "ruff check . && mypy app"
 cd frontend && npm ci && npm run lint && npm run typecheck && npm test && npm run build
 ```

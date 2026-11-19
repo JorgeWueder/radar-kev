@@ -14,12 +14,12 @@ TODAY = date(2026, 11, 19)
 def frame() -> pd.DataFrame:
     rows = [
         # cve, cvss, score, criticidad, entorno, kev, epss (%)
-        ("CVE-1", 9.8, 98.0, 4, "prod", True, 94.0, "a1", False, TODAY, 0.5),
-        ("CVE-2", 9.1, 92.0, 4, "prod", True, 60.0, "a1", False, TODAY, 0.5),
-        ("CVE-3", 7.5, 35.0, 3, "prod", False, 0.4, "a2", False, TODAY, 0.5),
-        ("CVE-4", 9.8, 30.0, 2, "staging", False, 0.2, "a3", True, TODAY, 0.5),
-        ("CVE-5", 5.3, 12.0, 2, "dev", False, 0.1, "a3", True, TODAY, 0.5),
-        ("CVE-6", None, 8.0, 1, "dev", False, None, "a4", False, None, 0.5),
+        ("CVE-1", 9.8, 98.0, 4, "prod", True, 94.0, "a1", False, TODAY, 0.5, False),
+        ("CVE-2", 9.1, 92.0, 4, "prod", True, 60.0, "a1", False, TODAY, 0.5, False),
+        ("CVE-3", 7.5, 35.0, 3, "prod", False, 0.4, "a2", False, TODAY, 0.5, False),
+        ("CVE-4", 9.8, 30.0, 2, "staging", False, 0.2, "a3", True, TODAY, 0.5, False),
+        ("CVE-5", 5.3, 12.0, 2, "dev", False, 0.1, "a3", True, TODAY, 0.5, False),
+        ("CVE-6", None, 8.0, 1, "dev", False, None, "a4", False, None, 0.5, False),
     ]
     return pd.DataFrame(rows, columns=COLUMNS)
 
@@ -85,11 +85,11 @@ def test_quality_detects_stale_epss_and_dominant_group_and_passes_clean_data() -
     df["epss_date"] = TODAY - timedelta(days=9)
     stale = quality(df, TODAY)
     assert stale["checks"][4]["status"] == "warn" and "antigüedad de EPSS" in stale["interpretation"][0]
-    big = pd.DataFrame([(f"CVE-{i}", 7.0, 50.0, 3, "prod" if i < 18 else "dev", i % 2 == 0, 5.0, f"a{i}", False, TODAY, 0.5)
+    big = pd.DataFrame([(f"CVE-{i}", 7.0, 50.0, 3, "prod" if i < 18 else "dev", i % 2 == 0, 5.0, f"a{i}", False, TODAY, 0.5, False)
                         for i in range(20)], columns=COLUMNS)  # fmt: skip
     by_env = next(x for x in quality(big, TODAY)["checks"] if x["key"] == "groups_environment")
     assert by_env["status"] == "warn" and "Producción reúne el 90 %" in by_env["detail"]
-    clean = pd.DataFrame([(f"CVE-{i}", 7.0, 50.0, 1 + i % 4, ("prod", "staging", "dev")[i % 3], i % 2 == 0, 5.0, f"a{i}", False, TODAY, 0.5)
+    clean = pd.DataFrame([(f"CVE-{i}", 7.0, 50.0, 1 + i % 4, ("prod", "staging", "dev")[i % 3], i % 2 == 0, 5.0, f"a{i}", False, TODAY, 0.5, False)
                           for i in range(60)], columns=COLUMNS)  # fmt: skip
     q = quality(clean, TODAY)
     assert q["status"] == "ok" and q["interpretation"][0].startswith("Datos aptos")

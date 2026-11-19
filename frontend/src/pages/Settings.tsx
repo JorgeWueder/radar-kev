@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Tabs } from '../components/kit'
+import { SensitivityPanel } from '../components/Sensitivity'
 import { Button, ErrorState, Field, Input, PageHeader, Panel, Skeleton, StatusBadge } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -32,11 +33,12 @@ function useDebounced<T>(value: T, ms = 300): T {
   return v
 }
 
-type Tab = 'score' | 'sla' | 'canales'
+type Tab = 'score' | 'sla' | 'canales' | 'sensibilidad'
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'score', label: 'Score' },
   { id: 'sla', label: 'SLA' },
   { id: 'canales', label: 'Canales' },
+  { id: 'sensibilidad', label: 'Sensibilidad' },
 ]
 
 const n = (v: number) => String(Math.round(v * 1000) / 1000).replace('.', ',')
@@ -128,7 +130,7 @@ export default function SettingsPage() {
       <PageHeader
         title="Configuración del score de riesgo"
         subtitle={`Versión activa ${cur.data.version} · guardada ${formatLima(cur.data.created_at)}. Cada cambio crea una versión nueva y recalcula el inventario.`}
-        actions={editable && tab !== 'canales' && (
+        actions={editable && tab !== 'canales' && tab !== 'sensibilidad' && (
           <>
             {dirty && <Button onClick={() => setDraft(null)}>Descartar cambios</Button>}
             <Button variant="primary" disabled={!dirty || !sumOk || !bandsOk || save.isPending} onClick={() => save.mutate()}>Guardar nueva versión</Button>
@@ -138,6 +140,8 @@ export default function SettingsPage() {
       <Tabs tabs={TABS} value={tab} onChange={setTab} label="Secciones de la configuración" />
       {tab === 'canales' ? (
         <div role="tabpanel" id="panel-canales" aria-labelledby="tab-canales"><IntegrationsPanel /></div>
+      ) : tab === 'sensibilidad' ? (
+        <div role="tabpanel" id="panel-sensibilidad" aria-labelledby="tab-sensibilidad"><SensitivityPanel /></div>
       ) : (
         <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
           <div className="space-y-4">

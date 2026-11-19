@@ -15,7 +15,7 @@ TODAY = date(2026, 11, 19)
 
 
 def row(cve: str, cvss: float | None, epss: float | None, kev: bool, crit: int = 3, asset: str = "a1") -> tuple[object, ...]:
-    return (cve, cvss, 50.0, crit, "prod", kev, epss, asset, False, TODAY, 0.5)
+    return (cve, cvss, 50.0, crit, "prod", kev, epss, asset, False, TODAY, 0.5, False)
 
 
 def test_auc_perfect_inverse_and_ties() -> None:

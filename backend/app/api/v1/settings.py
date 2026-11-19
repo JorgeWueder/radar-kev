@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.api.deps import audit, require
+from app.core.ratelimit import limiter
 from app.db.session import get_db
 from app.models.auth import User
 from app.services import integrations, notifications
@@ -86,6 +87,31 @@ def preview_scoring(body: PreviewIn, _: User = Depends(require("settings", "view
         base=round(base_score(p, s.epss, s.percentile, s.cvss, s.criticality), 4),
         score=score, band=band, sla_days_from_detection=days,
     )
+
+
+class SensitivityIn(BaseModel):
+    n_trials: int = Field(200, ge=20, le=1000)
+    seed: int = Field(7, ge=0, le=1_000_000)
+    bounds: dict[str, tuple[float, float]] | None = None  # {"w_epss": [0.2, 0.6], ...}; por defecto 0 a 1
+
+
+@router.post("/scoring/sensitivity")
+@limiter.limit("20/minute")
+def scoring_sensitivity(
+    request: Request, body: SensitivityIn, _: User = Depends(require("settings", "view")), db: Session = Depends(get_db)
+) -> dict[str, object]:
+    """Análisis de sensibilidad de los pesos: prueba combinaciones al azar y mide cuánto cambia la prioridad del
+    inventario abierto frente a la configuración vigente. Solo consulta: no guarda nada."""
+    from app.services import sensitivity
+
+    if body.bounds:
+        bad = set(body.bounds) - set(sensitivity.WEIGHTS)
+        if bad or any(not (0 <= lo <= hi <= 1) for lo, hi in body.bounds.values()):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Rangos inválidos: use pesos conocidos y 0 ≤ mín ≤ máx ≤ 1")
+    try:
+        return sensitivity.analyze(db, body.n_trials, body.seed, body.bounds)
+    except ValueError as e:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from None
 
 
 class IntegrationsIn(BaseModel):
