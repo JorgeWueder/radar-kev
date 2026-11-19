@@ -48,7 +48,8 @@ docker compose up -d --build
 
 ### Cargar datos reales de CISA y FIRST
 
-El flujo diario lo hace n8n a las 06:00 (hora de Lima). Para hacerlo ahora: botón **Ejecutar ahora** en *Ejecuciones*, o
+El flujo diario lo hace n8n: lo intenta cada hora entre las 06:00 y las 18:00 (hora de Lima) y corre una sola vez al día
+(las siguientes se omiten). Así, si el equipo estaba apagado a las 06:00, se pone al día en cuanto se enciende. Para hacerlo ahora: botón **Ejecutar ahora** en *Ejecuciones*, o
 
 ```bash
 docker compose exec backend python -m app.refresh

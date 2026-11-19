@@ -4,7 +4,7 @@ Archivos versionados en `n8n/workflows/`:
 
 | Archivo | Qué es |
 |---|---|
-| `radar_diario.json` | Flujo principal (id `RadarDiario01`), publicado: cron diario 06:00 (America/Lima) y webhook `POST /webhook/radar-manual` |
+| `radar_diario.json` | Flujo principal (id `RadarDiario01`), publicado: cron cada hora de 06:00 a 18:00 (America/Lima; corre una vez al día, el backend omite las repeticiones) y webhook `POST /webhook/radar-manual` |
 | `radar_error.json` | Flujo de errores (id `RadarError01`): ante un fallo no controlado marca la ejecución como fallida en la app |
 
 ## Importación automática (por defecto)

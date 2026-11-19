@@ -76,6 +76,7 @@ Caso 08. Cruza a diario el inventario propio con CISA KEV y FIRST EPSS. Plan com
 ## Fase 4: n8n, alertas y tickets
 - Workflow en `n8n/workflows/` (ver `n8n/README.md`). Se importa y publica solo al levantar (`n8n-import`); tras editar un JSON:
   `docker compose up -d --force-recreate n8n-import`. Los `.sh` deben tener finales de línea LF (`.gitattributes`).
+- Cron `0 6-18 * * *` (Lima): lo intenta cada hora y corre una vez al día (el backend omite si ya hubo una ejecución correcta hoy, fecha UTC; por eso termina a las 18:00). n8n no recupera disparos perdidos: con un cron único a las 06:00 y el equipo apagado, el día se perdía. Tras reimportar, reiniciar n8n (`docker compose restart n8n`) para que tome el cron. n8n borra su historial de ejecuciones a los 14 días; el historial durable es `workflow_runs`.
 - Disparo manual: `curl -X POST localhost:5678/webhook/radar-manual -H "X-Service-Key: $RADAR_SERVICE_KEY" -d '{}'` o el botón "Ejecutar ahora".
 - `services/alerting.py`: alerta + ticket por coincidencia NUEVA (UNIQUE + ON CONFLICT DO NOTHING) y UN correo/webhook resumen por ejecución.
   Un canal caído no detiene al otro; el resultado queda en `alert_deliveries`.
