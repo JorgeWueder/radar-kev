@@ -45,6 +45,15 @@ def comparison(
     return stats.comparison_tests(db, end - timedelta(days=days - 1), end)
 
 
+@router.get("/descriptive")
+def descriptive(_: User = Depends(require("dashboard", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Estadística descriptiva de los hallazgos abiertos (score, EPSS y CVSS): resumen, distribución por tramos,
+    comparación por criticidad y entorno, y KEV frente al resto. Cada bloque trae su lectura en español."""
+    from app.services.descriptive import descriptive as build
+
+    return build(db)
+
+
 @router.get("/top-assets")
 def top_assets(
     limit: int = Query(10, ge=1, le=25),
