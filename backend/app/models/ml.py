@@ -45,3 +45,29 @@ class MlJob(Base):
     created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class MlModel(Base):
+    """Un entrenamiento: CV anidada 5×3 con Optuna sobre un dataset + modelo final y sus predicciones (Fase 2)."""
+
+    __tablename__ = "ml_models"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    dataset_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("ml_datasets.id"))
+    algorithm: Mapped[str] = mapped_column(String(30))
+    name: Mapped[str] = mapped_column(String(120))
+    status: Mapped[str] = mapped_column(String(12), default="training")  # training | ready | failed
+    config: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)  # pruebas, pliegues, semilla
+    folds: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list)  # resultados por pliegue externo
+    aggregate: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    trials: Mapped[list[dict[str, object]]] = mapped_column(JSONB, default=list)  # cada prueba de Optuna
+    best_params: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    final_metrics: Mapped[dict[str, object]] = mapped_column(JSONB, default=dict)
+    reading: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    model_path: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    preds_path: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    seconds: Mapped[float | None] = mapped_column(nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

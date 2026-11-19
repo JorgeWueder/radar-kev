@@ -1,49 +1,24 @@
 // Laboratorio de modelos (experimental): predice qué CVE entrarán a KEV. Fase 1: datos.
 import { Flask } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { DatasetDetail } from '../components/lab/DatasetDetail'
+import { JobProgress } from '../components/lab/JobProgress'
+import { Training } from '../components/lab/Training'
 import type { Dataset, Job } from '../components/lab/types'
 import { num } from '../components/Descriptive'
 import { Button, EmptyState, ErrorState, Field, Input, PageHeader, Panel, Select, Skeleton, StatusBadge } from '../components/ui'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { formatLima } from '../lib/format'
 
 const PHASES = ['Datos', 'Entrenamiento', 'Evaluación', 'Explicabilidad', 'Reportes', 'Inferencia', 'Optimización']
+const READY_PHASES = 2 // fases ya implementadas
 const STATUS: Record<Dataset['status'], ['ok' | 'warn' | 'danger' | 'neutral', string]> = {
   ready: ['ok', 'Listo'], building: ['neutral', 'Construyendo'], failed: ['danger', 'Falló'],
 }
 const HORIZONS = [30, 90, 180] as const
-
-/** Monitoreo en vivo de un trabajo: barra de progreso y últimos pasos (consulta cada 1,5 s mientras corre). */
-export function JobProgress({ jobId, onDone }: { jobId: string; onDone?: (j: Job) => void }) {
-  const q = useQuery({
-    queryKey: ['ml-job', jobId],
-    queryFn: () => api.get<Job>(`/ml/jobs/${jobId}`),
-    refetchInterval: (query) => (query.state.data && query.state.data.status !== 'running' && query.state.data.status !== 'queued' ? false : 1500),
-  })
-  const j = q.data
-  const finished = j && (j.status === 'done' || j.status === 'failed')
-  useEffect(() => { if (finished && j) onDone?.(j) }, [finished]) // eslint-disable-line react-hooks/exhaustive-deps
-  if (!j) return <Skeleton cols={1} rows={2} />
-  return (
-    <div aria-live="polite">
-      <div className="flex items-center justify-between text-[13px]">
-        <span className="font-medium">{j.status === 'failed' ? 'Falló' : j.status === 'done' ? 'Terminado' : 'En curso'} · {j.message}</span>
-        <span className="tabular-nums text-muted">{j.progress} %</span>
-      </div>
-      <div className="mt-1 h-2 rounded-full bg-sunken" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={j.progress} aria-label="Avance del trabajo">
-        <div className={`h-2 rounded-full transition-[width] duration-300 ${j.status === 'failed' ? 'bg-danger' : 'bg-accent'}`} style={{ width: `${j.progress}%` }} />
-      </div>
-      <ol className="mt-2 max-h-32 space-y-0.5 overflow-y-auto text-[12px] text-muted">
-        {[...j.log].reverse().slice(0, 8).map((e) => <li key={`${e.t}-${e.msg}`} className="tabular-nums">{formatLima(e.t).slice(-8)} · {e.msg}</li>)}
-      </ol>
-    </div>
-  )
-}
 
 function NewDataset({ onStarted }: { onStarted: (r: { dataset_id: string; job_id: string }) => void }) {
   const [form, setForm] = useState({ name: 'KEV en 90 días', description: '', start: '2025-01-01', horizon_days: 90 as (typeof HORIZONS)[number], neg_rate: 0.05, seed: 7 })
@@ -89,6 +64,7 @@ export default function Lab() {
   const [startedJob, setJobId] = useState<string | null>(null)
   const [dismissed, setDismissed] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
+  const [phase, setPhase] = useState(0)
   // Estado derivado (sin efectos): el dataset elegido o, si no, el primero listo; el trabajo lanzado aquí o uno en curso.
   const selected = picked ?? list.data?.find((d) => d.status === 'ready')?.id ?? list.data?.[0]?.id ?? null
   const live = running.data?.[0]
@@ -98,16 +74,24 @@ export default function Lab() {
     <>
       <PageHeader title="Laboratorio de modelos"
         subtitle="Experimental: aprende a anticipar qué CVE entrarán a CISA KEV. Nada de aquí cambia la detección ni el score del radar." />
-      <ol className="mb-4 flex flex-wrap gap-1" aria-label="Fases del laboratorio">
-        {PHASES.map((p, i) => (
-          <li key={p} aria-current={i === 0 ? 'step' : undefined}
-            className={`rounded-full px-3 py-1 text-[12px] ${i === 0 ? 'bg-ink font-medium text-bg' : 'bg-sunken text-muted'}`}>
-            {i + 1} · {p}{i > 0 && <span className="sr-only"> (próxima fase)</span>}
-          </li>
-        ))}
-      </ol>
+      <nav aria-label="Fases del laboratorio" className="mb-4">
+        <ol className="flex flex-wrap gap-1">
+          {PHASES.map((p, i) => {
+            const ready = i < READY_PHASES
+            const cls = `rounded-full px-3 py-1 text-[12px] ${phase === i ? 'bg-ink font-medium text-bg' : ready ? 'bg-sunken text-ink hover:bg-control' : 'bg-sunken text-muted'}`
+            return (
+              <li key={p}>
+                {ready ? (
+                  <button type="button" aria-current={phase === i ? 'step' : undefined} onClick={() => setPhase(i)} className={`${cls} transition-colors duration-150 pointer-coarse:py-2.5`}>{i + 1} · {p}</button>
+                ) : <span className={cls} title="Próxima fase">{i + 1} · {p}<span className="sr-only"> (próxima fase)</span></span>}
+              </li>
+            )
+          })}
+        </ol>
+      </nav>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[320px_1fr]">
+      {phase === 1 ? <Training datasets={list.data ?? []} /> : (
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-4">
           {can('ml', 'create') && (
             <Panel className="p-4">
@@ -155,6 +139,7 @@ export default function Lab() {
           <Panel><EmptyState icon={Flask} title="Seleccione un dataset" hint="Aquí verá su resumen, validación, variables, muestra y metadata." /></Panel>
         )}
       </div>
+      )}
     </>
   )
 }

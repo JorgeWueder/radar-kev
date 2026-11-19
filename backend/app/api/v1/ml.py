@@ -19,7 +19,7 @@ from app.ml import dataset as ds
 from app.ml import jobs, profile, sources
 from app.models.auth import User
 from app.models.intel import KevEntry
-from app.models.ml import MlDataset, MlJob
+from app.models.ml import MlDataset, MlJob, MlModel
 
 router = APIRouter(prefix="/ml", tags=["laboratorio"])
 
@@ -189,3 +189,134 @@ def list_jobs(kind: str | None = None, limit: int = Query(20, ge=1, le=100), _: 
     if kind:
         q = q.where(MlJob.kind == kind)
     return [_job_out(j) for j in db.execute(q).scalars().all()]
+
+
+# --------------------------------------------------------------------------- Fase 2: entrenamiento
+class TrainIn(BaseModel):
+    dataset_id: uuid.UUID
+    algorithm: Literal["logreg", "random_forest", "hgb"]
+    name: str | None = Field(None, max_length=120)
+    n_trials: int = Field(15, ge=2, le=60)
+    seed: int = Field(7, ge=0, le=1_000_000)
+
+
+def _model_out(m: MlModel, full: bool = True) -> dict[str, Any]:
+    out: dict[str, Any] = {"id": str(m.id), "dataset_id": str(m.dataset_id), "algorithm": m.algorithm, "name": m.name, "status": m.status,
+           "config": m.config, "aggregate": m.aggregate, "best_params": m.best_params, "final_metrics": m.final_metrics,
+           "reading": m.reading, "seconds": m.seconds, "error": m.error,
+           "created_at": m.created_at.isoformat() if m.created_at else None,
+           "finished_at": m.finished_at.isoformat() if m.finished_at else None}  # fmt: skip
+    if full:
+        out |= {"folds": m.folds, "trials": m.trials}
+    return out
+
+
+@router.get("/algorithms")
+def algorithms(_: User = Depends(require("ml", "view"))) -> list[dict[str, Any]]:
+    """Algoritmos con su descripción, hiperparámetros por defecto y espacio de búsqueda (Optuna)."""
+    from app.ml import algorithms as algs
+
+    return algs.catalog()
+
+
+@router.get("/models")
+def list_models(dataset_id: uuid.UUID | None = None, _: User = Depends(require("ml", "view")),
+                db: Session = Depends(get_db)) -> list[dict[str, Any]]:  # fmt: skip
+    q = select(MlModel).order_by(MlModel.created_at.desc())
+    if dataset_id:
+        q = q.where(MlModel.dataset_id == dataset_id)
+    return [_model_out(m, full=False) for m in db.execute(q).scalars().all()]
+
+
+@router.get("/models/{model_id}")
+def get_model(model_id: uuid.UUID, _: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    m = db.get(MlModel, model_id)
+    if m is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Modelo no encontrado")
+    return _model_out(m)
+
+
+@router.post("/models", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("12/hour")
+def train_model(request: Request, body: TrainIn, actor: User = Depends(require("ml", "create")),
+                db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """Entrena en segundo plano: CV anidada temporal 5×3 con Optuna en desarrollo y modelo final (ver /ml/jobs)."""
+    import joblib
+    import sklearn
+
+    from app.ml import algorithms as algs
+    from app.ml import training
+
+    d = _get(db, body.dataset_id)
+    path = _ready(d)
+    by_split: Any = d.stats.get("by_split") or {}
+    dev_snaps = int((by_split.get("desarrollo") or {}).get("snapshots", 0))
+    k_out, k_in = 5, 3
+    problem = training.feasible(dev_snaps, k_out, k_in)
+    if problem:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problem)
+    m = MlModel(dataset_id=d.id, algorithm=body.algorithm, created_by=actor.id, status="training",
+                name=body.name or f"{algs.ALGORITHMS[body.algorithm]['label']} · {body.n_trials} pruebas",
+                config={"n_trials": body.n_trials, "k_out": k_out, "k_in": k_in, "seed": body.seed, "metric": "PR-AUC ponderada",
+                        "cv": "anidada temporal (ventana creciente)", "target": f"entra a KEV en {d.params.get('horizon_days')} días"},
+                folds=[], trials=[], aggregate={}, best_params={}, final_metrics={}, reading=[])  # fmt: skip
+    db.add(m)
+    db.commit()
+    db.refresh(m)
+    model_id = m.id
+    total = (k_out + 1) * body.n_trials
+    bind = db.get_bind()
+
+    def work(rep: jobs.Reporter, maker: jobs.Maker) -> None:
+        done = {"n": 0}
+
+        def report(msg: str, event: dict[str, Any] | None) -> None:
+            with maker() as s:
+                row = s.get(MlModel, model_id)
+                assert row is not None
+                if event and "trial" in event:
+                    done["n"] += 1
+                    row.trials = [*row.trials, event["trial"]]
+                if event and "fold" in event:
+                    row.folds = [*row.folds, event["fold"]]
+                s.commit()
+            rep(int(95 * done["n"] / total), msg)
+
+        rep(1, "Cargando el dataset")
+        res = training.train(ds.load(path), body.algorithm, body.n_trials, k_out, k_in, body.seed, report)
+        rep(97, "Guardando el modelo y las predicciones")
+        base = sources.data_dir() / "models"
+        base.mkdir(exist_ok=True)
+        model_path, preds_path = base / f"{model_id}.joblib", base / f"{model_id}.preds.csv.gz"
+        joblib.dump({"pipeline": res["model"], "algorithm": body.algorithm, "params": res["best_params"],
+                     "features": algs.NUM + algs.CAT, "sklearn": sklearn.__version__}, model_path)  # fmt: skip
+        res["preds"].to_csv(preds_path, index=False, compression="gzip")
+        with maker() as s:
+            row = s.get(MlModel, model_id)
+            assert row is not None
+            row.status, row.aggregate, row.best_params = "ready", res["aggregate"], res["best_params"]
+            row.final_metrics, row.seconds = res["final_metrics"], res["seconds"]
+            row.reading = training.notes(body.algorithm, res["aggregate"], res["final_metrics"], k_out)
+            row.model_path, row.preds_path = str(model_path), str(preds_path)
+            from datetime import UTC, datetime
+
+            row.finished_at = datetime.now(UTC)
+            s.commit()
+
+    def failed(msg: str) -> None:
+        with sessionmaker(bind=bind)() as s:
+            row = s.get(MlModel, model_id)
+            if row is not None:
+                row.status, row.error = "failed", msg
+                s.commit()
+
+    try:
+        job = jobs.start(db, "train", model_id, actor.id, work, failed)
+    except jobs.JobBusy as e:
+        db.delete(m)
+        db.commit()
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from None
+    audit(db, request, "ml", "model_train", user=actor,
+          detail={"model": str(model_id), "dataset": str(d.id), "algorithm": body.algorithm, "n_trials": body.n_trials})  # fmt: skip
+    db.commit()
+    return {"model_id": str(model_id), "job_id": str(job.id)}

@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { Dataset, Job, Profile } from '../components/lab/types'
-import Lab, { JobProgress } from './Lab'
+import { JobProgress } from '../components/lab/JobProgress'
+import Lab from './Lab'
 
 const DS: Dataset = {
   id: 'd1', name: 'KEV en 90 días', description: 'Fotos 2025', notes: '', tags: ['tesis'], status: 'ready', created_at: '2026-11-19T20:00:00Z', updated_at: '2026-11-19T20:00:00Z',
