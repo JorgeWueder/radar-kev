@@ -1,0 +1,17 @@
+N=10    muestras=131    errores=0     error%=0      prom=36ms p95=50ms rps=4.7
+N=50    muestras=1206   errores=0     error%=0      prom=60ms p95=154ms rps=20.6
+N=100   muestras=1794   errores=0     error%=0      prom=760ms p95=1373ms rps=30.8
+N=200   muestras=839    errores=400   error%=47.68  prom=14793ms p95=30006ms rps=15.9
+N=125   muestras=1778   errores=0     error%=0      prom=1525ms p95=2457ms rps=30.5
+N=150   muestras=800    errores=300   error%=37.5   prom=11833ms p95=30005ms rps=14.4
+N=135   muestras=1752   errores=0     error%=0      prom=1877ms p95=2824ms rps=29.9
+N=140   muestras=1797   errores=0     error%=0      prom=1908ms p95=2987ms rps=30.8
+N=145   muestras=1840   errores=0     error%=0      prom=1971ms p95=3065ms rps=31.7
+N=140   muestras=1832   errores=0     error%=0      prom=1856ms p95=2845ms rps=31.5
+N=150   muestras=1838   errores=0     error%=0      prom=2106ms p95=3225ms rps=31.7
+N=175   muestras=742    errores=350   error%=47.17  prom=14629ms p95=30005ms rps=13.9
+N=160   muestras=881    errores=320   error%=36.32  prom=11576ms p95=30004ms rps=15.5
+N=150   muestras=1585   errores=149   error%=9.4    prom=4720ms p95=30002ms rps=30.2
+N=145   muestras=1603   errores=145   error%=9.05   prom=4439ms p95=30002ms rps=30.2
+N=140   muestras=1826   errores=0     error%=0      prom=1860ms p95=2900ms rps=31.5
+N=130   muestras=1789   errores=0     error%=0      prom=1641ms p95=2624ms rps=31

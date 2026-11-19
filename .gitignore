@@ -19,3 +19,6 @@ radar_*.xlsx
 
 # Salidas del inspector de diseño
 .taste-skill/
+jmeter/resultados/N*/
+jmeter/~$*
+jmeter.log
