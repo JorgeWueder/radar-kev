@@ -17,6 +17,7 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Overview from './pages/Overview'
 import Profile from './pages/Profile'
+import Lab from './pages/Lab'
 import Reports from './pages/Reports'
 import Roles from './pages/Roles'
 import Users from './pages/Users'
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/configuracion" element={<Protected module="settings"><SettingsPage /></Protected>} />
         <Route path="/usuarios" element={<Protected module="users"><Users /></Protected>} />
         <Route path="/reportes" element={<Protected module="reports"><Reports /></Protected>} />
+        <Route path="/laboratorio" element={<Protected module="ml"><Lab /></Protected>} />
         <Route path="/roles" element={<Protected module="roles"><Roles /></Protected>} />
         <Route path="/bitacora" element={<Protected module="audit"><Audit /></Protected>} />
         <Route path="/perfil" element={<Protected><Profile /></Protected>} />

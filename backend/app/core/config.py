@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     epss_csv_url: str = "https://epss.empiricalsecurity.com/epss_scores-current.csv.gz"
     epss_csv_dated_url: str = "https://epss.empiricalsecurity.com/epss_scores-{date}.csv.gz"  # histórico por fecha
     nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    # Laboratorio de modelos (experimental): fuentes masivas y carpeta de datos (volumen ml_data)
+    ml_data_dir: str = "/data/ml"
+    nvd_feed_url: str = "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{year}.json.gz"
+    exploitdb_csv_url: str = "https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv"
 
     app_url: str = "http://localhost:8080"
     n8n_webhook_url: str = "http://n8n:5678/webhook/radar-manual"

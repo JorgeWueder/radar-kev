@@ -2,7 +2,7 @@
 
 MODULES = [
     "dashboard", "assets", "imports", "vulnerabilities", "kev", "tickets", "alerts",
-    "workflow", "reports", "ai", "settings", "users", "roles", "audit",
+    "workflow", "reports", "ai", "settings", "users", "roles", "audit", "ml",
 ]  # fmt: skip
 ACTIONS = ["view", "create", "edit", "delete", "export"]
 LETTER = {"V": "view", "C": "create", "E": "edit", "D": "delete", "X": "export"}
@@ -18,20 +18,21 @@ DEFAULT_MATRIX: dict[str, dict[str, str]] = {
         "dashboard": "V", "assets": "VCEDX", "imports": "VC", "vulnerabilities": "VEX",
         "kev": "VX", "tickets": "VCEDX", "alerts": "V", "workflow": "VC", "reports": "VX",
         "ai": "V", "settings": "VE", "users": "VCED", "roles": "VCED", "audit": "VX",
+        "ml": "VCE",
     },
     ANALYST: {
         "dashboard": "V", "assets": "VCEX", "imports": "VC", "vulnerabilities": "VEX",
         "kev": "VX", "tickets": "VEX", "alerts": "V", "workflow": "VC", "reports": "VX",
-        "ai": "V", "settings": "V",
+        "ai": "V", "settings": "V", "ml": "VCE",
     },
     AUDITOR: {
         "dashboard": "V", "assets": "V", "imports": "V", "vulnerabilities": "V", "kev": "V",
         "tickets": "V", "alerts": "V", "workflow": "V", "reports": "VX", "settings": "V",
-        "users": "V", "roles": "V", "audit": "VX",
+        "users": "V", "roles": "V", "audit": "VX", "ml": "V",
     },
     MANAGER: {
         "dashboard": "V", "kev": "V", "tickets": "V", "alerts": "V", "workflow": "V",
-        "reports": "VX", "ai": "V",
+        "reports": "VX", "ai": "V", "ml": "V",
     },
 }  # fmt: skip
 

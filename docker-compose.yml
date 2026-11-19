@@ -33,6 +33,8 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+psycopg://radar_app:${RADAR_DB_PASSWORD}@postgres:5432/radar
+    volumes:
+      - ml_data:/data/ml  # laboratorio de modelos: fuentes descargadas, datasets y modelos
     depends_on:
       postgres:
         condition: service_healthy
@@ -157,5 +159,6 @@ services:
 
 volumes:
   pgdata:
+  ml_data:
   n8ndata:
   ollama:

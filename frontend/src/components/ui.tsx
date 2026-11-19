@@ -1,6 +1,6 @@
 import { CheckCircle, Minus, Warning, XCircle } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect, useRef, type ButtonHTMLAttributes, type ComponentType, type InputHTMLAttributes, type ReactNode, type RefObject, type SelectHTMLAttributes } from 'react'
+import { useEffect, useRef, type ButtonHTMLAttributes, type ComponentType, type InputHTMLAttributes, type ReactNode, type RefObject, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 
 const press =
   'transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out-strong)] active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100'
@@ -31,6 +31,11 @@ const control =
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${control} ${props.className ?? ''}`} />
+}
+
+/** Texto de varias líneas: mismo borde y fondo que los inputs, con el radio de tarjeta (28 px) en lugar de píldora. */
+export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={`w-full rounded-lg border border-line-strong bg-surface px-4 py-3 text-[13px] text-ink placeholder:text-muted ${props.className ?? ''}`} />
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {

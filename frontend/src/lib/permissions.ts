@@ -19,6 +19,7 @@ export const MODULE_LABELS: Record<string, string> = {
   users: 'Usuarios',
   roles: 'Roles',
   audit: 'Bitácora',
+  ml: 'Laboratorio de modelos',
   auth: 'Autenticación',
   app: 'Aplicación',
 }

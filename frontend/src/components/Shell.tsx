@@ -5,6 +5,7 @@ import {
   ClipboardText,
   Crosshair,
   FileText,
+  Flask,
   Gauge,
   HardDrives,
   Moon,
@@ -62,6 +63,7 @@ const GROUPS: Array<{ title: string; items: NavItem[] }> = [
     items: [
       { to: '/reportes', label: 'Reportes', icon: FileText, module: 'reports', action: 'view' },
       { to: '/ejecuciones', label: 'Ejecuciones', icon: ArrowsClockwise, module: 'workflow', action: 'view' },
+      { to: '/laboratorio', label: 'Laboratorio de modelos', icon: Flask, module: 'ml', action: 'view' },
     ],
   },
   {
@@ -105,7 +107,7 @@ const TITLES: Record<string, string> = {
   '/perfil': 'Mi perfil', '/resumen': 'Resumen', '/asistente': 'Asistente IA', '/alertas': 'Alertas', '/tickets': 'Tickets',
   '/reportes': 'Reportes', '/activos': 'Activos', '/importacion': 'Importación', '/vulnerabilidades': 'Vulnerabilidades',
   '/kev': 'Catálogo KEV', '/ejecuciones': 'Ejecuciones', '/configuracion': 'Configuración', '/usuarios': 'Usuarios',
-  '/roles': 'Roles y permisos', '/bitacora': 'Bitácora',
+  '/roles': 'Roles y permisos', '/bitacora': 'Bitácora', '/laboratorio': 'Laboratorio de modelos',
 }
 
 /** Título de la pestaña por pantalla (WCAG 2.4.2) y foco al contenido en cada cambio de ruta. */

@@ -30,6 +30,8 @@ DEMO_USERS = [
 
 def seed_roles(db: Session) -> None:
     existing = {(p.module, p.action): p for p in db.execute(select(Permission)).scalars()}
+    known_modules = {m for m, _ in existing}
+    new_modules = {m for m in MODULES if m not in known_modules}  # módulos que aparecen por primera vez
     for module in MODULES:
         for action in ACTIONS:
             if (module, action) not in existing:
@@ -45,6 +47,12 @@ def seed_roles(db: Session) -> None:
                 existing[tuple(code.split(":"))] for code in sorted(permission_codes(letters))  # type: ignore[index]
             ]
             db.add(role)
+        elif new_modules and known_modules:
+            # Rol existente y módulo nuevo (p. ej. "ml"): se le dan sus permisos por defecto UNA sola vez, cuando el
+            # módulo aparece; si después un administrador los quita, no se vuelven a agregar.
+            extra = {m: ls for m, ls in letters.items() if m in new_modules}
+            for code in sorted(permission_codes(extra)):
+                role.permissions.append(existing[tuple(code.split(":"))])  # type: ignore[index]
     db.flush()
 
 
@@ -61,6 +69,9 @@ def run() -> None:
     settings = get_settings()
     with get_sessionmaker()() as db:
         seed_roles(db)
+        from app.ml.jobs import recover_stale
+
+        recover_stale(db)  # trabajos del laboratorio que un reinicio dejó a medias
         if settings.seed_on_start:
             password = settings.seed_demo_password.get_secret_value()
             if password:

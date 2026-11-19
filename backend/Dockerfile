@@ -9,7 +9,7 @@ COPY requirements.txt requirements-dev.txt ./
 ARG INSTALL_DEV=true
 RUN if [ "$INSTALL_DEV" = "true" ]; then pip install -r requirements-dev.txt; else pip install -r requirements.txt; fi
 COPY . .
-RUN useradd -m app && chown -R app /srv
+RUN useradd -m app && chown -R app /srv && mkdir -p /data/ml && chown app /data/ml
 USER app
 EXPOSE 8000
 CMD ["sh", "-c", "alembic upgrade head && python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

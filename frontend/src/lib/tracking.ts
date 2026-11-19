@@ -79,6 +79,7 @@ export const ROUTE_MODULES: Record<string, string> = {
   '/asistente': 'ai',
   '/kev': 'kev',
   '/ejecuciones': 'workflow',
+  '/laboratorio': 'ml',
   '/configuracion': 'settings',
   '/usuarios': 'users',
   '/roles': 'roles',
