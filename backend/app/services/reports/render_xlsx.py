@@ -1,15 +1,15 @@
-"""Excel con openpyxl: formato, filtros, paneles fijos, anchos y gráfico de tendencia."""
+"""Excel con openpyxl: formato, filtros, paneles fijos, anchos y gráficos nativos (líneas, barras y curvas)."""
 
 import io
 import re
 from typing import Any
 
 from openpyxl import Workbook
-from openpyxl.chart import LineChart, Reference
+from openpyxl.chart import BarChart, LineChart, Reference, ScatterChart, Series
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from app.services.reports.model import Report
+from app.services.reports.model import Chart, Report
 
 HEAD_FILL = PatternFill("solid", fgColor="1D5BB8")
 HEAD_FONT = Font(bold=True, color="FFFFFF")
@@ -43,6 +43,49 @@ def _sheet_name(name: str, used: set[str]) -> str:
         i += 1
     used.add(out)
     return out
+
+
+def _chart_sheet(ch: Any, chart: Chart) -> None:
+    """Datos de la figura en la hoja y su gráfico nativo de Excel al lado (editable por el usuario)."""
+    if chart.kind == "xy":
+        col = 1
+        sc = ScatterChart()
+        sc.title, sc.style, sc.height, sc.width = chart.title, 13, 10, 14
+        sc.x_axis.title, sc.y_axis.title = chart.x_label, chart.y_label
+        sc.x_axis.scaling.min, sc.x_axis.scaling.max = 0, 1
+        sc.y_axis.scaling.min, sc.y_axis.scaling.max = 0, 1
+        for name, pts in chart.xy:
+            ch.cell(1, col, safe(name)).font = Font(bold=True)
+            ch.cell(2, col, chart.x_label or "x")
+            ch.cell(2, col + 1, chart.y_label or "y")
+            for i, (px, py) in enumerate(pts, start=3):
+                ch.cell(i, col, px)
+                ch.cell(i, col + 1, py)
+            xs = Reference(ch, min_col=col, min_row=3, max_row=2 + len(pts))
+            ys = Reference(ch, min_col=col + 1, min_row=3, max_row=2 + len(pts))
+            ser = Series(ys, xs, title=name)
+            ser.marker.symbol = "none"
+            sc.series.append(ser)
+            col += 3
+        ch.add_chart(sc, f"{get_column_letter(col + 1)}2")
+        note_cell = f"{get_column_letter(col + 1)}24"
+    else:
+        head = "Tramo" if chart.kind == "bar" else "Fecha"
+        ch.append([head, *[name for name, _ in chart.series]])
+        for i, label in enumerate(chart.labels):
+            ch.append([safe(label), *[vals[i] for _, vals in chart.series]])
+        g: Any = BarChart() if chart.kind == "bar" else LineChart()
+        if chart.kind == "bar":
+            g.type = "bar"  # barras horizontales, como en el PDF y el Word
+        g.title, g.height, g.width = chart.title, 9, 22
+        g.add_data(Reference(ch, min_col=2, max_col=1 + len(chart.series), min_row=1, max_row=1 + len(chart.labels)), titles_from_data=True)
+        g.set_categories(Reference(ch, min_col=1, min_row=2, max_row=1 + len(chart.labels)))
+        ch.add_chart(g, "E2")
+        note_cell = "E22"
+        ch.column_dimensions["A"].width = 18
+    if chart.how_to_read:
+        ch[note_cell] = "Cómo leerlo: " + chart.how_to_read
+        ch[note_cell].font = Font(italic=True, color="333333")
 
 
 def render(report: Report) -> bytes:
@@ -79,6 +122,13 @@ def render(report: Report) -> bytes:
     for n in report.notes:
         row += 2
         ws.cell(row, 1, n).font = Font(color="8A5300", italic=True)
+    if report.findings:
+        row += 2
+        ws.cell(row, 1, "Lectura de los resultados").font = Font(bold=True)
+        for f in report.findings:
+            row += 1
+            ws.cell(row, 1, "·")
+            ws.cell(row, 2, safe(f)).alignment = Alignment(wrap_text=True, vertical="top")
     ws.column_dimensions["A"].width = 34
     ws.column_dimensions["B"].width = 90
 
@@ -106,20 +156,8 @@ def render(report: Report) -> bytes:
         if table.note:
             sh.cell(5 + len(table.rows), 1, table.note).font = Font(italic=True, color="666666")
 
-    if report.chart and report.chart.labels:
-        ch = wb.create_sheet(_sheet_name("Gráfico", used))
-        ch.append(["Fecha", *[name for name, _ in report.chart.series]])
-        for i, label in enumerate(report.chart.labels):
-            ch.append([label, *[vals[i] for _, vals in report.chart.series]])
-        line = LineChart()
-        line.title, line.height, line.width = report.chart.title, 9, 22
-        line.add_data(Reference(ch, min_col=2, max_col=1 + len(report.chart.series), min_row=1, max_row=1 + len(report.chart.labels)), titles_from_data=True)
-        line.set_categories(Reference(ch, min_col=1, min_row=2, max_row=1 + len(report.chart.labels)))
-        ch.add_chart(line, "E2")
-        if report.chart.how_to_read:
-            ch["E22"] = "Cómo leerlo: " + report.chart.how_to_read
-            ch["E22"].font = Font(italic=True, color="333333")
-        ch.column_dimensions["A"].width = 14
+    for chart in report.figures:
+        _chart_sheet(wb.create_sheet(_sheet_name(chart.title if len(report.figures) > 1 else "Gráfico", used)), chart)
 
     buf = io.BytesIO()
     wb.save(buf)

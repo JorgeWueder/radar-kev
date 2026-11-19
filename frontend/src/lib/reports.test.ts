@@ -11,6 +11,8 @@ describe('reportes', () => {
   it('envía solo los parámetros que usa cada tipo', () => {
     expect(reportParams(mttr, 'pdf', period, '', true)).toEqual({ fmt: 'pdf', date_from: '2026-10-05', date_to: '2026-11-03', cve_id: undefined, ai_summary: true })
     expect(reportParams(cve, 'xlsx', period, ' cve-2021-44228 ', true)).toEqual({ fmt: 'xlsx', date_from: undefined, date_to: undefined, cve_id: 'CVE-2021-44228', ai_summary: undefined })
+    const profile: ReportDef = { key: 'inventory_profile', kind: 'analysis', title: 'Perfil', description: '', period: false }
+    expect(reportParams(profile, 'docx', period, '', true)).toEqual({ fmt: 'docx', date_from: undefined, date_to: undefined, cve_id: undefined, ai_summary: undefined })
   })
   it('valida el periodo y el CVE antes de pedir el archivo', () => {
     expect(reportError(mttr, period, '')).toBeNull()

@@ -25,7 +25,7 @@ TEMPLATE = _env.from_string(
   .ai { border: 1px solid #bbb; border-left: 3px solid #1d5bb8; padding: 6px 9px; margin: 10px 0; background: #f6f6f3; }
   .ai .badge { font-size: 8px; font-weight: bold; color: #1d5bb8; } .ai ul { margin: 2px 0 4px 14px; padding: 0; }
   .how { border-left: 3px solid #86868b; background: #f6f6f3; padding: 4px 8px; margin-top: 5px; font-size: 8.5px; color: #333; }
-  .warn { color: #8a5300; font-size: 8.5px; margin: 6px 0; }
+  .warn { color: #8a5300; font-size: 8.5px; margin: 6px 0; } .fig { page-break-inside: avoid; flex: 1 1 0; min-width: 0; } .figrow { display: flex; flex-wrap: wrap; gap: 0 16px; } .findings { margin: 2px 0 4px 14px; padding: 0; } .findings li { margin-bottom: 2px; }
 </style></head><body>
 <h1>{{ r.title }}</h1><div class="sub">{{ r.subtitle }}</div>
 <div class="meta">Generado el {{ r.generated_at.strftime('%d/%m/%Y %H:%M') }} UTC · Radar de explotación activa (KEV/EPSS)</div>
@@ -36,7 +36,8 @@ TEMPLATE = _env.from_string(
   <b>Recomendaciones</b><ul>{% for x in r.ai.summary.recomendaciones %}<li>{{ x }}</li>{% endfor %}</ul>
   <div class="note">Texto redactado por un modelo de lenguaje a partir de las cifras de este radar; revíselo antes de difundirlo.</div></div>{% endif %}
 {% for n in r.notes %}<div class="warn">{{ n }}</div>{% endfor %}
-{% if chart_svg %}<h2>{{ r.chart.title }}</h2>{{ chart_svg | safe }}{% if r.chart.how_to_read %}<div class="how"><b>Cómo leerlo.</b> {{ r.chart.how_to_read }}</div>{% endif %}{% endif %}
+{% if r.findings %}<h2>Lectura de los resultados</h2><ul class="findings">{% for f in r.findings %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}
+{% for row in fig_rows %}<div class="figrow">{% for c, svg in row %}<div class="fig"><h2>{{ c.title }}</h2>{{ svg | safe }}{% if c.how_to_read %}<div class="how"><b>Cómo leerlo.</b> {{ c.how_to_read }}</div>{% endif %}</div>{% endfor %}</div>{% endfor %}
 {% for t in r.tables %}<h2>{{ t.title }}</h2>
 {% if t.rows %}<table><thead><tr>{% for c in t.columns %}<th class="{{ 'r' if loop.index0 in t.right else '' }}">{{ c }}</th>{% endfor %}</tr></thead>
 <tbody>{% for row in t.rows %}<tr>{% for cell in row %}<td class="{{ 'r' if loop.index0 in t.right else '' }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
@@ -76,9 +77,103 @@ def line_chart_svg(chart: Chart, width: int = 640, height: int = 170) -> str:
     return "".join(parts)
 
 
+def bar_chart_svg(chart: Chart, width: int = 640) -> str:
+    """Barras horizontales (una por tramo) con el conteo al final; textos escapados."""
+    from html import escape
+
+    vals = chart.series[0][1] if chart.series else []
+    row, pad_l, pad_r = 16, 120, 40
+    height = row * len(vals) + 8
+    top = max([1.0, *vals])
+    span = width - pad_l - pad_r
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" font-family="DejaVu Sans" font-size="8">']
+    for i, (label, v) in enumerate(zip(chart.labels, vals, strict=True)):
+        y = 4 + i * row
+        w = span * v / top
+        parts.append(f'<text x="{pad_l - 6}" y="{y + 10}" text-anchor="end" fill="#444">{escape(label)}</text>'
+                     f'<rect x="{pad_l}" y="{y + 2}" width="{span:.1f}" height="10" fill="#ececef"/>'
+                     f'<rect x="{pad_l}" y="{y + 2}" width="{w:.1f}" height="10" fill="#1d5bb8"/>'
+                     f'<text x="{pad_l + span + 6}" y="{y + 10}" fill="#1b1c1a">{v:.0f}</text>')  # fmt: skip
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+XY_STROKES = (("#1d5bb8", "", 1.8), ("#1b1c1a", "5 2", 1.4), ("#6e6e73", "1 2", 1.6))
+
+
+def xy_chart_svg(chart: Chart, size: int = 230) -> str:
+    """Curvas en [0, 1] con ejes en %, referencia (diagonal o línea base) y leyenda; distingue series por trazo."""
+    from html import escape
+
+    pad_l, pad_r, pad_t, pad_b = 34, 10, 8, 30
+    w, h = size + pad_l + pad_r, size + pad_t + pad_b
+    total_w = w + 140
+
+    def x(v: float) -> float:
+        return pad_l + size * v
+
+    def y(v: float) -> float:
+        return pad_t + size * (1 - v)
+
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="{h}" viewBox="0 0 {total_w} {h}" font-family="DejaVu Sans" font-size="8">']
+    for t in (0, 0.25, 0.5, 0.75, 1):
+        parts.append(f'<line x1="{x(0)}" x2="{x(1)}" y1="{y(t):.1f}" y2="{y(t):.1f}" stroke="#e3e3dc" stroke-width=".6"/>'
+                     f'<line x1="{x(t):.1f}" x2="{x(t):.1f}" y1="{y(0)}" y2="{y(1)}" stroke="#e3e3dc" stroke-width=".6"/>'
+                     f'<text x="{pad_l - 4}" y="{y(t) + 3:.1f}" text-anchor="end" fill="#666">{t * 100:.0f} %</text>'
+                     f'<text x="{x(t):.1f}" y="{y(0) + 11}" text-anchor="middle" fill="#666">{t * 100:.0f} %</text>')  # fmt: skip
+    ref_label = ""
+    if chart.ref == "diagonal":
+        parts.append(f'<line x1="{x(0)}" y1="{y(0)}" x2="{x(1)}" y2="{y(1)}" stroke="#aaaaaa" stroke-dasharray="3 3"/>')
+        ref_label = "Azar"
+    elif chart.ref.startswith("h:"):
+        b = float(chart.ref[2:])
+        parts.append(f'<line x1="{x(0)}" y1="{y(b):.1f}" x2="{x(1)}" y2="{y(b):.1f}" stroke="#aaaaaa" stroke-dasharray="3 3"/>')
+        ref_label = f"Línea base ({b * 100:.0f} %)"
+    step = chart.ref.startswith("h:")
+    for i, (_, pts) in enumerate(chart.xy):
+        color, dash, width = XY_STROKES[i % len(XY_STROKES)]
+        coords: list[str] = []
+        for j, (px, py) in enumerate(pts):
+            if step and j:  # escalón: primero horizontal y luego vertical
+                coords.append(f"{x(px):.1f},{y(pts[j - 1][1]):.1f}")
+            coords.append(f"{x(px):.1f},{y(py):.1f}")
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
+        parts.append(f'<polyline fill="none" stroke="{color}" stroke-width="{width}"{dash_attr} points="{" ".join(coords)}"/>')
+    parts.append(f'<text x="{x(0.5):.1f}" y="{h - 4}" text-anchor="middle" fill="#444">{escape(chart.x_label)}</text>')
+    lx = w + 8
+    for i, (name, _) in enumerate(chart.xy):
+        color, dash, width = XY_STROKES[i % len(XY_STROKES)]
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
+        parts.append(f'<line x1="{lx}" x2="{lx + 18}" y1="{12 + i * 12}" y2="{12 + i * 12}" stroke="{color}" stroke-width="{width}"{dash_attr}/>'
+                     f'<text x="{lx + 24}" y="{15 + i * 12}" fill="#1b1c1a">{escape(name)}</text>')  # fmt: skip
+    k = len(chart.xy)
+    if ref_label:
+        parts.append(f'<line x1="{lx}" x2="{lx + 18}" y1="{12 + k * 12}" y2="{12 + k * 12}" stroke="#aaaaaa" stroke-dasharray="3 3"/>'
+                     f'<text x="{lx + 24}" y="{15 + k * 12}" fill="#666">{escape(ref_label)}</text>')  # fmt: skip
+        k += 1
+    if chart.y_label:
+        parts.append(f'<text x="{lx}" y="{15 + (k + 1) * 12}" fill="#666">Eje vertical: {escape(chart.y_label)}</text>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def chart_svg(chart: Chart) -> str:
+    if chart.kind == "bar":
+        return bar_chart_svg(chart)
+    if chart.kind == "xy":
+        return xy_chart_svg(chart)
+    return line_chart_svg(chart)
+
+
 def render(report: Report) -> bytes:
     from weasyprint import HTML
 
-    svg = line_chart_svg(report.chart) if report.chart and report.chart.labels else ""
-    html = TEMPLATE.render(r=report, chart_svg=svg)
+    # Las curvas XY consecutivas (ROC y precisión-cobertura) van lado a lado; el resto, una por fila.
+    rows: list[list[tuple[Chart, str]]] = []
+    for c in report.figures:
+        if c.kind == "xy" and rows and len(rows[-1]) == 1 and rows[-1][0][0].kind == "xy":
+            rows[-1].append((c, chart_svg(c)))
+        else:
+            rows.append([(c, chart_svg(c))])
+    html = TEMPLATE.render(r=report, fig_rows=rows)
     return bytes(HTML(string=html).write_pdf())

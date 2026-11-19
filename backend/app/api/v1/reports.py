@@ -17,6 +17,7 @@ router = APIRouter(prefix="/reports", tags=["reportes"])
 TYPES = Literal[
     "kev_by_asset", "open_tickets", "sla_overdue", "cve_detail",
     "exposure_trend", "mttr", "sla_compliance", "period_comparison",
+    "inventory_profile", "criteria_evaluation",
 ]  # fmt: skip
 
 

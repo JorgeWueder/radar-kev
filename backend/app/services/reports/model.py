@@ -23,10 +23,23 @@ class Table:
 
 @dataclass
 class Chart:
+    """`line`: series sobre etiquetas (fechas). `bar`: una serie de conteos por etiqueta (tramos).
+    `xy`: curvas con puntos (x, y) en [0, 1] (ROC y precisión-cobertura); `ref` dibuja la referencia:
+    "diagonal" (azar) o "h:<valor>" (línea base horizontal)."""
+
     title: str
     labels: list[str]
     series: list[tuple[str, list[float]]]
     how_to_read: str = ""
+    kind: str = "line"
+    xy: list[tuple[str, list[tuple[float, float]]]] = field(default_factory=list)
+    x_label: str = ""
+    y_label: str = ""
+    ref: str = ""
+
+    @property
+    def empty(self) -> bool:
+        return not (self.xy if self.kind == "xy" else self.labels)
 
 
 @dataclass
@@ -38,8 +51,14 @@ class Report:
     kpis: list[tuple[str, str]] = field(default_factory=list)
     tables: list[Table] = field(default_factory=list)
     chart: Chart | None = None
+    charts: list[Chart] = field(default_factory=list)  # figuras adicionales (además de `chart`)
     ai: dict[str, Any] | None = None  # resumen ejecutivo generado por IA (marcado como tal en todos los formatos)
-    notes: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)  # avisos (se dibujan resaltados)
+    findings: list[str] = field(default_factory=list)  # lectura de los resultados (texto neutro)
+
+    @property
+    def figures(self) -> list[Chart]:
+        return [c for c in ([self.chart] if self.chart else []) + self.charts if not c.empty]
 
     @property
     def wide(self) -> bool:

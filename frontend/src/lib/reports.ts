@@ -1,6 +1,6 @@
 export interface ReportDef {
   key: string
-  kind: 'operational' | 'management'
+  kind: 'operational' | 'management' | 'analysis'
   title: string
   description: string
   period: boolean

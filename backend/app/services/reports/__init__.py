@@ -4,9 +4,12 @@ from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from app.services.reports import builders, render_docx, render_pdf, render_xlsx
-from app.services.reports.builders import CATALOG, MANAGEMENT
+from app.services.reports import analysis, builders, render_docx, render_pdf, render_xlsx
+from app.services.reports.builders import CATALOG as _BASE_CATALOG
+from app.services.reports.builders import MANAGEMENT
 from app.services.reports.model import Report, ReportError
+
+CATALOG = _BASE_CATALOG + analysis.CATALOG
 
 Fmt = Literal["pdf", "docx", "xlsx"]
 CONTENT_TYPES = {

@@ -25,7 +25,8 @@ from tests.test_alerting import dispatch, matches_from_correlation
 from tests.test_intel_api import env  # noqa: F401
 
 Env = tuple[TestClient, sessionmaker[Session]]
-TYPES = ["kev_by_asset", "open_tickets", "sla_overdue", "cve_detail", "exposure_trend", "mttr", "sla_compliance", "period_comparison"]
+TYPES = ["kev_by_asset", "open_tickets", "sla_overdue", "cve_detail", "exposure_trend", "mttr", "sla_compliance", "period_comparison",
+         "inventory_profile", "criteria_evaluation"]
 CVE = "CVE-2021-44228"
 
 
@@ -122,7 +123,7 @@ def test_every_report_generates_valid_pdf_docx_xlsx_and_is_audited(env: Env, rty
         else:
             wb = load_workbook(io.BytesIO(r.content))
             assert wb.sheetnames[0] == "Resumen" and wb["Resumen"]["A1"].value
-            tabular = [ws for ws in wb.worksheets[1:] if ws.title != "Gráfico" and ws.max_row >= 4 and ws["A3"].value]
+            tabular = [ws for ws in wb.worksheets[1:] if not ws._charts and ws.max_row >= 4 and ws["A3"].value]
             for ws in tabular:
                 assert ws.freeze_panes == "A4" and ws["A3"].font.bold  # encabezado con formato y panel fijo
                 assert ws.auto_filter.ref or ws.max_row == 3  # filtros sobre los datos
@@ -167,7 +168,7 @@ def test_roles_that_can_export_and_those_that_cannot(env: Env) -> None:  # noqa:
         assert get(c, who, "open_tickets", "pdf").status_code == 200, who
         assert c.get("/api/v1/reports/catalog", headers=login(c, who)).status_code == 200
     assert c.post("/api/v1/reports/mttr").status_code == 401
-    assert len(c.get("/api/v1/reports/catalog", headers=login(c, "gerencia@radar.local")).json()) == 8
+    assert len(c.get("/api/v1/reports/catalog", headers=login(c, "gerencia@radar.local")).json()) == 10
 
 
 @pytest.mark.parametrize(

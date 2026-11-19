@@ -33,7 +33,7 @@ export default function Reports() {
     }
   }
 
-  const group = (kind: 'operational' | 'management', title: string, hint: string) => {
+  const group = (kind: ReportDef['kind'], title: string, hint: string) => {
     const items = catalog.data?.filter((r) => r.kind === kind) ?? []
     return (
       <section className="mb-6" aria-labelledby={`g-${kind}`}>
@@ -65,7 +65,7 @@ export default function Reports() {
 
   return (
     <>
-      <PageHeader title="Reportes" subtitle="Operacionales y de gestión, en PDF, Word y Excel. Cada exportación queda en la bitácora." />
+      <PageHeader title="Reportes" subtitle="Operacionales, de gestión y analíticos, en PDF, Word y Excel. Cada exportación queda en la bitácora." />
       <Panel className="mb-6 flex flex-wrap items-end gap-3 p-4">
         <Field label="Desde (reportes de gestión)"><Input type="date" value={period.from} max={period.to} onChange={(e) => setPeriod({ ...period, from: e.target.value })} /></Field>
         <Field label="Hasta"><Input type="date" value={period.to} onChange={(e) => setPeriod({ ...period, to: e.target.value })} /></Field>
@@ -80,6 +80,7 @@ export default function Reports() {
         <>
           {group('operational', 'Operacionales', 'Situación actual: qué hay abierto, qué venció y qué hacer.')}
           {group('management', 'De gestión', 'Tendencia, tiempos de remediación y cumplimiento en el periodo elegido.')}
+          {group('analysis', 'Analíticos', 'Estadística descriptiva, calidad de los datos y evaluación de criterios frente a KEV, con figuras de 600 DPI.')}
         </>
       )}
       {!canExport && <p className="text-[13px] text-muted">Su rol puede consultar el catálogo pero no exportar reportes.</p>}

@@ -63,13 +63,19 @@ def render(report: Report) -> bytes:
     for n in report.notes:
         doc.add_paragraph(n).runs[0].font.color.rgb = RGBColor(0x8A, 0x53, 0x00)
 
-    if report.chart and report.chart.labels:
-        from app.services.reports.figures import line_chart_png
+    if report.findings:
+        doc.add_heading("Lectura de los resultados", level=1)
+        for f in report.findings:
+            doc.add_paragraph(f, style="List Bullet")
 
-        doc.add_heading(report.chart.title, level=1)
-        doc.add_picture(io.BytesIO(line_chart_png(report.chart)), width=Cm(16.5 if not report.wide else 22))
-        if report.chart.how_to_read:
-            _how(doc, "Cómo leerlo. " + report.chart.how_to_read)
+    from app.services.reports.figures import chart_png
+
+    for chart in report.figures:
+        doc.add_heading(chart.title, level=1)
+        width = 11 if chart.kind == "xy" else (16.5 if not report.wide else 22)  # las curvas XY son casi cuadradas
+        doc.add_picture(io.BytesIO(chart_png(chart)), width=Cm(width))
+        if chart.how_to_read:
+            _how(doc, "Cómo leerlo. " + chart.how_to_read)
 
     for table in report.tables:
         doc.add_heading(table.title, level=1)

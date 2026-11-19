@@ -1,4 +1,4 @@
-"""Constructores de los 8 reportes. Toda cifra sale de la base de datos o de services/stats.py (nunca de la IA)."""
+"""Constructores de los reportes operacionales y de gestión (los analíticos están en analysis.py). Toda cifra sale de la base de datos o de services/stats.py (nunca de la IA)."""
 
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
@@ -286,5 +286,10 @@ def build(db: Session, key: str, start: date, end: date, cve_id: str | None) -> 
         return sla_compliance(db, start, end)
     if key == "period_comparison":
         return period_comparison(db, start, end)
+    from app.services.reports import analysis
+
+    if key in analysis.BUILDERS:
+        report: Report = analysis.BUILDERS[key](db)
+        return report
     raise ReportError("Tipo de reporte desconocido")
 
