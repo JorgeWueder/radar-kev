@@ -54,6 +54,15 @@ def descriptive(_: User = Depends(require("dashboard", "view")), db: Session = D
     return build(db)
 
 
+@router.get("/evaluation")
+def evaluation(_: User = Depends(require("dashboard", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Qué tan bien separan CVSS, EPSS y el score sin KEV los CVE explotados (KEV) de los demás: ROC/AUC con IC 95 %,
+    precisión-cobertura y matrices de confusión de reglas fijas. Por CVE único; no se entrena nada."""
+    from app.services.evaluation import evaluation as build
+
+    return build(db)
+
+
 @router.get("/top-assets")
 def top_assets(
     limit: int = Query(10, ge=1, le=25),

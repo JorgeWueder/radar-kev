@@ -4,6 +4,7 @@ Solo describe: no decide nada ni toca el cruce. Las funciones `profile`/`summari
 dict fuera) para poder probarlas sin base de datos; `load_frame` es la única que consulta.
 """
 
+from datetime import UTC, date, datetime
 from typing import Any
 
 import pandas as pd
@@ -37,19 +38,21 @@ HOW_TO_READ = {
 
 _SQL = text(
     "SELECT v.cve_id, v.cvss_score AS cvss, v.risk_score, a.criticality, a.environment, "
-    " (k.cve_id IS NOT NULL) AS in_kev, e.epss "
+    " (k.cve_id IS NOT NULL) AS in_kev, e.epss, a.id::text AS asset_id, a.auto_created, e.score_date AS epss_date, e.percentile "
     "FROM vulnerabilities v JOIN assets a ON a.id = v.asset_id "
     "LEFT JOIN kev_entries k ON k.cve_id = v.cve_id "
-    "LEFT JOIN (SELECT DISTINCT ON (cve_id) cve_id, epss FROM epss_scores ORDER BY cve_id, score_date DESC) e "
+    "LEFT JOIN (SELECT DISTINCT ON (cve_id) cve_id, epss, percentile, score_date FROM epss_scores ORDER BY cve_id, score_date DESC) e "
     " ON e.cve_id = v.cve_id "
     "WHERE v.status IN ('open','in_progress')"
 )
+COLUMNS = ["cve_id", "cvss", "risk_score", "criticality", "environment", "in_kev", "epss", "asset_id", "auto_created", "epss_date", "percentile"]
 
 
 def load_frame(db: Session) -> pd.DataFrame:
     rows = db.execute(_SQL).all()
-    df = pd.DataFrame(rows, columns=["cve_id", "cvss", "risk_score", "criticality", "environment", "in_kev", "epss"])
-    for col in ("cvss", "risk_score", "epss"):
+    df = pd.DataFrame(rows, columns=COLUMNS)
+    df["auto_created"] = df["auto_created"].astype(bool)
+    for col in ("cvss", "risk_score", "epss", "percentile"):
         df[col] = pd.to_numeric(df[col], errors="coerce").astype(float)
     df["epss"] = df["epss"] * 100.0  # se describe en %
     df["in_kev"] = df["in_kev"].astype(bool)
@@ -144,7 +147,7 @@ def _group_table(df: pd.DataFrame, col: str, names: dict[Any, str], order: list[
         rows.append({
             "group": str(g), "label": names.get(g, str(g)), "n": int(len(sub)), "kev": int(sub["in_kev"].sum()),
             "kev_pct": _f(sub["in_kev"].mean() * 100), "median_score": _med(sub["risk_score"]),
-            "median_epss": _med(sub["epss"]), "median_cvss": _med(sub["cvss"]),
+            "median_epss": _med(sub["epss"]), "median_cvss": _med(sub["cvss"]), "small": len(sub) < SMALL_GROUP,
         })  # fmt: skip
     return rows
 
@@ -171,9 +174,94 @@ def _group_notes(rows: list[dict[str, Any]], dim: str, total_kev: int) -> list[s
     return notes
 
 
-def profile(df: pd.DataFrame) -> dict[str, Any]:
+EPSS_STALE_DAYS = 3  # FIRST publica a diario; con más de 3 días sin actualizar, el cruce no está corriendo bien
+DOMINANT_SHARE = 0.8  # un grupo con el 80 % o más deja a los demás con muy pocos casos para comparar
+
+
+def _sentence(s: str) -> str:
+    return s[:1].upper() + s[1:] + "."
+
+
+def _check(key: str, label: str, status: str, detail: str, count: int | None = None) -> dict[str, Any]:
+    return {"key": key, "label": label, "status": status, "count": count, "detail": detail}
+
+
+def quality(df: pd.DataFrame, today: date) -> dict[str, Any]:
+    """Validación de los datos y de los grupos ANTES de leer la estadística: qué falta, qué es supuesto y qué grupo es
+    demasiado pequeño o dominante para compararlo. Estados: `ok`, `warn` (sesga la lectura) e `info` (contexto)."""
     n = int(len(df))
-    out: dict[str, Any] = {"n": n, "kev": int(df["in_kev"].sum()) if n else 0, "how_to_read": HOW_TO_READ}
+    if n == 0:
+        return {"status": "ok", "checks": [], "interpretation": ["Sin hallazgos abiertos: no hay datos que validar."]}
+    checks: list[dict[str, Any]] = []
+
+    if "auto_created" in df:
+        auto = df[df["auto_created"]]
+        k = int(auto["asset_id"].nunique()) if len(auto) else 0
+        checks.append(_check(
+            "assumed_criticality", "Criticidad supuesta", "warn" if k else "ok",
+            f"{len(auto)} hallazgos están en {k} {'activo creado' if k == 1 else 'activos creados'} por la importación con criticidad "
+            "supuesta (Media). Hasta completarlos, la comparación por criticidad puede estar sesgada." if k
+            else "Todos los activos con hallazgos abiertos tienen su criticidad revisada.", len(auto) or None,
+        ))  # fmt: skip
+
+    for key, label in (("epss", "EPSS"), ("cvss", "CVSS"), ("risk_score", "score")):
+        miss = int(df[key].isna().sum())
+        checks.append(_check(
+            f"missing_{key}", f"Sin {label}", "warn" if miss else "ok",
+            f"{miss} de {n} hallazgos no tienen {label} ({_num(100 * miss / n, digits=0)} %); quedan fuera de sus cifras." if miss
+            else f"Todos los hallazgos tienen {label}.", miss or None,
+        ))  # fmt: skip
+
+    if "epss_date" in df and df["epss_date"].notna().any():
+        latest = pd.to_datetime(df["epss_date"]).max().date()
+        age = (today - latest).days
+        checks.append(_check(
+            "epss_age", "Antigüedad de EPSS", "warn" if age > EPSS_STALE_DAYS else "ok",
+            f"El EPSS más reciente es de hace {age} días ({latest.strftime('%d/%m/%Y')}); revise las ejecuciones del cruce."
+            if age > EPSS_STALE_DAYS else f"EPSS al día (última fecha {latest.strftime('%d/%m/%Y')}).", age,
+        ))  # fmt: skip
+
+    groupings: tuple[tuple[str, dict[Any, str], str], ...] = (
+        ("criticality", CRITICALITY, "criticidad"), ("environment", ENVIRONMENT, "entorno"))
+    for col, names, dim in groupings:
+        counts = df[col].value_counts()
+        small = [lbl for g, lbl in names.items() if g in counts.index and counts[g] < SMALL_GROUP]
+        empty = [lbl for g, lbl in names.items() if g not in counts.index]
+        top_g: Any = counts.idxmax()
+        top_c = int(counts.max())
+        parts = []
+        if small:
+            parts.append(f"{', '.join(small)} con menos de {SMALL_GROUP} hallazgos (orientativo)")
+        if top_c / n >= DOMINANT_SHARE and len(counts) > 1:
+            parts.append(f"{names.get(top_g, str(top_g))} reúne el {_num(100 * top_c / n, digits=0)} % de los hallazgos")
+        if empty:
+            parts.append(f"sin hallazgos en {', '.join(empty)}")
+        checks.append(_check(
+            f"groups_{col}", f"Grupos por {dim}", "warn" if small or top_c / n >= DOMINANT_SHARE else ("info" if empty else "ok"),
+            _sentence("; ".join(parts)) if parts else f"Todos los grupos por {dim} tienen al menos {SMALL_GROUP} hallazgos.",
+            len(small) or None,
+        ))  # fmt: skip
+
+    kev_n = int(df["in_kev"].sum())
+    rest_n = n - kev_n
+    ok = min(kev_n, rest_n) >= SMALL_GROUP
+    checks.append(_check(
+        "kev_vs_rest", "KEV frente al resto", "ok" if ok else "warn",
+        f"{kev_n} en KEV y {rest_n} fuera: hay casos suficientes en ambos lados." if ok
+        else f"{kev_n} en KEV y {rest_n} fuera: con menos de {SMALL_GROUP} en un lado, la comparación es orientativa.",
+    ))  # fmt: skip
+
+    warns = [c for c in checks if c["status"] == "warn"]
+    text = (["Datos aptos para comparar: ninguna validación encontró problemas."] if not warns else
+            [f"{len(warns)} {'aviso' if len(warns) == 1 else 'avisos'} antes de leer las cifras: "
+             + "; ".join(c["label"][:1].lower() + c["label"][1:] for c in warns) + "."])  # fmt: skip
+    return {"status": "warn" if warns else "ok", "checks": checks, "interpretation": text}
+
+
+def profile(df: pd.DataFrame, today: date | None = None) -> dict[str, Any]:
+    n = int(len(df))
+    out: dict[str, Any] = {"n": n, "kev": int(df["in_kev"].sum()) if n else 0, "how_to_read": HOW_TO_READ,
+                           "quality": quality(df, today or datetime.now(UTC).date())}  # fmt: skip
     if n == 0:
         out |= {"variables": [], "groups": [], "kev_vs_rest": None,
                 "interpretation": ["No hay hallazgos abiertos: no hay nada que describir."]}  # fmt: skip
