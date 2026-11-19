@@ -7,6 +7,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { ComparisonPanel } from '../components/Comparison'
 import { DescriptivePanel } from '../components/Descriptive'
 import { EvaluationPanel } from '../components/Evaluation'
+import { UniversePanel } from '../components/Universe'
 import { KpiCard, Meta } from '../components/kit'
 import { EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge, td, th } from '../components/ui'
 import { api } from '../lib/api'
@@ -224,6 +225,7 @@ export default function Overview() {
 
           <DescriptivePanel />
           <EvaluationPanel />
+          <UniversePanel />
         </>
       )}
     </>

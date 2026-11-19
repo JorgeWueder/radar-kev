@@ -106,3 +106,17 @@ class ExposureSnapshot(Base):
     critical_assets_exposed: Mapped[int] = mapped_column(Integer, default=0)
     mean_risk: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     by_band: Mapped[dict[str, int]] = mapped_column(JSONB, default=dict)
+
+
+class UniverseEvaluation(Base):
+    """Resultado en caché de la prueba prospectiva de EPSS sobre todo el universo de CVE (se recalcula a pedido)."""
+
+    __tablename__ = "universe_evaluations"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    as_of: Mapped[date] = mapped_column(Date)  # fecha del EPSS usado
+    until: Mapped[date] = mapped_column(Date)  # fin de la ventana de observación de KEV
+    horizon_days: Mapped[int] = mapped_column(Integer)
+    model_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    result: Mapped[dict[str, object]] = mapped_column(JSONB)
+    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

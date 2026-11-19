@@ -24,7 +24,7 @@ TEMPLATE = _env.from_string(
   tr { page-break-inside: avoid; } .note { color: #666; font-size: 8px; margin-top: 3px; }
   .ai { border: 1px solid #bbb; border-left: 3px solid #1d5bb8; padding: 6px 9px; margin: 10px 0; background: #f6f6f3; }
   .ai .badge { font-size: 8px; font-weight: bold; color: #1d5bb8; } .ai ul { margin: 2px 0 4px 14px; padding: 0; }
-  .how { border-left: 3px solid #86868b; background: #f6f6f3; padding: 4px 8px; margin-top: 5px; font-size: 8.5px; color: #333; }
+  .how { break-before: avoid; page-break-before: avoid; border-left: 3px solid #86868b; background: #f6f6f3; padding: 4px 8px; margin-top: 5px; font-size: 8.5px; color: #333; }
   .warn { color: #8a5300; font-size: 8.5px; margin: 6px 0; } .fig { page-break-inside: avoid; flex: 1 1 0; min-width: 0; } .figrow { display: flex; flex-wrap: wrap; gap: 0 16px; } .findings { margin: 2px 0 4px 14px; padding: 0; } .findings li { margin-bottom: 2px; }
 </style></head><body>
 <h1>{{ r.title }}</h1><div class="sub">{{ r.subtitle }}</div>

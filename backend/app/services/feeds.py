@@ -64,3 +64,16 @@ def fetch_epss(cves: list[str], pause: float = 1.0) -> list[dict[str, Any]]:
 def fetch_epss_csv() -> bytes:
     with httpx.Client(timeout=httpx.Timeout(120.0), follow_redirects=True) as c:
         return _get(c, get_settings().epss_csv_url).content
+
+
+def fetch_epss_csv_for(day: str) -> bytes | None:
+    """CSV completo de EPSS de una fecha (AAAA-MM-DD). None si FIRST no publicó ese día (404, sin reintentos)."""
+    url = get_settings().epss_csv_dated_url.format(date=day)
+    with httpx.Client(timeout=httpx.Timeout(120.0), follow_redirects=True) as c:
+        try:
+            r = c.get(url)
+        except httpx.HTTPError:
+            return _get(c, url).content  # error de red: reintentos normales (lanza RuntimeError si no se recupera)
+        if r.status_code == 404:
+            return None
+        return _get(c, url).content if r.is_error else r.content

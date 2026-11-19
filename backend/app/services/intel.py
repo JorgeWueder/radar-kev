@@ -160,6 +160,18 @@ def ingest_epss(
 
 def parse_epss_csv(gz_bytes: bytes, only: set[str] | None = None) -> tuple[list[dict[str, Any]], date, str | None]:
     """CSV diario completo (gz). Primera línea: '#model_version:...,score_date:...'; luego cve,epss,percentile."""
+    df, sdate, model = read_epss_csv(gz_bytes)
+    if only is not None:
+        df = df[df["cve"].isin(only)]
+    items = [
+        {"cve": r.cve, "epss": str(r.epss), "percentile": str(r.percentile)}
+        for r in df.itertuples(index=False)
+    ]
+    return items, sdate, model
+
+
+def read_epss_csv(gz_bytes: bytes) -> tuple[pd.DataFrame, date, str | None]:
+    """El CSV completo como DataFrame (cve, epss, percentile), su fecha y la versión del modelo."""
     text = gzip.decompress(gz_bytes)
     first = text.split(b"\n", 1)[0].decode("utf-8", "replace")
     if not first.startswith("#"):
@@ -172,10 +184,4 @@ def parse_epss_csv(gz_bytes: bytes, only: set[str] | None = None) -> tuple[list[
     df = pd.read_csv(io.BytesIO(text), comment="#", dtype={"cve": str})
     if not {"cve", "epss", "percentile"} <= set(df.columns):
         raise IntelError("El CSV de EPSS no tiene las columnas cve, epss, percentile")
-    if only is not None:
-        df = df[df["cve"].isin(only)]
-    items = [
-        {"cve": r.cve, "epss": str(r.epss), "percentile": str(r.percentile)}
-        for r in df.itertuples(index=False)
-    ]
-    return items, sdate, meta.get("model_version")
+    return df[["cve", "epss", "percentile"]], sdate, meta.get("model_version")

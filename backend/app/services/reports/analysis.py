@@ -1,14 +1,14 @@
 """Reportes analíticos: perfil del inventario (estadística descriptiva + calidad de datos) y evaluación de criterios
 frente a KEV. Las cifras salen de services/descriptive.py y services/evaluation.py, las mismas que ve el Resumen."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
 
 from app.services import descriptive, evaluation
 from app.services.intel import get_active_config
-from app.services.reports.model import Chart, Report, Table, fmt_num
+from app.services.reports.model import Chart, Report, ReportError, Table, fmt_date, fmt_num
 
 STATUS = {"ok": "Correcto", "warn": "Aviso", "info": "Información"}
 
@@ -112,16 +112,64 @@ def criteria_evaluation(db: Session) -> Report:
     findings: list[str] = list(e["interpretation"])
     findings.append(f"Criterios evaluados sin KEV; el score completo (piso de KEV {fmt_num(params.kev_floor, 0)}) no se evalúa porque "
                  "incluye KEV y daría un resultado perfecto por construcción.")  # fmt: skip
+    _add_universe(db, tables, charts, findings)
     return Report("criteria_evaluation", "Evaluación de criterios frente a KEV",
                   "Qué criterio habría puesto primero los CVE con explotación confirmada (por CVE único)", datetime.now(UTC),
                   kpis=kpis, tables=tables, charts=charts, findings=findings)  # fmt: skip
 
 
-BUILDERS: dict[str, Any] = {"inventory_profile": inventory_profile, "criteria_evaluation": criteria_evaluation}
+def _add_universe(db: Session, tables: list[Table], charts: list[Chart], findings: list[str]) -> None:
+    """La prueba sobre todo el universo de CVE tiene su propio reporte; aquí solo se remite a él."""
+    from app.services import universe
+
+    u = universe.latest(db)
+    if u is None or u.get("auc") is None:
+        findings.append("Para saber si EPSS anticipa lo que entrará a KEV fuera de este inventario, calcule la prueba sobre todo el "
+                        "universo de CVE (Resumen → «Calcular») y exporte el reporte «Prueba prospectiva de EPSS».")  # fmt: skip
+    else:
+        findings.append(f"Sobre todo el universo de CVE, el EPSS de hace {u['horizon_days']} días anticipó las nuevas entradas a KEV con "
+                        f"AUC {fmt_num(u['auc'], 2)}: detalle en el reporte «Prueba prospectiva de EPSS».")  # fmt: skip
+
+
+def epss_universe(db: Session) -> Report:
+    from app.services import universe
+
+    u = universe.latest(db)
+    if u is None:
+        raise ReportError("Aún no se calculó la prueba sobre el universo de CVE: use «Calcular» en el Resumen")
+    when = f"EPSS del {fmt_date(date.fromisoformat(u['as_of']))} · KEV hasta {fmt_date(date.fromisoformat(u['until']))}"
+    kpis = [("CVE evaluados", f"{u['n']:,}".replace(",", " ")), (f"Entraron a KEV en {u['horizon_days']} días", str(u["positives"]))]
+    tables: list[Table] = []
+    charts: list[Chart] = []
+    if u.get("auc") is not None:
+        kpis.append(("AUC (IC 95 %)", f"{fmt_num(u['auc'], 2)} ({fmt_num(u['auc_ci'][0], 2)} a {fmt_num(u['auc_ci'][1], 2)})"))
+        tables.append(Table(
+            "Esfuerzo frente a cobertura", ["Parchear el primer", "CVE", "Entradas a KEV cubiertas", "Cobertura", "Veces mejor que el azar"],
+            [[_n(e["share_pct"], "%"), f"{e['cves']:,}".replace(",", " "), e["captured"], _n(e["coverage_pct"], "%", 0), fmt_num(e["lift"], 0)]
+             for e in u["effort"]],  # fmt: skip
+            right={1, 2, 3, 4}, how_to_read=u["how_to_read"]["effort"],
+        ))  # fmt: skip
+        tables.append(Table(
+            "Reglas por umbral de EPSS", ["Regla", "CVE marcados", "Esfuerzo", "Entradas a KEV cubiertas", "Cobertura"],
+            [[f"EPSS ≥ {fmt_num(r['threshold_pct'], 0)} %", f"{r['marked']:,}".replace(",", " "), _n(r["effort_pct"], "%", 2), r["captured"],
+              _n(r["coverage_pct"], "%", 0)] for r in u["rules"]],  # fmt: skip
+            right={1, 2, 3, 4}, how_to_read=u["how_to_read"]["rules"],
+        ))  # fmt: skip
+        charts.append(Chart(f"Curva ROC (AUC {fmt_num(u['auc'], 2)})", [], [], kind="xy", ref="diagonal",
+                            x_label="CVE que no entraron a KEV", y_label="KEV anticipados",
+                            xy=[("EPSS", [(p["fpr"], p["tpr"]) for p in u["roc"]])], how_to_read=u["how_to_read"]["curves"]))  # fmt: skip
+    model = f" · modelo EPSS {u['model_version']}" if u.get("model_version") else ""
+    return Report("epss_universe", "Prueba prospectiva de EPSS", f"Todo el universo de CVE · {when}{model}", datetime.now(UTC),
+                  kpis=kpis, tables=tables, charts=charts, findings=u["interpretation"])  # fmt: skip
+
+
+BUILDERS: dict[str, Any] = {"inventory_profile": inventory_profile, "criteria_evaluation": criteria_evaluation, "epss_universe": epss_universe}
 
 CATALOG: list[dict[str, Any]] = [
     {"key": "inventory_profile", "kind": "analysis", "title": "Perfil del inventario",
      "description": "Estadística descriptiva de score, EPSS y CVSS, por criticidad y entorno, con la validación de los datos.", "period": False},
     {"key": "criteria_evaluation", "kind": "analysis", "title": "Evaluación de criterios frente a KEV",
      "description": "Curvas ROC y precisión-cobertura, AUC con IC 95 % y matrices de confusión de CVSS, EPSS y el score sin KEV.", "period": False},
+    {"key": "epss_universe", "kind": "analysis", "title": "Prueba prospectiva de EPSS",
+     "description": "Sobre todo el universo de CVE: si el EPSS de hace N días anticipó lo que entró a KEV (último cálculo guardado).", "period": False},
 ]  # fmt: skip

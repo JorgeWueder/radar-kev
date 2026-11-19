@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     )
     epss_api_url: str = "https://api.first.org/data/v1/epss"
     epss_csv_url: str = "https://epss.empiricalsecurity.com/epss_scores-current.csv.gz"
+    epss_csv_dated_url: str = "https://epss.empiricalsecurity.com/epss_scores-{date}.csv.gz"  # histórico por fecha
     nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
     app_url: str = "http://localhost:8080"

@@ -1,9 +1,10 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import require
+from app.api.deps import audit, require
+from app.core.ratelimit import limiter
 from app.db.session import get_db
 from app.models.auth import User
 from app.services import stats
@@ -61,6 +62,40 @@ def evaluation(_: User = Depends(require("dashboard", "view")), db: Session = De
     from app.services.evaluation import evaluation as build
 
     return build(db)
+
+
+@router.get("/evaluation/universe")
+def universe_latest(_: User = Depends(require("dashboard", "view")), db: Session = Depends(get_db)) -> dict[str, Any] | None:
+    """Último resultado guardado de la prueba prospectiva de EPSS sobre todo el universo de CVE (null si no hay)."""
+    from app.services import universe
+
+    return universe.latest(db)
+
+
+@router.post("/evaluation/universe")
+@limiter.limit("5/hour")
+def universe_compute(
+    request: Request,
+    horizon: int = Query(90),
+    actor: User = Depends(require("workflow", "create")),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Recalcula la prueba prospectiva: descarga el CSV completo de EPSS de hace `horizon` días y lo cruza con KEV.
+    Tarda unos segundos (el archivo tiene cientos de miles de CVE); queda en la bitácora."""
+    from app.services import universe
+
+    try:
+        out = universe.compute(db, horizon)
+    except (universe.UniverseError, RuntimeError) as e:
+        db.rollback()
+        audit(db, request, "dashboard", "universe_eval", user=actor, result="failure", detail={"error": str(e)[:200]})
+        db.commit()
+        code = status.HTTP_422_UNPROCESSABLE_CONTENT if isinstance(e, universe.UniverseError) else status.HTTP_502_BAD_GATEWAY
+        raise HTTPException(code, str(e)[:300]) from None
+    audit(db, request, "dashboard", "universe_eval", user=actor,
+          detail={"horizon": horizon, "as_of": out["as_of"], "n": out["n"], "positives": out["positives"]})  # fmt: skip
+    db.commit()
+    return out
 
 
 @router.get("/top-assets")
