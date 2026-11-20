@@ -8,7 +8,11 @@ from app.services.reports.model import Chart
 DPI = 600
 COLORS = ("#1d5bb8", "#b3261e", "#8a5300")
 # Curvas XY: se distinguen por trazo además de por color (legibles también en blanco y negro).
-XY_STYLES: tuple[tuple[str, Any, float], ...] = (("#1d5bb8", "-", 1.8), ("#1b1c1a", (0, (5, 2)), 1.4), ("#6e6e73", (0, (1, 2)), 1.6))
+# Hasta 7 series (5 modelos + 2 líneas base): color Y trazo distintos, legibles también en blanco y negro.
+XY_STYLES: tuple[tuple[str, Any, float], ...] = (
+    ("#1d5bb8", "-", 1.8), ("#1b1c1a", (0, (5, 2)), 1.4), ("#b3261e", "-", 1.4), ("#17693a", (0, (3, 1, 1, 1)), 1.4),
+    ("#8a5300", (0, (6, 2, 1, 2)), 1.4), ("#6e6e73", (0, (1, 2)), 1.6), ("#aaaaaa", (0, (2, 3)), 1.2),
+)
 
 
 def _plt() -> Any:
@@ -73,16 +77,20 @@ def xy_chart_png(chart: Chart, dpi: int = DPI) -> bytes:
         ax.plot([0, 1], [0, 1], color="#aaaaaa", linewidth=0.8, linestyle=(0, (3, 3)), label="Azar")
     elif chart.ref.startswith("h:"):
         b = float(chart.ref[2:])
-        ax.axhline(b, color="#aaaaaa", linewidth=0.8, linestyle=(0, (3, 3)), label=f"Línea base ({b * 100:.0f} %)")
+        p = 100 * b
+        ax.axhline(b, color="#aaaaaa", linewidth=0.8, linestyle=(0, (3, 3)),
+                   label=f"Línea base ({p:.{0 if p >= 10 or p == 0 else 1 if p >= 1 else 3}f} %)".replace(".", ","))  # fmt: skip
     for i, (name, pts) in enumerate(chart.xy):
         color, dash, width = XY_STYLES[i % len(XY_STYLES)]
-        ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, linestyle=dash, linewidth=width, label=name,
+        ax.plot([p[0] for p in pts], [min(p[1], (chart.y_max or 1.0) * 1.02) for p in pts], color=color, linestyle=dash, linewidth=width, label=name,
                 drawstyle="steps-post" if chart.ref.startswith("h:") else "default")  # fmt: skip
     ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1.02)
+    ymax = chart.y_max or 1.0
+    ax.set_ylim(0, ymax * 1.02)
     ticks = [0, 0.25, 0.5, 0.75, 1]
     ax.set_xticks(ticks, [f"{t * 100:.0f} %" for t in ticks], fontsize=7)
-    ax.set_yticks(ticks, [f"{t * 100:.0f} %" for t in ticks], fontsize=7)
+    yd = 0 if ymax >= 0.1 else 1 if ymax >= 0.01 else 3
+    ax.set_yticks([t * ymax for t in ticks], [f"{t * ymax * 100:.{yd}f} %".replace(".", ",") for t in ticks], fontsize=7)
     ax.set_xlabel(chart.x_label, fontsize=7)
     ax.set_ylabel(chart.y_label, fontsize=7)
     ax.grid(color="#e3e3dc", linewidth=0.6)

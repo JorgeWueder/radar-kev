@@ -36,6 +36,7 @@ class Chart:
     x_label: str = ""
     y_label: str = ""
     ref: str = ""
+    y_max: float | None = None  # tope del eje vertical en curvas XY (p. ej. precisión de ~1 %); por defecto 1
 
     @property
     def empty(self) -> bool:

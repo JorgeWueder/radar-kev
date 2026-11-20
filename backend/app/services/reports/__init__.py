@@ -1,15 +1,16 @@
+import uuid
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from app.services.reports import analysis, builders, render_docx, render_pdf, render_xlsx
+from app.services.reports import analysis, builders, lab, render_docx, render_pdf, render_xlsx
 from app.services.reports.builders import CATALOG as _BASE_CATALOG
 from app.services.reports.builders import MANAGEMENT
 from app.services.reports.model import Report, ReportError
 
-CATALOG = _BASE_CATALOG + analysis.CATALOG
+CATALOG = _BASE_CATALOG + analysis.CATALOG + lab.CATALOG
 
 Fmt = Literal["pdf", "docx", "xlsx"]
 CONTENT_TYPES = {
@@ -34,7 +35,10 @@ def default_period(date_from: date | None, date_to: date | None) -> tuple[date, 
     return (date_from or end - timedelta(days=29)), end
 
 
-def build_report(db: Session, key: str, date_from: date | None, date_to: date | None, cve_id: str | None) -> Report:
+def build_report(db: Session, key: str, date_from: date | None, date_to: date | None, cve_id: str | None,
+                 dataset_id: uuid.UUID | None = None, model_id: uuid.UUID | None = None, op: int = 1) -> Report:  # fmt: skip
+    if key.startswith("ml_"):
+        return lab.build(db, key, dataset_id, model_id, op)
     start, end = default_period(date_from, date_to)
     return builders.build(db, key, start, end, cve_id)
 

@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.deps import audit, require
 from app.core.ratelimit import limiter
 from app.db.session import get_db
+from app.ml import cache as mlcache
 from app.ml import dataset as ds
 from app.ml import jobs, profile, sources
 from app.models.auth import User
@@ -334,8 +335,6 @@ def evaluation(dataset_id: uuid.UUID, op: int = Query(1, description="Punto de o
     """Evalúa en PRUEBA todos los modelos listos del dataset frente a EPSS y CVSS (métricas, matrices, curvas, pruebas
     estadísticas y estabilidad mensual). Si está en caché se devuelve; si no, se calcula en segundo plano y se responde
     {"status": "computing", "job_id"} (el bootstrap tarda minutos). La caché cambia sola si se entrena un modelo nuevo."""
-    import hashlib
-
     from app.ml import assess
 
     if op not in (1, 5):
@@ -346,8 +345,7 @@ def evaluation(dataset_id: uuid.UUID, op: int = Query(1, description="Punto de o
     rows = [m for m in rows if m.preds_path and Path(m.preds_path).exists()]
     if not rows:
         raise HTTPException(status.HTTP_409_CONFLICT, "Aún no hay modelos entrenados en este dataset (fase 2)")
-    key = hashlib.sha256(("|".join(str(m.id) for m in rows) + f"|{op}|v4").encode()).hexdigest()[:16]
-    cache = sources.data_dir() / "cache" / f"eval_{d.id}_{key}.json"
+    cache = mlcache.evaluation(d.id, [m.id for m in rows], op)
     if cache.exists():
         cached: dict[str, Any] = json.loads(cache.read_text(encoding="utf-8"))
         return cached
@@ -389,7 +387,7 @@ def explanation(model_id: uuid.UUID, user: User = Depends(require("ml", "view"))
         raise HTTPException(status.HTTP_409_CONFLICT, "El modelo aún no está listo")
     d = _get(db, m.dataset_id)
     data_path = _ready(d)
-    cache = sources.data_dir() / "cache" / f"explain_{m.id}_v4.json"
+    cache = mlcache.explanation(m.id)
     if cache.exists():
         cached: dict[str, Any] = json.loads(cache.read_text(encoding="utf-8"))
         return cached

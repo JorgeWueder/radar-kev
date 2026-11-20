@@ -20,7 +20,7 @@ TEMPLATE = _env.from_string(
   .sub { color: #555; margin-bottom: 3px; } .meta { color: #777; font-size: 8px; margin-bottom: 10px; }
   .kpis { display: flex; gap: 22px; margin: 8px 0 4px 0; } .kpi b { display: block; font-size: 20px; line-height: 1.1; } .kpi span { color: #555; font-size: 8px; }
   table { width: 100%; border-collapse: collapse; margin-top: 4px; } th { text-align: left; font-size: 8px; color: #444; border-bottom: 1.2px solid #1b1c1a; padding: 3px 4px; }
-  td { padding: 3px 4px; border-bottom: .5px solid #d6d6cf; vertical-align: top; overflow-wrap: anywhere; } td.r, th.r { text-align: right; }
+  td { padding: 3px 4px; border-bottom: .5px solid #d6d6cf; vertical-align: top; overflow-wrap: anywhere; } td.r, th.r { text-align: right; } td.nw { white-space: nowrap; overflow-wrap: normal; }
   tr { page-break-inside: avoid; } .note { color: #666; font-size: 8px; margin-top: 3px; }
   .ai { border: 1px solid #bbb; border-left: 3px solid #1d5bb8; padding: 6px 9px; margin: 10px 0; background: #f6f6f3; }
   .ai .badge { font-size: 8px; font-weight: bold; color: #1d5bb8; } .ai ul { margin: 2px 0 4px 14px; padding: 0; }
@@ -40,10 +40,16 @@ TEMPLATE = _env.from_string(
 {% for row in fig_rows %}<div class="figrow">{% for c, svg in row %}<div class="fig"><h2>{{ c.title }}</h2>{{ svg | safe }}{% if c.how_to_read %}<div class="how"><b>Cómo leerlo.</b> {{ c.how_to_read }}</div>{% endif %}</div>{% endfor %}</div>{% endfor %}
 {% for t in r.tables %}<h2>{{ t.title }}</h2>
 {% if t.rows %}<table><thead><tr>{% for c in t.columns %}<th class="{{ 'r' if loop.index0 in t.right else '' }}">{{ c }}</th>{% endfor %}</tr></thead>
-<tbody>{% for row in t.rows %}<tr>{% for cell in row %}<td class="{{ 'r' if loop.index0 in t.right else '' }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+<tbody>{% for row in t.rows %}<tr>{% for cell in row %}<td class="{{ 'r' if loop.index0 in t.right else '' }}{{ ' nw' if (cell|string|length) <= 14 else '' }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
 {% else %}<div class="note">Sin datos.</div>{% endif %}{% if t.how_to_read %}<div class="how"><b>Cómo leerla.</b> {{ t.how_to_read }}</div>{% endif %}{% if t.note %}<div class="note">{{ t.note }}</div>{% endif %}{% endfor %}
 </body></html>"""
 )
+
+
+def _tick(v: float, top: float) -> str:
+    """Etiqueta del eje con los decimales que pide la escala (conteos sin decimales, PR-AUC con 3)."""
+    digits = 0 if top >= 10 else 1 if top >= 1 else 3 if top >= 0.01 else 4
+    return f"{v:.{digits}f}".replace(".", ",")
 
 
 def line_chart_svg(chart: Chart, width: int = 640, height: int = 170) -> str:
@@ -52,7 +58,8 @@ def line_chart_svg(chart: Chart, width: int = 640, height: int = 170) -> str:
 
     pad_l, pad_r, pad_t, pad_b = 34, 10, 10, 22
     n = len(chart.labels)
-    top = max([1.0] + [v for _, vals in chart.series for v in vals])
+    peak = max([0.0] + [v for _, vals in chart.series for v in vals])
+    top = peak * 1.1 if peak > 0 else 1.0
     colors = ["#1d5bb8", "#b3261e", "#8a5300"]
 
     def x(i: float) -> float:
@@ -65,7 +72,7 @@ def line_chart_svg(chart: Chart, width: int = 640, height: int = 170) -> str:
     for k in range(1, 5):  # sin la etiqueta "0": se pisaría con las fechas del eje X
         v = top * k / 4
         parts.append(f'<line x1="{pad_l}" x2="{width - pad_r}" y1="{y(v):.1f}" y2="{y(v):.1f}" stroke="#e3e3dc" stroke-width=".6"/>'
-                     f'<text x="{pad_l - 4}" y="{y(v) + 3:.1f}" text-anchor="end" fill="#666">{v:.0f}</text>')
+                     f'<text x="{pad_l - 4}" y="{y(v) + 3:.1f}" text-anchor="end" fill="#666">{_tick(v, top)}</text>')
     for s, (name, vals) in enumerate(chart.series):
         pts = " ".join(f"{x(i):.1f},{y(v):.1f}" for i, v in enumerate(vals))
         parts.append(f'<polyline fill="none" stroke="{colors[s % 3]}" stroke-width="1.6" points="{pts}"/>')
@@ -98,37 +105,46 @@ def bar_chart_svg(chart: Chart, width: int = 640) -> str:
     return "".join(parts)
 
 
-XY_STROKES = (("#1d5bb8", "", 1.8), ("#1b1c1a", "5 2", 1.4), ("#6e6e73", "1 2", 1.6))
+XY_STROKES = (("#1d5bb8", "", 1.8), ("#1b1c1a", "5 2", 1.4), ("#b3261e", "", 1.4), ("#17693a", "3 1 1 1", 1.4),
+              ("#8a5300", "6 2 1 2", 1.4), ("#6e6e73", "1 2", 1.6), ("#aaaaaa", "2 3", 1.2))  # mismos estilos que figures.py
+
+
+def _pct_tick(v: float) -> str:
+    """Porcentaje con los decimales que pide su tamaño (50 %, 2,5 %, 0,009 %)."""
+    p = 100 * v
+    digits = 0 if p >= 10 or p == 0 else 1 if p >= 1 else 3
+    return f"{p:.{digits}f} %".replace(".", ",")
 
 
 def xy_chart_svg(chart: Chart, size: int = 230) -> str:
     """Curvas en [0, 1] con ejes en %, referencia (diagonal o línea base) y leyenda; distingue series por trazo."""
     from html import escape
 
-    pad_l, pad_r, pad_t, pad_b = 34, 10, 8, 30
+    pad_l, pad_r, pad_t, pad_b = 48, 10, 8, 30  # margen para etiquetas como «0,734 %»
     w, h = size + pad_l + pad_r, size + pad_t + pad_b
-    total_w = w + 140
+    total_w = w + 190
+    ymax = chart.y_max or 1.0
 
     def x(v: float) -> float:
         return pad_l + size * v
 
     def y(v: float) -> float:
-        return pad_t + size * (1 - v)
+        return pad_t + size * (1 - min(v, ymax) / ymax)
 
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="{h}" viewBox="0 0 {total_w} {h}" font-family="DejaVu Sans" font-size="8">']
     for t in (0, 0.25, 0.5, 0.75, 1):
-        parts.append(f'<line x1="{x(0)}" x2="{x(1)}" y1="{y(t):.1f}" y2="{y(t):.1f}" stroke="#e3e3dc" stroke-width=".6"/>'
+        parts.append(f'<line x1="{x(0)}" x2="{x(1)}" y1="{y(t * ymax):.1f}" y2="{y(t * ymax):.1f}" stroke="#e3e3dc" stroke-width=".6"/>'
                      f'<line x1="{x(t):.1f}" x2="{x(t):.1f}" y1="{y(0)}" y2="{y(1)}" stroke="#e3e3dc" stroke-width=".6"/>'
-                     f'<text x="{pad_l - 4}" y="{y(t) + 3:.1f}" text-anchor="end" fill="#666">{t * 100:.0f} %</text>'
+                     f'<text x="{pad_l - 4}" y="{y(t * ymax) + 3:.1f}" text-anchor="end" fill="#666">{_pct_tick(t * ymax)}</text>'
                      f'<text x="{x(t):.1f}" y="{y(0) + 11}" text-anchor="middle" fill="#666">{t * 100:.0f} %</text>')  # fmt: skip
     ref_label = ""
     if chart.ref == "diagonal":
-        parts.append(f'<line x1="{x(0)}" y1="{y(0)}" x2="{x(1)}" y2="{y(1)}" stroke="#aaaaaa" stroke-dasharray="3 3"/>')
+        parts.append(f'<line x1="{x(0)}" y1="{y(0)}" x2="{x(min(1.0, ymax))}" y2="{y(min(1.0, ymax))}" stroke="#aaaaaa" stroke-dasharray="3 3"/>')
         ref_label = "Azar"
     elif chart.ref.startswith("h:"):
         b = float(chart.ref[2:])
         parts.append(f'<line x1="{x(0)}" y1="{y(b):.1f}" x2="{x(1)}" y2="{y(b):.1f}" stroke="#aaaaaa" stroke-dasharray="3 3"/>')
-        ref_label = f"Línea base ({b * 100:.0f} %)"
+        ref_label = f"Línea base ({_pct_tick(b)})"
     step = chart.ref.startswith("h:")
     for i, (_, pts) in enumerate(chart.xy):
         color, dash, width = XY_STROKES[i % len(XY_STROKES)]
@@ -145,7 +161,7 @@ def xy_chart_svg(chart: Chart, size: int = 230) -> str:
         color, dash, width = XY_STROKES[i % len(XY_STROKES)]
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
         parts.append(f'<line x1="{lx}" x2="{lx + 18}" y1="{12 + i * 12}" y2="{12 + i * 12}" stroke="{color}" stroke-width="{width}"{dash_attr}/>'
-                     f'<text x="{lx + 24}" y="{15 + i * 12}" fill="#1b1c1a">{escape(name)}</text>')  # fmt: skip
+                     f'<text x="{lx + 24}" y="{15 + i * 12}" fill="#1b1c1a">{escape(name[:34])}</text>')  # fmt: skip
     k = len(chart.xy)
     if ref_label:
         parts.append(f'<line x1="{lx}" x2="{lx + 18}" y1="{12 + k * 12}" y2="{12 + k * 12}" stroke="#aaaaaa" stroke-dasharray="3 3"/>'

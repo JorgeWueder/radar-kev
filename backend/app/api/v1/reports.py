@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 from typing import Any, Literal
 
@@ -18,6 +19,7 @@ TYPES = Literal[
     "kev_by_asset", "open_tickets", "sla_overdue", "cve_detail",
     "exposure_trend", "mttr", "sla_compliance", "period_comparison",
     "inventory_profile", "criteria_evaluation", "epss_universe",
+    "ml_dataset", "ml_training", "ml_evaluation", "ml_explain",
 ]  # fmt: skip
 
 
@@ -36,12 +38,19 @@ def generate(
     date_to: date | None = None,
     ai_summary: bool = False,
     cve_id: str | None = Query(None, pattern=r"^(?i:CVE)-\d{4}-\d{4,}$"),
+    dataset_id: uuid.UUID | None = None,
+    model_id: uuid.UUID | None = None,
+    op: int = Query(1, ge=1, le=5),
     user: User = Depends(require("reports", "export")),
     db: Session = Depends(get_db),
 ) -> Response:
     """Genera el reporte en el formato pedido. Cada exportación queda en la bitácora."""
+    if rtype.startswith("ml_") and "ml:view" not in user_permissions(user):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Su rol no puede ver el laboratorio de modelos")
+    if op not in (1, 5):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "El punto de operación debe ser 1 o 5 (% del universo)")
     try:
-        report = reports.build_report(db, rtype, date_from, date_to, cve_id)
+        report = reports.build_report(db, rtype, date_from, date_to, cve_id, dataset_id, model_id, op)
     except reports.ReportError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from None
 
@@ -61,7 +70,8 @@ def generate(
     out = reports.render(report, fmt)
     audit(db, request, "reports", "export", user=user,
           detail={"type": rtype, "fmt": fmt, "rows": out.rows, "ai_summary": ai_used, "bytes": len(out.content),
-                  "period": [str(date_from), str(date_to)] if rtype in reports.MANAGEMENT else None})  # fmt: skip
+                  "period": [str(date_from), str(date_to)] if rtype in reports.MANAGEMENT else None,
+                  "dataset": str(dataset_id) if dataset_id else None, "model": str(model_id) if model_id else None})  # fmt: skip
     db.commit()
     return Response(out.content, media_type=out.content_type,
                     headers={"Content-Disposition": f'attachment; filename="{out.filename}"'})

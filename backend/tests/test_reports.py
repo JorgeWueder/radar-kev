@@ -168,7 +168,7 @@ def test_roles_that_can_export_and_those_that_cannot(env: Env) -> None:  # noqa:
         assert get(c, who, "open_tickets", "pdf").status_code == 200, who
         assert c.get("/api/v1/reports/catalog", headers=login(c, who)).status_code == 200
     assert c.post("/api/v1/reports/mttr").status_code == 401
-    assert len(c.get("/api/v1/reports/catalog", headers=login(c, "gerencia@radar.local")).json()) == 11
+    assert len(c.get("/api/v1/reports/catalog", headers=login(c, "gerencia@radar.local")).json()) == 15
 
 
 @pytest.mark.parametrize(
