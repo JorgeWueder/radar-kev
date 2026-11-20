@@ -198,6 +198,7 @@ class TrainIn(BaseModel):
     name: str | None = Field(None, max_length=120)
     n_trials: int = Field(15, ge=2, le=60)
     seed: int = Field(7, ge=0, le=1_000_000)
+    drop: list[Literal["cvss", "epss"]] = Field(default_factory=list, max_length=2)  # ablación de grupos de variables
 
 
 def _model_out(m: MlModel, full: bool = True) -> dict[str, Any]:
@@ -252,13 +253,16 @@ def train_model(request: Request, body: TrainIn, actor: User = Depends(require("
     by_split: Any = d.stats.get("by_split") or {}
     dev_snaps = int((by_split.get("desarrollo") or {}).get("snapshots", 0))
     k_out, k_in = 5, 3
+    drop = tuple(sorted(set(body.drop)))
     problem = training.feasible(dev_snaps, k_out, k_in)
     if problem:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problem)
     m = MlModel(dataset_id=d.id, algorithm=body.algorithm, created_by=actor.id, status="training",
-                name=body.name or f"{algs.ALGORITHMS[body.algorithm]['label']} · {body.n_trials} pruebas",
+                name=body.name or (f"{algs.ALGORITHMS[body.algorithm]['label']} · {body.n_trials} pruebas"
+                                   + (f" · sin {' ni '.join(algs.GROUPS[g]['label'] for g in drop)}" if drop else "")),
                 config={"n_trials": body.n_trials, "k_out": k_out, "k_in": k_in, "seed": body.seed, "metric": "PR-AUC ponderada",
-                        "cv": "anidada temporal (ventana creciente)", "target": f"entra a KEV en {d.params.get('horizon_days')} días"},
+                        "cv": "anidada temporal (ventana creciente)", "target": f"entra a KEV en {d.params.get('horizon_days')} días",
+                        "drop": list(drop)},
                 folds=[], trials=[], aggregate={}, best_params={}, final_metrics={}, reading=[])  # fmt: skip
     db.add(m)
     db.commit()
@@ -283,12 +287,12 @@ def train_model(request: Request, body: TrainIn, actor: User = Depends(require("
             rep(int(95 * done["n"] / total), msg)
 
         rep(1, "Cargando el dataset")
-        res = training.train(ds.load(path), body.algorithm, body.n_trials, k_out, k_in, body.seed, report)
+        res = training.train(ds.load(path), body.algorithm, body.n_trials, k_out, k_in, body.seed, report, drop)
         rep(97, "Guardando el modelo y las predicciones")
         base = sources.data_dir() / "models"
         base.mkdir(exist_ok=True)
         model_path, preds_path = base / f"{model_id}.joblib", base / f"{model_id}.preds.csv.gz"
-        joblib.dump({"pipeline": res["model"], "algorithm": body.algorithm, "params": res["best_params"],
+        joblib.dump({"pipeline": res["model"], "algorithm": body.algorithm, "params": res["best_params"], "drop": list(drop),
                      "features": algs.NUM + algs.CAT, "sklearn": sklearn.__version__}, model_path)  # fmt: skip
         res["preds"].to_csv(preds_path, index=False, compression="gzip")
         with maker() as s:
@@ -317,6 +321,53 @@ def train_model(request: Request, body: TrainIn, actor: User = Depends(require("
         db.commit()
         raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from None
     audit(db, request, "ml", "model_train", user=actor,
-          detail={"model": str(model_id), "dataset": str(d.id), "algorithm": body.algorithm, "n_trials": body.n_trials})  # fmt: skip
+          detail={"model": str(model_id), "dataset": str(d.id), "algorithm": body.algorithm, "n_trials": body.n_trials,
+                  "drop": list(drop)})  # fmt: skip
     db.commit()
     return {"model_id": str(model_id), "job_id": str(job.id)}
+
+
+# --------------------------------------------------------------------------- Fase 3: evaluación
+@router.get("/datasets/{dataset_id}/evaluation")
+def evaluation(dataset_id: uuid.UUID, op: int = Query(1, description="Punto de operación: revisar el 1 % o el 5 % del universo"), user: User = Depends(require("ml", "view")),
+               db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """Evalúa en PRUEBA todos los modelos listos del dataset frente a EPSS y CVSS (métricas, matrices, curvas, pruebas
+    estadísticas y estabilidad mensual). Si está en caché se devuelve; si no, se calcula en segundo plano y se responde
+    {"status": "computing", "job_id"} (el bootstrap tarda minutos). La caché cambia sola si se entrena un modelo nuevo."""
+    import hashlib
+
+    from app.ml import assess
+
+    if op not in (1, 5):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "El punto de operación debe ser 1 o 5 (% del universo)")
+    d = _get(db, dataset_id)
+    _ready(d)
+    rows = db.execute(select(MlModel).where(MlModel.dataset_id == d.id, MlModel.status == "ready").order_by(MlModel.created_at)).scalars().all()
+    rows = [m for m in rows if m.preds_path and Path(m.preds_path).exists()]
+    if not rows:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Aún no hay modelos entrenados en este dataset (fase 2)")
+    key = hashlib.sha256(("|".join(str(m.id) for m in rows) + f"|{op}|v4").encode()).hexdigest()[:16]
+    cache = sources.data_dir() / "cache" / f"eval_{d.id}_{key}.json"
+    if cache.exists():
+        cached: dict[str, Any] = json.loads(cache.read_text(encoding="utf-8"))
+        return cached
+    model_rows: list[dict[str, Any]] = [{"id": str(m.id), "name": m.name, "algorithm": m.algorithm, "drop": m.config.get("drop", []), "folds": m.folds,
+                   "preds_path": str(m.preds_path)} for m in rows]  # fmt: skip
+    profile_path = Path(str(d.file_path)).with_suffix("").with_suffix(".profile.json")
+
+    def work(rep: jobs.Reporter, maker: jobs.Maker) -> None:
+        rep(3, "Cargando las predicciones de validación y prueba")
+        models = [m | {"preds": pd.read_csv(m["preds_path"], compression="gzip", dtype={"cve": str})} for m in model_rows]
+        res = assess.assess(models, float(op), rep)
+        if profile_path.exists():
+            version = {x["snapshot"]: x["epss_model"] for x in json.loads(profile_path.read_text(encoding="utf-8"))["snapshots"]}
+            for row in res["stability"]:
+                row["epss_model"] = version.get(row["snapshot"])
+        res["models"] = [{k: m[k] for k in ("id", "name", "algorithm", "drop")} for m in model_rows]
+        cache.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+
+    running = db.execute(select(MlJob).where(MlJob.kind == "evaluate", MlJob.status.in_(("queued", "running")))).scalars().first()
+    if running is not None:  # ya se está calculando (esta u otra evaluación): se devuelve ese trabajo
+        return {"status": "computing", "job_id": str(running.id)}
+    job = jobs.start(db, "evaluate", d.id, user.id, work)
+    return {"status": "computing", "job_id": str(job.id)}

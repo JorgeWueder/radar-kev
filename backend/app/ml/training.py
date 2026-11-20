@@ -52,31 +52,32 @@ def feasible(n_snaps: int, k_out: int, k_in: int) -> str | None:
     return None
 
 
-def _xyw(df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray, np.ndarray]:
-    return algs.prepare(df), df["label"].to_numpy(dtype=int), df["weight"].to_numpy(dtype=float)
+def _xyw(df: pd.DataFrame, drop: tuple[str, ...] = ()) -> tuple[pd.DataFrame, np.ndarray, np.ndarray]:
+    return algs.prepare(df, drop), df["label"].to_numpy(dtype=int), df["weight"].to_numpy(dtype=float)
 
 
-def fit_predict(algo: str, params: dict[str, Any], seed: int, train: pd.DataFrame, test: pd.DataFrame) -> tuple[Any, np.ndarray]:
-    X, y, w = _xyw(train)
+def fit_predict(algo: str, params: dict[str, Any], seed: int, train: pd.DataFrame, test: pd.DataFrame,
+                drop: tuple[str, ...] = ()) -> tuple[Any, np.ndarray]:  # fmt: skip
+    X, y, w = _xyw(train, drop)
     model = algs.build(algo, params, seed)
     model.fit(X, y, clf__sample_weight=w)
-    return model, model.predict_proba(algs.prepare(test))[:, 1]
+    return model, model.predict_proba(algs.prepare(test, drop))[:, 1]
 
 
-def inner_cv(algo: str, params: dict[str, Any], seed: int, df: pd.DataFrame, k_in: int) -> float:
+def inner_cv(algo: str, params: dict[str, Any], seed: int, df: pd.DataFrame, k_in: int, drop: tuple[str, ...] = ()) -> float:
     """PR-AUC media en los pliegues internos (los pliegues sin positivos en validación no cuentan)."""
     scores = []
     for tr, va in forward_folds(sorted(df["snapshot"].unique()), k_in):
         a, b = df[df["snapshot"].isin(tr)], df[df["snapshot"].isin(va)]
         if b["label"].sum() == 0 or a["label"].sum() == 0:
             continue
-        _, s = fit_predict(algo, params, seed, a, b)
+        _, s = fit_predict(algo, params, seed, a, b, drop)
         scores.append(evaluate(b["label"].to_numpy(), s, b["weight"].to_numpy())["pr_auc"])
     return float(np.mean(scores)) if scores else 0.0
 
 
 def search(algo: str, df: pd.DataFrame, n_trials: int, k_in: int, seed: int, tag: str, report: Report,
-           trials_log: list[dict[str, Any]]) -> dict[str, Any]:  # fmt: skip
+           trials_log: list[dict[str, Any]], drop: tuple[str, ...] = ()) -> dict[str, Any]:  # fmt: skip
     """Optuna (TPE con semilla) maximizando la PR-AUC interna; la prueba 0 son los hiperparámetros por defecto."""
     study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=seed))
     study.enqueue_trial(algs.defaults(algo))
@@ -84,7 +85,7 @@ def search(algo: str, df: pd.DataFrame, n_trials: int, k_in: int, seed: int, tag
     def objective(trial: optuna.Trial) -> float:
         t0 = time.perf_counter()
         params = algs.suggest(trial, algo)
-        value = inner_cv(algo, params, seed, df, k_in)
+        value = inner_cv(algo, params, seed, df, k_in, drop)
         rec = {"fold": tag, "trial": trial.number, "value": round(value, 5), "params": params, "seconds": round(time.perf_counter() - t0, 2)}
         trials_log.append(rec)
         report(f"{tag} · prueba {trial.number + 1}/{n_trials} · PR-AUC interna {value:.4f}".replace(".", ","), {"trial": rec})
@@ -99,13 +100,13 @@ def _baselines(df: pd.DataFrame) -> dict[str, Any]:
 
 
 def nested(algo: str, dev: pd.DataFrame, n_trials: int, k_out: int, k_in: int, seed: int, report: Report,
-           trials_log: list[dict[str, Any]]) -> list[dict[str, Any]]:  # fmt: skip
+           trials_log: list[dict[str, Any]], drop: tuple[str, ...] = ()) -> list[dict[str, Any]]:  # fmt: skip
     folds = []
     for i, (tr, va) in enumerate(forward_folds(sorted(dev["snapshot"].unique()), k_out), start=1):
         outer_train, outer_val = dev[dev["snapshot"].isin(tr)], dev[dev["snapshot"].isin(va)]
         tag = f"Pliegue {i}/{k_out}"
-        best = search(algo, outer_train, n_trials, k_in, seed + i, tag, report, trials_log)
-        _, s = fit_predict(algo, best, seed, outer_train, outer_val)  # reentrena con los mejores y evalúa UNA vez
+        best = search(algo, outer_train, n_trials, k_in, seed + i, tag, report, trials_log, drop)
+        _, s = fit_predict(algo, best, seed, outer_train, outer_val, drop)  # reentrena con los mejores y evalúa UNA vez
         metrics = evaluate(outer_val["label"].to_numpy(), s, outer_val["weight"].to_numpy())
         res: dict[str, Any] = {
             "fold": i, "train": [str(min(tr)), str(max(tr))], "val": [str(min(va)), str(max(va))],
@@ -133,18 +134,19 @@ def aggregate(folds: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def train(df: pd.DataFrame, algo: str, n_trials: int, k_out: int, k_in: int, seed: int, report: Report) -> dict[str, Any]:
+def train(df: pd.DataFrame, algo: str, n_trials: int, k_out: int, k_in: int, seed: int, report: Report,
+          drop: tuple[str, ...] = ()) -> dict[str, Any]:  # fmt: skip
     """Todo el entrenamiento: CV anidada en desarrollo + modelo final (búsqueda en todo desarrollo) + predicciones."""
     if algo not in algs.ALGORITHMS:
         raise ValueError(f"Algoritmo desconocido: {algo}")
     dev = df[df["split"] == "desarrollo"]
     trials_log: list[dict[str, Any]] = []
     t0 = time.perf_counter()
-    folds = nested(algo, dev, n_trials, k_out, k_in, seed, report, trials_log)
+    folds = nested(algo, dev, n_trials, k_out, k_in, seed, report, trials_log, drop)
     report("Modelo final: búsqueda en todo desarrollo", None)
-    best = search(algo, dev, n_trials, k_in, seed, "Modelo final", report, trials_log)
+    best = search(algo, dev, n_trials, k_in, seed, "Modelo final", report, trials_log, drop)
     rest = df[df["split"].isin(["validacion", "prueba"])]
-    model, s = fit_predict(algo, best, seed, dev, rest)
+    model, s = fit_predict(algo, best, seed, dev, rest, drop)
     preds = rest[["snapshot", "cve", "split", "label", "weight"]].copy()
     preds["score"] = s
     for b, (_, fn) in algs.BASELINES.items():

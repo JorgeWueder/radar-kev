@@ -56,9 +56,20 @@ ALGORITHMS: dict[str, dict[str, str]] = {
 }  # fmt: skip
 
 
-def prepare(df: pd.DataFrame) -> pd.DataFrame:
-    """Variables de entrada: transformación monótona de las colas largas (no cambia a los árboles, ayuda a la lineal)."""
+GROUPS: dict[str, dict[str, Any]] = {
+    "cvss": {"label": "CVSS de la CNA", "columns": ["cvss", "av", "ac", "pr", "ui"]},
+    "epss": {"label": "EPSS", "columns": ["epss", "percentile", "epss_delta", "epss_model"]},
+}  # fmt: skip
+
+
+def prepare(df: pd.DataFrame, drop: tuple[str, ...] | list[str] = ()) -> pd.DataFrame:
+    """Variables de entrada: transformación monótona de las colas largas (no cambia a los árboles, ayuda a la lineal).
+    `drop` (ablación) deja constantes grupos completos de variables: el modelo se entrena como si no existieran."""
     X = df[NUM + CAT].copy()
+    for g in drop:
+        for col in GROUPS[g]["columns"]:
+            # Constante (no vacía): ningún modelo puede usarla y el binning del boosting no falla con columnas todo NaN.
+            X[col] = 0.0 if col in NUM else "desconocido"
     for col, c in LOG.items():
         X[col] = np.log(X[col].clip(lower=0) + c)
     for col in CAT:

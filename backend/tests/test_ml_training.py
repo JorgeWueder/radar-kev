@@ -126,3 +126,12 @@ def test_train_endpoint_runs_in_background_and_stores_the_model(env: Env, tmp_pa
     assert (tmp_path / "models" / f"{mod['id']}.joblib").exists() and (tmp_path / "models" / f"{mod['id']}.preds.csv.gz").exists()
     listed = c.get("/api/v1/ml/models", params={"dataset_id": str(did)}, headers=h).json()
     assert [x["id"] for x in listed] == [mod["id"]] and "trials" not in listed[0]
+
+
+@pytest.mark.parametrize("algo", ["logreg", "hgb"])
+def test_ablation_trains_without_a_feature_group(algo: str, small_trees: None) -> None:
+    df = synthetic()
+    X = algs.prepare(df, ("epss",))
+    assert X["epss"].nunique() == 1 and set(X["epss_model"]) == {"desconocido"} and X["cvss"].nunique() > 1
+    res = training.train(df, algo, n_trials=2, k_out=5, k_in=3, seed=1, report=lambda m, e: None, drop=("epss",))
+    assert len(res["folds"]) == 5 and res["folds"][0]["baselines"]["epss"]["pr_auc"] is not None  # la línea base usa EPSS real
