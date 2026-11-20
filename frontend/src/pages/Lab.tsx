@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { DatasetDetail } from '../components/lab/DatasetDetail'
 import { JobProgress } from '../components/lab/JobProgress'
 import { LabEvaluation } from '../components/lab/LabEvaluation'
+import { LabExplain } from '../components/lab/LabExplain'
 import { Training } from '../components/lab/Training'
 import type { Dataset, Job } from '../components/lab/types'
 import { num } from '../components/Descriptive'
@@ -15,7 +16,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 const PHASES = ['Datos', 'Entrenamiento', 'Evaluación', 'Explicabilidad', 'Reportes', 'Inferencia', 'Optimización']
-const READY_PHASES = 3 // fases ya implementadas
+const READY_PHASES = 4 // fases ya implementadas
 const STATUS: Record<Dataset['status'], ['ok' | 'warn' | 'danger' | 'neutral', string]> = {
   ready: ['ok', 'Listo'], building: ['neutral', 'Construyendo'], failed: ['danger', 'Falló'],
 }
@@ -91,7 +92,7 @@ export default function Lab() {
         </ol>
       </nav>
 
-      {phase === 1 ? <Training datasets={list.data ?? []} /> : phase === 2 ? <LabEvaluation datasets={list.data ?? []} /> : (
+      {phase === 1 ? <Training datasets={list.data ?? []} /> : phase === 2 ? <LabEvaluation datasets={list.data ?? []} /> : phase === 3 ? <LabExplain datasets={list.data ?? []} /> : (
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-4">
           {can('ml', 'create') && (

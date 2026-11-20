@@ -371,3 +371,39 @@ def evaluation(dataset_id: uuid.UUID, op: int = Query(1, description="Punto de o
         return {"status": "computing", "job_id": str(running.id)}
     job = jobs.start(db, "evaluate", d.id, user.id, work)
     return {"status": "computing", "job_id": str(job.id)}
+
+
+# --------------------------------------------------------------------------- Fase 4: explicabilidad
+@router.get("/models/{model_id}/explanation")
+def explanation(model_id: uuid.UUID, user: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Importancia por permutación, dependencia parcial 1D/2D, atribución por oclusión de casos y coeficientes. Si no
+    está en caché, se calcula en segundo plano y responde {"status": "computing", "job_id"}."""
+    import joblib
+
+    from app.ml import explain as xp
+
+    m = db.get(MlModel, model_id)
+    if m is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Modelo no encontrado")
+    if m.status != "ready" or not m.model_path or not Path(m.model_path).exists() or not m.preds_path:
+        raise HTTPException(status.HTTP_409_CONFLICT, "El modelo aún no está listo")
+    d = _get(db, m.dataset_id)
+    data_path = _ready(d)
+    cache = sources.data_dir() / "cache" / f"explain_{m.id}_v4.json"
+    if cache.exists():
+        cached: dict[str, Any] = json.loads(cache.read_text(encoding="utf-8"))
+        return cached
+    model_path, preds_path = str(m.model_path), str(m.preds_path)
+    meta = {"model": {"id": str(m.id), "name": m.name, "algorithm": m.algorithm}}
+
+    def work(rep: jobs.Reporter, maker: jobs.Maker) -> None:
+        rep(2, "Cargando el modelo, el dataset y las predicciones")
+        bundle = joblib.load(model_path)
+        res = xp.explain(bundle, ds.load(data_path), pd.read_csv(preds_path, compression="gzip", dtype={"cve": str}), report=rep)
+        cache.write_text(json.dumps(res | meta, ensure_ascii=False), encoding="utf-8")
+
+    running = db.execute(select(MlJob).where(MlJob.kind == "explain", MlJob.status.in_(("queued", "running")))).scalars().first()
+    if running is not None:
+        return {"status": "computing", "job_id": str(running.id)}
+    job = jobs.start(db, "explain", m.id, user.id, work)
+    return {"status": "computing", "job_id": str(job.id)}
