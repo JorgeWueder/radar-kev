@@ -19,3 +19,11 @@ def evaluation(dataset_id: uuid.UUID, model_ids: Iterable[uuid.UUID], op: int) -
 
 def explanation(model_id: uuid.UUID) -> Path:
     return sources.data_dir() / "cache" / f"explain_{model_id}_{EXPLAIN_VERSION}.json"
+
+
+INFERENCE_VERSION = "v1"
+
+
+def inference(model_id: uuid.UUID) -> Path:
+    """Calibración, bandas, valores típicos y opciones del formulario de inferencia de un modelo."""
+    return sources.data_dir() / "cache" / f"inference_{model_id}_{INFERENCE_VERSION}.json"

@@ -3,6 +3,7 @@
 import json
 import uuid
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
@@ -405,3 +406,178 @@ def explanation(model_id: uuid.UUID, user: User = Depends(require("ml", "view"))
         return {"status": "computing", "job_id": str(running.id)}
     job = jobs.start(db, "explain", m.id, user.id, work)
     return {"status": "computing", "job_id": str(job.id)}
+
+
+# ---- Fase 6: inferencia individual ----------------------------------------------------------------------------------
+
+CVE_PREFIX = r"^CVE-\d{4}-\d{0,7}$"
+
+
+@lru_cache(maxsize=1)
+def _frame(path: str, mtime: float) -> pd.DataFrame:
+    """Dataset en memoria (~1 s de lectura): la búsqueda y la predicción de un CVE no lo releen en cada petición."""
+    return ds.load(path)
+
+
+@lru_cache(maxsize=3)
+def _bundle(path: str, mtime: float) -> dict[str, Any]:
+    import joblib
+
+    out: dict[str, Any] = joblib.load(path)
+    return out
+
+
+@lru_cache(maxsize=3)
+def _preds(path: str, mtime: float) -> pd.DataFrame:
+    return pd.read_csv(path, compression="gzip", dtype={"cve": str})
+
+
+@lru_cache(maxsize=6)
+def _setup_file(path: str, mtime: float) -> dict[str, Any]:
+    out: dict[str, Any] = json.loads(Path(path).read_text(encoding="utf-8"))
+    return out
+
+
+def _ready_model(db: Session, model_id: uuid.UUID) -> MlModel:
+    m = db.get(MlModel, model_id)
+    if m is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Modelo no encontrado")
+    if m.status != "ready" or not m.model_path or not Path(m.model_path).exists() or not m.preds_path or not Path(m.preds_path).exists():
+        raise HTTPException(status.HTTP_409_CONFLICT, "El modelo aún no está listo")
+    return m
+
+
+def _dataset_frame(db: Session, m: MlModel) -> tuple[MlDataset, pd.DataFrame]:
+    d = _get(db, m.dataset_id)
+    path = _ready(d)
+    return d, _frame(str(path), path.stat().st_mtime)
+
+
+def _setup(db: Session, m: MlModel) -> dict[str, Any]:
+    """Calibración en validación + verificación en prueba + valores típicos. Se calcula una vez (~5 s) y queda en caché."""
+    from app.ml import explain as xp
+    from app.ml import inference as inf
+
+    cache = mlcache.inference(m.id)
+    if not cache.exists():
+        d, df = _dataset_frame(db, m)
+        dev = df[df["split"] == "desarrollo"]
+        preds_path = Path(str(m.preds_path))
+        try:
+            cal = inf.calibrate(_preds(str(preds_path), preds_path.stat().st_mtime))
+        except ValueError as e:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from None
+        base = {k: (round(v, 6) if isinstance(v, float) else str(v)) for k, v in xp.baseline_values(dev).items()}
+        params: Any = d.params
+        config: Any = m.config
+        out = {"model": {"id": str(m.id), "name": m.name, "algorithm": m.algorithm}, "dataset": {"id": str(d.id), "name": d.name},
+               "horizon_days": int(params.get("horizon_days") or 90), "drop": list(config.get("drop") or []),
+               "calibration": cal, "baseline": base, "options": inf.options(dev), "bands": inf.BANDS,
+               "features": ds.FEATURES, "how_to_read": inf.HOW_TO_READ}  # fmt: skip
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+    return _setup_file(str(cache), cache.stat().st_mtime)
+
+
+@router.get("/models/{model_id}/inference")
+def inference_setup(model_id: uuid.UUID, _: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    """Calibración (Platt en validación), su verificación en prueba, bandas de severidad y valores del formulario."""
+    s = _setup(db, _ready_model(db, model_id))
+    cal = {k: v for k, v in s["calibration"].items() if k not in ("boot", "grid")}
+    return s | {"calibration": cal}
+
+
+@router.get("/models/{model_id}/cases")
+def inference_cases(model_id: uuid.UUID, q: str = Query(..., min_length=9, max_length=16, pattern=CVE_PREFIX),
+                    _: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> list[dict[str, Any]]:  # fmt: skip
+    """CVE del dataset que empiezan por `q` (cada foto en que aparece). Los negativos están muestreados: no están todos."""
+    _d, df = _dataset_frame(db, _ready_model(db, model_id))
+    hit = df[df["cve"].str.startswith(q.upper())].sort_values(["snapshot", "cve"], ascending=[False, True]).head(25)
+    recs: list[Any] = hit.to_dict("records")
+    return [{"cve": r["cve"], "snapshot": str(r["snapshot"]), "split": r["split"], "label": int(r["label"])} for r in recs]
+
+
+@router.get("/models/{model_id}/ranking")
+def inference_ranking(model_id: uuid.UUID, snapshot: date | None = None, limit: int = Query(20, ge=5, le=100),
+                      _: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """CVE con mayor probabilidad en una foto de validación o prueba, con su banda y si entraron a KEV de verdad."""
+    from app.ml import inference as inf
+
+    m = _ready_model(db, model_id)
+    s = _setup(db, m)
+    path = Path(str(m.preds_path))
+    p = _preds(str(path), path.stat().st_mtime)
+    snaps = sorted(p["snapshot"].astype(str).unique())
+    shot = str(snapshot) if snapshot else snaps[-1]
+    if shot not in snaps:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Esa foto no está en validación ni en prueba")
+    g = p[p["snapshot"].astype(str) == shot]
+    top = g.nlargest(limit, "score")
+    cal = s["calibration"]
+    recs: list[Any] = top.to_dict("records")
+    rows = [{"cve": r["cve"], "score": float(r["score"]), "probability": float(inf.apply(cal["params"], r["score"])[0]),
+             "band": inf.band_of(cal["thresholds"], float(r["score"])), "label": int(r["label"]), "split": r["split"]} for r in recs]  # fmt: skip
+    return {"snapshot": shot, "snapshots": snaps, "split": str(g["split"].iloc[0]), "rows": rows,
+            "hits": int(top["label"].sum()), "positives": int(g["label"].sum())}  # fmt: skip
+
+
+class FeaturesIn(BaseModel):
+    """Valores a mano (escenario hipotético). Vacío (null) = dato ausente, como un CVE sin CVSS de la CNA."""
+
+    epss: float | None = Field(None, ge=0, le=1)
+    percentile: float | None = Field(None, ge=0, le=1)
+    epss_delta: float | None = Field(None, ge=-1, le=1)
+    epss_model: str | None = Field(None, max_length=80)
+    cvss: float | None = Field(None, ge=0, le=10)
+    av: str | None = Field(None, max_length=80)
+    ac: str | None = Field(None, max_length=80)
+    pr: str | None = Field(None, max_length=80)
+    ui: str | None = Field(None, max_length=80)
+    cwe: str | None = Field(None, max_length=80)
+    cna: str | None = Field(None, max_length=80)
+    days_published: float | None = Field(None, ge=0, le=20000)
+    edb_exploits: float | None = Field(None, ge=0, le=1000)
+    cna_kev_prior: float | None = Field(None, ge=0, le=10000)
+
+
+class PredictIn(BaseModel):
+    cve: str | None = Field(None, pattern=r"^CVE-\d{4}-\d{4,7}$")
+    snapshot: date | None = None
+    values: FeaturesIn | None = None
+
+
+@router.post("/models/{model_id}/predict")
+@limiter.limit("120/minute")
+def inference_predict(request: Request, model_id: uuid.UUID, body: PredictIn, actor: User = Depends(require("ml", "view")),
+                      db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """Predicción individual: probabilidad calibrada con IC 90 %, severidad, posición en el universo y explicación."""
+    from app.ml import algorithms as algs
+    from app.ml import inference as inf
+
+    if (body.cve is None) == (body.values is None):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Indique un CVE del dataset o los valores a mano (uno de los dos)")
+    m = _ready_model(db, model_id)
+    s = _setup(db, m)
+    bundle = _bundle(str(m.model_path), Path(str(m.model_path)).stat().st_mtime)
+    case: dict[str, Any] | None = None
+    if body.cve is not None:
+        _, df = _dataset_frame(db, m)
+        rows = df[df["cve"] == body.cve]
+        if body.snapshot is not None:
+            rows = rows[rows["snapshot"] == body.snapshot]
+        if rows.empty:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese CVE no está en el dataset para esa foto (los negativos están muestreados)")
+        r: Any = rows.sort_values("snapshot").iloc[-1].to_dict()
+        kev = r["kev_date"] if pd.notna(r["kev_date"]) else None
+        case = {"cve": r["cve"], "snapshot": str(r["snapshot"]), "split": r["split"], "label": int(r["label"]),
+                "kev_date": str(kev) if kev else None, "days_to_kev": (kev - r["snapshot"]).days if kev else None}  # fmt: skip
+        frame = inf.frame({c: (None if pd.isna(r[c]) else r[c]) for c in algs.NUM + algs.CAT})
+    else:
+        assert body.values is not None
+        frame = inf.frame(body.values.model_dump())
+    res = inf.predict(bundle, frame, s["calibration"], s["baseline"])
+    first: Any = frame.iloc[0].to_dict()
+    vals = {c: (None if pd.isna(first[c]) else (round(float(first[c]), 6) if c in algs.NUM else str(first[c]))) for c in algs.NUM + algs.CAT}
+    audit(db, request, "ml", "model_predict", user=actor, detail={"model": str(m.id), "cve": body.cve or "manual"})
+    db.commit()
+    return {"result": res, "case": case, "values": vals, "reading": inf.reading(res, s["calibration"], s["horizon_days"], case)}
