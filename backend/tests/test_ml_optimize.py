@@ -25,29 +25,30 @@ def _one_thread() -> Iterator[None]:
 
 
 def test_custom_space_is_validated_against_the_limits() -> None:
-    sp = {p["name"]: p for p in algs.custom_space("logreg", {"C": {"low": 1e-4, "high": 0.5}, "class_weight": {"choices": ["none"]}})}
-    assert sp["C"]["low"] == 1e-4 and sp["C"]["high"] == 0.5 and sp["C"]["default"] == 0.5  # el defecto (1) se recorta al rango
-    assert sp["class_weight"]["choices"] == ["none"] and sp["class_weight"]["default"] == "none"
+    sp = {p["name"]: p for p in algs.custom_space("logreg", {"C": {"low": 1e-4, "high": 0.005}})}
+    assert sp["C"]["low"] == 1e-4 and sp["C"]["high"] == 0.005 and sp["C"]["default"] == 0.005  # el defecto (0,01) se recorta al rango
+    mf = {p["name"]: p for p in algs.custom_space("random_forest", {"max_features": {"choices": ["0.3"]}})}
+    assert mf["max_features"]["choices"] == ["0.3"] and mf["max_features"]["default"] == "0.3"
     assert algs.custom_space("hgb", None) == algs.SPACES["hgb"]
     rf = {p["name"]: p for p in algs.custom_space("random_forest", {"max_depth": {"low": 3.4, "high": 20.6}})}
     assert (rf["max_depth"]["low"], rf["max_depth"]["high"]) == (3, 21)
     for bad in ({"C": {"low": 1, "high": 0.1}}, {"C": {"low": 1e-9, "high": 1}}, {"C": {"high": 1000}},
-                {"class_weight": {"choices": ["equilibrado"]}}, {"gamma": {"low": 1, "high": 2}}):  # fmt: skip
+                {"class_weight": {"choices": ["none"]}}, {"gamma": {"low": 1, "high": 2}}):  # fmt: skip
         with pytest.raises(ValueError):
             algs.custom_space("logreg", bad)
 
 
 def test_edges_suggest_a_wider_range_unless_at_the_limit() -> None:
     space = algs.custom_space("logreg", None)
-    e = optimize.edges({"C": 0.0012, "class_weight": "balanced"}, space, "logreg")
-    assert len(e) == 1 and e[0]["side"] == "inferior" and e[0]["suggest"] == {"low": pytest.approx(1e-4), "high": 10.0}
+    e = optimize.edges({"C": 0.00012}, space, "logreg")
+    assert len(e) == 1 and e[0]["side"] == "inferior" and e[0]["suggest"] == {"low": pytest.approx(1e-5), "high": 1.0}
     assert optimize.edges({"C": 0.3}, space, "logreg") == []
     at_limit = algs.custom_space("logreg", {"C": {"low": 1e-5, "high": 1}})
     e = optimize.edges({"C": 1.1e-5}, at_limit, "logreg")
     assert e[0]["at_limit"] and e[0]["suggest"] is None
     rf = algs.custom_space("random_forest", None)
-    e = optimize.edges({"n_estimators": 300, "max_depth": 9, "min_samples_leaf": 10}, rf, "random_forest")
-    assert [x["param"] for x in e] == ["n_estimators"] and e[0]["side"] == "superior" and e[0]["suggest"] == {"low": 100.0, "high": 400.0}
+    e = optimize.edges({"max_depth": 16, "min_samples_leaf": 30}, rf, "random_forest")
+    assert [x["param"] for x in e] == ["max_depth"] and e[0]["side"] == "superior" and e[0]["suggest"]["high"] == 23
 
 
 def cfg(**kw: Any) -> dict[str, Any]:

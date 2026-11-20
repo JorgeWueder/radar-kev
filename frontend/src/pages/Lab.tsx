@@ -26,7 +26,7 @@ const STATUS: Record<Dataset['status'], ['ok' | 'warn' | 'danger' | 'neutral', s
 const HORIZONS = [30, 90, 180] as const
 
 function NewDataset({ onStarted }: { onStarted: (r: { dataset_id: string; job_id: string }) => void }) {
-  const [form, setForm] = useState({ name: 'KEV en 90 días', description: '', start: '2025-01-01', horizon_days: 90 as (typeof HORIZONS)[number], neg_rate: 0.05, seed: 7 })
+  const [form, setForm] = useState({ name: 'KEV en 90 días', description: '', start: '2023-04-01', horizon_days: 90 as (typeof HORIZONS)[number], neg_rate: 0.05, seed: 7 })
   const create = useMutation({
     mutationFn: () => api.post<{ dataset_id: string; job_id: string }>('/ml/datasets', form),
     onSuccess: (r) => { toast.success('Construcción iniciada'); onStarted(r) },
@@ -37,7 +37,7 @@ function NewDataset({ onStarted }: { onStarted: (r: { dataset_id: string; job_id
       <Field label="Nombre"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required minLength={3} /></Field>
       <Field label="Descripción (opcional)"><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Primera foto"><Input type="date" min="2024-11-01" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} /></Field>
+        <Field label="Primera foto"><Input type="date" min="2023-04-01" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} /></Field>
         <Field label="Semilla"><Input type="number" min={0} value={form.seed} onChange={(e) => setForm({ ...form, seed: Number(e.target.value) })} className="tabular-nums" /></Field>
       </div>
       <div>
@@ -55,6 +55,7 @@ function NewDataset({ onStarted }: { onStarted: (r: { dataset_id: string; job_id
         </Select>
       </Field>
       <Button variant="primary" type="submit" disabled={create.isPending}>{create.isPending ? 'Iniciando…' : 'Construir dataset'}</Button>
+      <p className="text-[12px] text-muted">Con embargo: las fotos cuya ventana de etiqueta llega al bloque siguiente se excluyen (no se entrena ni se evalúa con ellas) y se informan en el resumen.</p>
       <p className="text-[12px] text-muted">La primera vez descarga EPSS, NVD y Exploit-DB (unos cientos de MB) y tarda varios minutos; después usa la caché.</p>
     </form>
   )

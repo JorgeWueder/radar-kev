@@ -180,7 +180,7 @@ def test_build_dataset_end_to_end_with_profile_metadata_and_rbac(env: Env, fake_
     assert job["progress"] == 100 and any("Foto" in e["msg"] for e in job["log"])  # monitoreo del avance
 
     d = c.get(f"{url}/{r.json()['dataset_id']}", headers=login(c, "gerencia@radar.local")).json()
-    assert d["status"] == "ready" and d["params"]["split"] == "temporal 70/15/15" and len(d["features"]) == len(ds.FEATURES)
+    assert d["status"] == "ready" and d["params"]["split"] == "temporal 70/15/15 con embargo" and d["stats"]["embargo_days"] == 30 and "excluida" in d["stats"]["split_snapshots"] and len(d["features"]) == len(ds.FEATURES)
     assert {s["kind"] for s in d["sources"]} >= {"kev", "epss", "nvd", "exploitdb"}
     st = d["stats"]
     assert st["positives"] > 0 and set(st["by_split"]) == {"desarrollo", "validacion", "prueba"}
@@ -218,7 +218,7 @@ def test_failed_build_marks_dataset_and_job(env: Env, fake_sources: Path, monkey
 
     monkeypatch.setattr(sources, "exploitdb", down)
     h = login(c, "admin@radar.local")
-    r = c.post("/api/v1/ml/datasets", json={"name": "Falla", "start": "2025-01-01", "horizon_days": 30}, headers=h)
+    r = c.post("/api/v1/ml/datasets", json={"name": "Falla", "start": "2025-01-01", "horizon_days": 30, "embargo": False}, headers=h)
     job = wait_job(c, h, r.json()["job_id"])
     assert job["status"] == "failed" and "no disponible" in job["message"]
     d = c.get(f"/api/v1/ml/datasets/{r.json()['dataset_id']}", headers=h).json()

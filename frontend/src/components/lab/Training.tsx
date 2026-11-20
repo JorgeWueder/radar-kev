@@ -1,4 +1,4 @@
-// Fase 2 · Entrenamiento: selector de modelo, hiperparámetros, CV anidada temporal 5×3 con Optuna y monitoreo en vivo.
+// Fase 2 · Entrenamiento: selector de modelo, hiperparámetros, CV anidada temporal con embargo (4×2; 5×3 en datasets heredados) con Optuna y monitoreo en vivo.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, XAxis, YAxis, ZAxis } from 'recharts'
@@ -197,6 +197,8 @@ export function Training({ datasets }: { datasets: Dataset[] }) {
               <p className="text-[12px] text-muted">
                 Clase: entra a KEV en {ds?.params.horizon_days} días (1) o no (0) · Desarrollo {split.desarrollo?.snapshots} fotos ({split.desarrollo?.positives} KEV) ·
                 Validación {split.validacion?.snapshots} ({split.validacion?.positives}) · Prueba {split.prueba?.snapshots} ({split.prueba?.positives}).
+                {ds?.stats.split_snapshots?.excluida?.length ? ` Excluidas por embargo de ${ds.stats.embargo_days} días: ${ds.stats.split_snapshots.excluida.length} fotos.` : ''}
+                {ds?.stats.by_split?.prueba?.events != null ? ` Eventos únicos (CVE distintos): desarrollo ${split.desarrollo?.events}, validación ${split.validacion?.events}, prueba ${split.prueba?.events}.` : ''}
               </p>
             )}
             <fieldset>

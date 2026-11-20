@@ -59,7 +59,7 @@ def download(kind: str, url: str, name: str, max_age_hours: float | None = None,
     for _ in range(3):
         try:
             with httpx.Client(timeout=TIMEOUT, follow_redirects=True) as c, c.stream("GET", url) as r:
-                if r.status_code == 404 and missing_ok:
+                if r.status_code in (403, 404) and missing_ok:  # el bucket de EPSS responde 403 (no 404) si falta el archivo de un día
                     return None
                 r.raise_for_status()
                 with tmp.open("wb") as f:

@@ -3,10 +3,10 @@
 export interface Excluded { name: string; source: string; reason: string }
 export interface Feature { name: string; type: 'num' | 'cat'; source: string; description: string }
 export interface Source { kind: string; name: string; license: string; url: string; file?: string; bytes?: number; sha256?: string; fetched_at?: string; date?: string; year?: number; model_version?: string; cached?: boolean; entries?: number; last_date_added?: string }
-export interface DatasetStats { rows?: number; positives?: number; snapshots?: string[]; by_split?: Record<string, { rows: number; positives: number; snapshots: number }>; nvd_cves?: number; edb_exploits?: number; error?: string }
+export interface DatasetStats { rows?: number; positives?: number; snapshots?: string[]; by_split?: Record<string, { rows: number; positives: number; snapshots: number; events?: number }>; events?: number; embargo_days?: number; split_snapshots?: Record<string, string[]>; nvd_cves?: number; edb_exploits?: number; error?: string }
 export interface Dataset {
   id: string; name: string; description: string; notes: string; tags: string[]; status: 'building' | 'ready' | 'failed'
-  params: { start: string; until: string; horizon_days: number; neg_rate: number; seed: number; snapshots: number; split: string }
+  params: { start: string; until: string; horizon_days: number; neg_rate: number; seed: number; snapshots: number; split: string; embargo?: boolean }
   sources: Source[]; stats: DatasetStats; created_at: string | null; updated_at: string | null; features?: Feature[]; excluded?: Excluded[]
 }
 export interface Job { id: string; kind: string; status: 'queued' | 'running' | 'done' | 'failed'; progress: number; message: string; log: { t: string; pct: number; msg: string }[]; target_id: string | null; started_at: string; finished_at: string | null }

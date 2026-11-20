@@ -12,7 +12,7 @@ from app.services.evaluation import _quality_of, auc
 
 MIN_POS_SPLIT = 20
 SPLITS = ("desarrollo", "validacion", "prueba")
-SPLIT_LABEL = {"desarrollo": "Desarrollo (70 %)", "validacion": "Validación (15 %)", "prueba": "Prueba (15 %)"}
+SPLIT_LABEL = {"desarrollo": "Desarrollo", "validacion": "Validación", "prueba": "Prueba"}
 BINS: dict[str, list[float]] = {
     "epss": [0, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0001],
     "cvss": [0, 4, 7, 9, 10.0001],
@@ -75,7 +75,7 @@ def profile(df: pd.DataFrame, neg_rate: float) -> dict[str, Any]:
         g = df[df["split"] == sp]
         if g.empty:
             continue
-        splits.append({"split": sp, "label": SPLIT_LABEL[sp], "rows": int(len(g)), "positives": int(g["label"].sum()),
+        splits.append({"split": sp, "label": SPLIT_LABEL[sp] + f" ({100 * g['snapshot'].nunique() / df['snapshot'].nunique():.0f} %)", "rows": int(len(g)), "positives": int(g["label"].sum()),
                        "snapshots": int(g["snapshot"].nunique()), "from": str(g["snapshot"].min()), "to": str(g["snapshot"].max()),
                        "share_pct": round(100 * g["snapshot"].nunique() / df["snapshot"].nunique(), 1),
                        "prevalence_pct": _prev(float(g["label"].sum()), float(g["weight"].sum()))})  # fmt: skip

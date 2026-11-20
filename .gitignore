@@ -25,3 +25,6 @@ jmeter.log
 
 # Caché de compilación de TypeScript (se regenera en cada build)
 *.tsbuildinfo
+
+# Predicciones de los experimentos del laboratorio (≈ 25 MB; se regeneran con app.ml.experiment)
+articulo/protocolo/resultados/f4/*.preds.csv.gz

@@ -69,6 +69,40 @@ def split_of(n: int) -> list[str]:
     return ["desarrollo"] * (n - n_val - n_test) + ["validacion"] * n_val + ["prueba"] * n_test
 
 
+def embargoed_split(shots: list[date], horizon_days: int, frac: float = 0.15) -> dict[date, str]:
+    """Partición temporal con EMBARGO: una foto S solo pertenece a un bloque si su ventana de etiqueta (S, S+N] termina
+    antes del inicio del bloque siguiente (S + N ≤ inicio). Las fotos que no lo cumplen quedan «excluida»: su etiqueta
+    mira dentro del bloque siguiente y usarla en entrenamiento o selección filtraría información futura.
+    Prueba = últimas `frac` fotos; validación = las `frac` anteriores que no cruzan hacia la prueba; desarrollo = lo que
+    queda y no cruza hacia la validación. Las proporciones finales son 70/15/15 solo de forma aproximada."""
+    n = len(shots)
+    if n < 6:
+        raise ValueError("Hacen falta al menos 6 fotos mensuales para la partición con embargo")
+    shots = sorted(shots)
+    gap = timedelta(days=horizon_days)
+    n_blk = max(1, round(frac * n))
+    test = shots[-n_blk:]
+    pre = [s for s in shots[:-n_blk] if s + gap <= test[0]]
+    val = pre[-n_blk:]
+    if not val or len(pre) <= len(val):
+        raise ValueError(
+            "No quedan fotos de desarrollo y validación tras aplicar el embargo: adelante la fecha de inicio"
+        )
+    dev = [s for s in pre[: len(pre) - len(val)] if s + gap <= val[0]]
+    if not dev:
+        raise ValueError("No quedan fotos de desarrollo tras aplicar el embargo: adelante la fecha de inicio")
+    out = dict.fromkeys(shots, "excluida")
+    for name, block in (("desarrollo", dev), ("validacion", val), ("prueba", test)):
+        for s in block:
+            out[s] = name
+    return out
+
+
+def purge(train: list[date], block_start: date, horizon_days: int) -> list[date]:
+    """Fotos de `train` cuya ventana de etiqueta no llega al bloque que empieza en `block_start`."""
+    return [s for s in train if s + timedelta(days=horizon_days) <= block_start]
+
+
 def exploits(path: Path) -> pd.DataFrame:
     """(cve, date_added) de cada exploit de Exploit-DB que cita un CVE."""
     df = pd.read_csv(path, usecols=["codes", "date_added"], dtype=str)
@@ -92,7 +126,9 @@ def snapshot_rows(s: date, horizon: int, epss: pd.DataFrame, prev: pd.DataFrame 
     df["weight"] = np.where(df["label"] == 1, 1.0, 1.0 / neg_rate)
     df["snapshot"] = s
     df["epss_model"] = model or "desconocido"
-    df["epss_delta"] = df["epss"] - df["cve"].map(prev.set_index("cve")["epss"]) if prev is not None else np.nan
+    df["epss_delta"] = (
+        df["epss"] - df["cve"].map(prev.set_index("cve")["epss"]) if prev is not None else np.nan
+    )
 
     df = df.merge(nvd_t, on="cve", how="left")
     pub = pd.to_datetime(df["published"])
@@ -100,7 +136,9 @@ def snapshot_rows(s: date, horizon: int, epss: pd.DataFrame, prev: pd.DataFrame 
     df.loc[df["days_published"] < 0, "days_published"] = np.nan  # publicado en el NVD después de la foto
     prior = edb[edb["date_added"] <= s].groupby("cve").size()
     df["edb_exploits"] = df["cve"].map(prior).fillna(0).astype(int)
-    kev_cna = kev[kev["date_added"] <= s].merge(nvd_t[["cve", "cna"]], on="cve", how="inner").groupby("cna").size()
+    kev_cna = (
+        kev[kev["date_added"] <= s].merge(nvd_t[["cve", "cna"]], on="cve", how="inner").groupby("cna").size()
+    )
     df["cna_kev_prior"] = df["cna"].map(kev_cna).fillna(0).astype(int)
     for col in ("av", "ac", "pr", "ui", "cwe", "cna"):
         df[col] = df[col].fillna("desconocido")
@@ -108,10 +146,15 @@ def snapshot_rows(s: date, horizon: int, epss: pd.DataFrame, prev: pd.DataFrame 
 
 
 def build(kev: pd.DataFrame, start: date, until: date, horizon: int, neg_rate: float, seed: int, out_path: Path,
-          progress: Progress) -> dict[str, Any]:  # fmt: skip
-    """Descarga las fuentes, arma todas las fotos y escribe el CSV comprimido. Devuelve procedencia y estadísticas."""
+          progress: Progress, embargo: bool = False) -> dict[str, Any]:  # fmt: skip
+    """Descarga las fuentes, arma todas las fotos y escribe el CSV comprimido. Devuelve procedencia y estadísticas.
+    Con `embargo` las fotos cuya ventana cruza hacia el bloque siguiente se excluyen del CSV (ver `embargoed_split`)."""
     shots = snapshots(start, until, horizon)
-    splits = split_of(len(shots))
+    if embargo:
+        by_date = embargoed_split(shots, horizon)
+        splits = [by_date[s] for s in shots]
+    else:
+        splits = split_of(len(shots))
     meta: list[dict[str, Any]] = [{"kind": "kev", "name": sources.LICENSES["kev"][0], "license": sources.LICENSES["kev"][1],
                                    "url": "tabla kev_entries (actualizada por el flujo diario)", "entries": int(len(kev)),
                                    "last_date_added": until.isoformat()}]  # fmt: skip
@@ -141,17 +184,29 @@ def build(kev: pd.DataFrame, start: date, until: date, horizon: int, neg_rate: f
         path, day, m = sources.epss_for(s)
         epss, _, model = read_epss_csv(path.read_bytes())
         meta.append(m | {"model_version": model})
-        rows = snapshot_rows(s, horizon, epss[["cve", "epss", "percentile"]], prev, model, kev, nvd_t, edb, neg_rate, rng)
-        rows["split"] = split
-        parts.append(rows)
-        prev = epss[["cve", "epss"]]
+        if split != "excluida":
+            rows = snapshot_rows(
+                s, horizon, epss[["cve", "epss", "percentile"]], prev, model, kev, nvd_t, edb, neg_rate, rng
+            )
+            rows["split"] = split
+            parts.append(rows)
+        prev = epss[
+            ["cve", "epss"]
+        ]  # también en las excluidas: epss_delta se mide contra la foto mensual anterior
     progress(96, "Guardando el dataset")
     df = pd.concat(parts, ignore_index=True)
     df.to_csv(out_path, index=False, compression="gzip")
-    by_split = df.groupby("split").agg(rows=("cve", "size"), positives=("label", "sum"), snapshots=("snapshot", "nunique"))
+    by_split = df.groupby("split").agg(
+        rows=("cve", "size"), positives=("label", "sum"), snapshots=("snapshot", "nunique")
+    )
+    events = df[df["label"] == 1].groupby("split")["cve"].nunique()
     stats = {
         "rows": int(len(df)), "positives": int(df["label"].sum()), "snapshots": [s.isoformat() for s in shots],
-        "by_split": {k: {kk: int(vv) for kk, vv in v.items()} for k, v in by_split.to_dict("index").items()},
+        "by_split": {k: {kk: int(vv) for kk, vv in v.items()} | {"events": int(events.get(k, 0))} for k, v in by_split.to_dict("index").items()},
+        "events": int(df.loc[df["label"] == 1, "cve"].nunique()),
+        "split_snapshots": {sp: [s.isoformat() for s, x in zip(shots, splits, strict=True) if x == sp]
+                            for sp in ("desarrollo", "validacion", "prueba", "excluida")},
+        "embargo_days": horizon if embargo else 0,
         "nvd_cves": int(len(nvd_t)), "edb_exploits": int(len(edb)),
     }  # fmt: skip
     return {"sources": meta, "stats": stats}

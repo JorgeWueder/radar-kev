@@ -127,7 +127,7 @@ ni las alertas del radar. Sigue las fases del Promptuario del curso:
 | Fase | Qué hace | Dónde |
 |---|---|---|
 | 1 · Datos | Construye el dataset a partir de fuentes públicas, valida, describe las variables y guarda la procedencia (URL, fecha, SHA-256, licencia) | `ml/dataset.py`, `ml/profile.py` |
-| 2 · Entrenamiento | Regresión logística, random forest y gradient boosting con validación cruzada anidada **temporal** 5×3 y Optuna (TPE con semilla); ablación sin EPSS o sin CVSS | `ml/training.py` |
+| 2 · Entrenamiento | Regresión logística, random forest y gradient boosting con validación cruzada anidada **temporal con embargo** (4×2 en datasets nuevos; 5×3 en los heredados) y Optuna (TPE con semilla, poda por mediana); ablación sin EPSS, sin CVSS o sin versión de EPSS | `ml/training.py` |
 | 3 · Evaluación | En prueba: PR-AUC, ROC-AUC, matrices de confusión, curvas, bootstrap pareado, McNemar, Friedman y estabilidad por mes | `ml/assess.py` |
 | 4 · Explicabilidad | Equivalentes tabulares de Grad-CAM++ (oclusión), mapas de atención (permutación, dependencia parcial 1D/2D) y máscaras caso por caso | `ml/explain.py` |
 | 5 · Reportes | Dataset, entrenamiento, evaluación y explicabilidad en PDF, Word (600 DPI) y Excel | `services/reports/lab.py` |
@@ -223,4 +223,5 @@ infra/          inicialización de PostgreSQL (3 bases)
 - Un modelo local de 3B es modesto: los controles detectan datos inventados (CVE, equipos, URLs) pero no toda imprecisión semántica; revise lo generado. Para más calidad use un modelo mayor o Anthropic/OpenAI.
 - La bitácora se protege con trigger y hash encadenado, pero el rol de la app es dueño de la tabla y podría quitar el trigger (mejora futura: rol de solo inserción).
 - PostgreSQL 16 es requisito del proyecto; n8n 3.x lo marca como "compatibilidad" (funciona).
+- Laboratorio: los datasets construidos antes del protocolo con embargo (fotos desde 2025-01 sin exclusión) tienen la validación contaminada por etiquetas que miran hacia el bloque siguiente (auditoría en `articulo/protocolo/F1_auditoria.md`); los nuevos excluyen esas fotos. Los «positivos por mes» son filas: un mismo CVE aparece en hasta 3 fotos, por eso se informan también los eventos únicos.
 - Laboratorio: con 24 a 37 entradas a KEV por mes, las cifras mensuales son ruidosas y los intervalos, anchos. Los modelos se entrenan con meses hasta ago-2026 y no se reentrenan solos; con el tiempo hay que reconstruir el dataset y reentrenar.

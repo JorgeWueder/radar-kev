@@ -21,7 +21,7 @@ import pandas as pd
 
 from app.ml import algorithms as algs
 from app.ml.metrics import evaluate
-from app.ml.training import fit_predict, forward_folds
+from app.ml.training import _fold_pairs, fit_predict
 from app.services.descriptive import _num
 
 SAMPLERS = {"tpe": "TPE (bayesiano)", "random": "Aleatorio"}
@@ -58,10 +58,10 @@ def _pruner(name: str) -> optuna.pruners.BasePruner:
     return optuna.pruners.NopPruner()
 
 
-def fold_frames(dev: pd.DataFrame, k_in: int) -> list[tuple[pd.DataFrame, pd.DataFrame]]:
+def fold_frames(dev: pd.DataFrame, k_in: int, v_in: int | None = None, horizon: int = 0) -> list[tuple[pd.DataFrame, pd.DataFrame]]:
     """Pliegues temporales de desarrollo con positivos a ambos lados (los demás no permiten medir la PR-AUC)."""
     out = []
-    for tr, va in forward_folds(sorted(dev["snapshot"].unique()), k_in):
+    for tr, va in _fold_pairs(sorted(dev["snapshot"].unique()), k_in, v_in, horizon):
         a, b = dev[dev["snapshot"].isin(tr)], dev[dev["snapshot"].isin(va)]
         if a["label"].sum() > 0 and b["label"].sum() > 0:
             out.append((a, b))
@@ -73,7 +73,8 @@ def fold_frames(dev: pd.DataFrame, k_in: int) -> list[tuple[pd.DataFrame, pd.Dat
 def run(dev: pd.DataFrame, algo: str, space: list[dict[str, Any]], cfg: dict[str, Any], on_trial: OnTrial) -> dict[str, Any]:
     """Ejecuta el estudio. `cfg`: sampler, pruner, n_trials, timeout_minutes, seed, k_in, include_defaults, drop."""
     seed, drop = int(cfg["seed"]), tuple(cfg.get("drop") or ())
-    folds = fold_frames(dev, int(cfg["k_in"]))
+    horizon = int(cfg.get("horizon") or 0)
+    folds = fold_frames(dev, int(cfg["k_in"]), cfg.get("v_in"), horizon)
     study = optuna.create_study(direction="maximize", sampler=_sampler(cfg["sampler"], seed), pruner=_pruner(cfg["pruner"]))
     if cfg.get("include_defaults", True):
         study.enqueue_trial(algs.defaults(algo, space))
@@ -83,7 +84,7 @@ def run(dev: pd.DataFrame, algo: str, space: list[dict[str, Any]], cfg: dict[str
         params = algs.suggest(trial, algo, space)
         vals: list[float] = []
         for step, (a, b) in enumerate(folds):
-            _, s = fit_predict(algo, params, seed, a, b, drop)
+            _, s = fit_predict(algo, params, seed, a, b, drop, horizon)
             vals.append(float(evaluate(b["label"].to_numpy(), s, b["weight"].to_numpy())["pr_auc"] or 0.0))
             trial.set_user_attr("folds", vals)
             trial.report(float(np.mean(vals)), step)
@@ -126,7 +127,7 @@ def _importance(study: optuna.Study, seed: int) -> list[dict[str, Any]]:
 
 def _position(p: dict[str, Any], v: float) -> float:
     lo, hi = float(p["low"]), float(p["high"])
-    if p["type"] == "float_log":
+    if p["type"] == "float_log" or p.get("log"):
         return (math.log(v) - math.log(lo)) / (math.log(hi) - math.log(lo))
     return (v - lo) / (hi - lo)
 
@@ -134,7 +135,7 @@ def _position(p: dict[str, Any], v: float) -> float:
 def _widen(p: dict[str, Any], side: str, lim: tuple[float, float]) -> tuple[float, float]:
     """Rango ampliado por el lado del borde: ×10 en escala log; la mitad del ancho en escala lineal."""
     lo, hi = float(p["low"]), float(p["high"])
-    if p["type"] == "float_log":
+    if p["type"] == "float_log" or p.get("log"):
         lo, hi = (lo / 10, hi) if side == "inferior" else (lo, hi * 10)
     else:
         w = (hi - lo) / 2

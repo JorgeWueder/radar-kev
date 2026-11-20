@@ -29,7 +29,17 @@ BANDS: list[dict[str, Any]] = [
     {"key": "media", "label": "Media", "top": 0.20, "meaning": "Entre el 5 % y el 20 % superior: vigilar."},
     {"key": "baja", "label": "Baja", "top": 1.0, "meaning": "El 80 % restante: prioridad normal."},
 ]  # fmt: skip
-RELIABILITY_TOPS = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]  # tramos para la curva de fiabilidad y Hosmer-Lemeshow
+RELIABILITY_TOPS = [
+    0.001,
+    0.005,
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+]  # tramos para la curva de fiabilidad y Hosmer-Lemeshow
 HOW_TO_READ = {
     "probability": ("Probabilidad CALIBRADA de que el CVE entre a KEV en el horizonte del dataset. El modelo da un puntaje para ordenar; "
                     "la calibración (ajustada en validación) lo traduce a una frecuencia esperada. El intervalo sale de recalibrar 200 veces "
@@ -146,7 +156,11 @@ def calibrate(preds: pd.DataFrame, seed: int = 7, n_boot: int = N_BOOT) -> dict[
     def wmean(v: np.ndarray) -> float:
         return float((wt * v).sum() / wt.sum())
 
-    brier_raw, brier_cal, brier_ref = wmean((st - yt) ** 2), wmean((pt - yt) ** 2), wmean((base_val - yt) ** 2)
+    brier_raw, brier_cal, brier_ref = (
+        wmean((st - yt) ** 2),
+        wmean((pt - yt) ** 2),
+        wmean((base_val - yt) ** 2),
+    )
     slope, intercept = _platt(_logit(pt), yt, wt)
     # Intervalos que suman las dos fuentes de error: la calibración (cada réplica usa una calibración bootstrap de
     # validación) y el azar de prueba (remuestreo estratificado; el conteo de positivos, por Poisson).
@@ -261,7 +275,9 @@ def frame(values: dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame([row])
 
 
-def predict(bundle: dict[str, Any], row: pd.DataFrame, cal: dict[str, Any], base: dict[str, Any]) -> dict[str, Any]:
+def predict(
+    bundle: dict[str, Any], row: pd.DataFrame, cal: dict[str, Any], base: dict[str, Any]
+) -> dict[str, Any]:
     """Predicción de UNA fila: puntaje, probabilidad calibrada con IC 90 %, banda, posición y atribución por oclusión."""
     model, drop = bundle["pipeline"], tuple(bundle.get("drop", []))
     s = float(xp._predict(model, row, drop)[0])
@@ -304,18 +320,26 @@ def reading(res: dict[str, Any], cal: dict[str, Any], horizon: int, case: dict[s
     up = [a for a in used if a["factor"] >= 1.1][:2]
     down = [a for a in used if a["factor"] <= 1 / 1.1][:2]
     if up:
-        out.append("Lo que más la sube: " + " y ".join(f"{a['group']} (×{_x(a['factor'])})" for a in up) + ".")
+        out.append(
+            "Lo que más la sube: " + " y ".join(f"{a['group']} (×{_x(a['factor'])})" for a in up) + "."
+        )
     if down:
-        out.append("Lo que más la baja: " + " y ".join(f"{a['group']} (×{_x(a['factor'])})" for a in down) + ".")
+        out.append(
+            "Lo que más la baja: " + " y ".join(f"{a['group']} (×{_x(a['factor'])})" for a in down) + "."
+        )
     if not up and not down:
-        out.append("Ningún grupo de variables cambia la probabilidad más de un 10 % frente a su valor típico.")
+        out.append(
+            "Ningún grupo de variables cambia la probabilidad más de un 10 % frente a su valor típico."
+        )
     if case is None:
         out.append("Valores ingresados a mano: es un escenario hipotético, no un CVE real.")
     else:
         if case["split"] == "desarrollo":
             out.append("Ojo: esta fila se usó para ENTRENAR el modelo; su predicción no sirve como prueba.")
         if case["label"]:
-            out.append(f"Resultado real: entró a KEV el {case['kev_date']}, {case['days_to_kev']} días después de la foto.")
+            out.append(
+                f"Resultado real: entró a KEV el {case['kev_date']}, {case['days_to_kev']} días después de la foto."
+            )
         else:
             out.append(f"Resultado real: no entró a KEV en los {horizon} días siguientes a la foto.")
     return out
@@ -323,9 +347,102 @@ def reading(res: dict[str, Any], cal: dict[str, Any], horizon: int, case: dict[s
 
 def options(dev: pd.DataFrame) -> dict[str, Any]:
     """Valores típicos y rangos para el formulario: categorías más frecuentes y percentiles 1/99 de las numéricas."""
-    cats = {c: [str(v) for v in dev[c].astype(str).value_counts().head(40 if c in ("cna", "cwe") else 12).index] for c in algs.CAT}
+    cats = {
+        c: [str(v) for v in dev[c].astype(str).value_counts().head(40 if c in ("cna", "cwe") else 12).index]
+        for c in algs.CAT
+    }
     nums = {}
     for c in algs.NUM:
         s = dev[c].dropna()
-        nums[c] = {"p01": float(s.quantile(0.01)) if len(s) else 0.0, "p99": float(s.quantile(0.99)) if len(s) else 0.0}
+        nums[c] = {
+            "p01": float(s.quantile(0.01)) if len(s) else 0.0,
+            "p99": float(s.quantile(0.99)) if len(s) else 0.0,
+        }
     return {"categorical": cats, "numeric": nums}
+
+
+# --------------------------------------------------------------------------- Fase 3 (protocolo): Platt frente a isotónica y deriva
+MIN_EVENTS_ISOTONIC = 50  # eventos únicos mínimos en validación para aceptar la isotónica (si no, Platt)
+
+
+def _logloss(y: np.ndarray, p: np.ndarray, w: np.ndarray) -> float:
+    p = np.clip(p, 1e-9, 1 - 1e-9)
+    return float(-np.sum(w * (y * np.log(p) + (1 - y) * np.log(1 - p))) / np.sum(w))
+
+
+def _fit_platt_fn(s: np.ndarray, y: np.ndarray, w: np.ndarray) -> Any:
+    a, b = _platt(_logit(s), y, w)
+    return lambda x: apply((a, b), x)
+
+
+def _fit_iso_fn(s: np.ndarray, y: np.ndarray, w: np.ndarray) -> Any:
+    from sklearn.isotonic import IsotonicRegression
+
+    iso = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0).fit(s, y, sample_weight=w)
+    return lambda x: np.asarray(iso.predict(np.asarray(x, dtype=float)))
+
+
+def compare_calibrators(preds: pd.DataFrame) -> dict[str, Any]:
+    """Platt frente a isotónica, ajustadas en VALIDACIÓN y elegidas por log-loss con 2 pliegues temporales dentro de validación
+    (se ajusta con las fotos más antiguas y se predice el tercio siguiente). La isotónica solo se acepta con
+    ≥ MIN_EVENTS_ISOTONIC eventos únicos en validación. Después se verifica en PRUEBA (O/E, Brier, log-loss) y se mide la deriva:
+    O/E de la mitad más reciente de validación frente a prueba, y el efecto de recalibrar solo con esa mitad reciente."""
+    val = preds[preds["split"] == "validacion"].sort_values("snapshot")
+    test = preds[preds["split"] == "prueba"]
+    events = int(val.loc[val["label"] == 1, "cve"].nunique())
+    snaps = sorted(val["snapshot"].unique())
+    if events < 5 or test.empty or len(snaps) < 3:
+        raise ValueError(
+            "Hacen falta al menos 5 eventos y 3 fotos en validación, y datos de prueba, para comparar calibraciones"
+        )
+    thirds = np.array_split(np.array(snaps, dtype=object), 3)
+    makers = {"platt": _fit_platt_fn, "isotonic": _fit_iso_fn}
+    cv: dict[str, list[float]] = {k: [] for k in makers}
+    for i in (1, 2):
+        tr = val[val["snapshot"].isin(np.concatenate(thirds[:i]).tolist())]
+        te = val[val["snapshot"].isin(thirds[i].tolist())]
+        if tr["label"].sum() == 0 or te["label"].sum() == 0:
+            continue
+        for k, mk in makers.items():
+            fn = mk(tr["score"].to_numpy(float), tr["label"].to_numpy(int), tr["weight"].to_numpy(float))
+            cv[k].append(
+                _logloss(
+                    te["label"].to_numpy(int), fn(te["score"].to_numpy(float)), te["weight"].to_numpy(float)
+                )
+            )
+    cv_mean = {k: (float(np.mean(v)) if v else None) for k, v in cv.items()}
+    choice = "platt"
+    if (
+        events >= MIN_EVENTS_ISOTONIC
+        and cv_mean["isotonic"] is not None
+        and cv_mean["platt"] is not None
+        and cv_mean["isotonic"] < cv_mean["platt"]
+    ):
+        choice = "isotonic"
+    sv, yv, wv = (val["score"].to_numpy(float), val["label"].to_numpy(int), val["weight"].to_numpy(float))
+    st, yt, wt = (test["score"].to_numpy(float), test["label"].to_numpy(int), test["weight"].to_numpy(float))
+    recent = val[val["snapshot"].isin(snaps[len(snaps) // 2 :])]
+
+    def check(fn: Any, label: str) -> dict[str, Any]:
+        p = np.clip(np.asarray(fn(st), dtype=float), 1e-9, 1 - 1e-9)
+        exp = float((wt * p).sum())
+        return {"label": label, "oe": float((wt * yt).sum() / exp) if exp else None, "brier": float(np.sum(wt * (p - yt) ** 2) / wt.sum()),
+                "logloss": _logloss(yt, p, wt)}  # fmt: skip
+
+    fns = {k: mk(sv, yv, wv) for k, mk in makers.items()}
+    rows = {k: check(fn, k) for k, fn in fns.items()}
+    rows["raw"] = {"label": "sin calibrar", "oe": float((wt * yt).sum() / (wt * st).sum()), "brier": float(np.sum(wt * (st - yt) ** 2) / wt.sum()),
+                   "logloss": _logloss(yt, st, wt)}  # fmt: skip
+    drift: dict[str, Any] = {"recent_validation_snapshots": [str(s) for s in snaps[len(snaps) // 2 :]]}
+    if recent["label"].sum() > 0:
+        f_recent = _fit_platt_fn(
+            recent["score"].to_numpy(float), recent["label"].to_numpy(int), recent["weight"].to_numpy(float)
+        )
+        p_val_recent = f_recent(recent["score"].to_numpy(float))
+        drift["oe_recent_validation"] = float(
+            (recent["weight"] * recent["label"]).sum() / (recent["weight"] * p_val_recent).sum()
+        )
+        drift["recalibrated_with_recent"] = check(f_recent, "platt (solo validación reciente)")
+    drift["oe_test_full_validation_platt"] = rows["platt"]["oe"]
+    return {"validation_events": events, "cv_logloss": cv_mean, "choice": choice, "min_events_isotonic": MIN_EVENTS_ISOTONIC,
+            "test": rows, "drift": drift}  # fmt: skip

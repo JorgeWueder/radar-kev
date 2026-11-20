@@ -14,7 +14,7 @@ import type { Dataset } from './types'
 type Key = 'ml_dataset' | 'ml_training' | 'ml_evaluation' | 'ml_explain'
 const REPORTS: { key: Key; phase: string; title: string; description: string; needs: 'dataset' | 'model'; requires?: string }[] = [
   { key: 'ml_dataset', phase: '1 · Datos', title: 'Dataset', description: 'Partición 70/15/15, validación, estadística de las variables, variables descartadas por fuga, fuentes y licencias.', needs: 'dataset' },
-  { key: 'ml_training', phase: '2 · Entrenamiento', title: 'Entrenamiento', description: 'Configuración, espacio de hiperparámetros, CV anidada 5×3 por pliegue y evolución de las pruebas de Optuna.', needs: 'model' },
+  { key: 'ml_training', phase: '2 · Entrenamiento', title: 'Entrenamiento', description: 'Configuración, espacio de hiperparámetros, CV anidada temporal por pliegue y evolución de las pruebas de Optuna.', needs: 'model' },
   { key: 'ml_evaluation', phase: '3 · Evaluación', title: 'Evaluación', description: 'Métricas en prueba, matrices de confusión, curvas ROC y PR, pruebas estadísticas y estabilidad mensual.', needs: 'dataset', requires: 'Requiere haber calculado la evaluación en la fase 3.' },
   { key: 'ml_explain', phase: '4 · Explicabilidad', title: 'Explicabilidad', description: 'Equivalencias con el Promptuario, importancia, dependencia parcial, mapa de interacción y casos explicados.', needs: 'model', requires: 'Requiere haber calculado las explicaciones de ese modelo en la fase 4.' },
 ]
