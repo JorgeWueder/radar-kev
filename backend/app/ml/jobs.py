@@ -86,8 +86,9 @@ def recover_stale(db: Session) -> int:
         update(MlJob).where(MlJob.status.in_(("queued", "running")))
         .values(status="failed", message="Interrumpido por un reinicio del servicio", finished_at=datetime.now(UTC))
     )  # fmt: skip
-    from app.models.ml import MlDataset, MlModel
+    from app.models.ml import MlDataset, MlModel, MlStudy
 
     db.execute(update(MlDataset).where(MlDataset.status == "building").values(status="failed"))
     db.execute(update(MlModel).where(MlModel.status == "training").values(status="failed", error="Interrumpido por un reinicio"))
+    db.execute(update(MlStudy).where(MlStudy.status == "running").values(status="failed", error="Interrumpido por un reinicio"))
     return int(res.rowcount or 0)  # type: ignore[attr-defined]

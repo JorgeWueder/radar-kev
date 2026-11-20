@@ -21,7 +21,7 @@ from app.ml import dataset as ds
 from app.ml import jobs, profile, sources
 from app.models.auth import User
 from app.models.intel import KevEntry
-from app.models.ml import MlDataset, MlJob, MlModel
+from app.models.ml import MlDataset, MlJob, MlModel, MlStudy
 
 router = APIRouter(prefix="/ml", tags=["laboratorio"])
 
@@ -201,6 +201,30 @@ class TrainIn(BaseModel):
     n_trials: int = Field(15, ge=2, le=60)
     seed: int = Field(7, ge=0, le=1_000_000)
     drop: list[Literal["cvss", "epss"]] = Field(default_factory=list, max_length=2)  # ablación de grupos de variables
+    space: dict[str, "SpaceRange"] | None = None  # espacio de búsqueda propio (Fase 7); None = el de siempre
+    study_id: uuid.UUID | None = None  # estudio de Optuna del que sale el espacio, si lo hay
+
+
+class SpaceRange(BaseModel):
+    """Rango (numéricos) o categorías elegidas (categóricos) de un hiperparámetro."""
+
+    low: float | None = None
+    high: float | None = None
+    choices: list[str] | None = Field(None, min_length=1, max_length=10)
+
+
+TrainIn.model_rebuild()
+
+
+def _space(algo: str, space: dict[str, SpaceRange] | None) -> list[dict[str, Any]] | None:
+    from app.ml import algorithms as algs
+
+    if not space:
+        return None
+    try:
+        return algs.custom_space(algo, {k: v.model_dump(exclude_none=True) for k, v in space.items()})
+    except ValueError as e:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from None
 
 
 def _model_out(m: MlModel, full: bool = True) -> dict[str, Any]:
@@ -256,15 +280,17 @@ def train_model(request: Request, body: TrainIn, actor: User = Depends(require("
     dev_snaps = int((by_split.get("desarrollo") or {}).get("snapshots", 0))
     k_out, k_in = 5, 3
     drop = tuple(sorted(set(body.drop)))
+    space = _space(body.algorithm, body.space)
     problem = training.feasible(dev_snaps, k_out, k_in)
     if problem:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problem)
     m = MlModel(dataset_id=d.id, algorithm=body.algorithm, created_by=actor.id, status="training",
                 name=body.name or (f"{algs.ALGORITHMS[body.algorithm]['label']} · {body.n_trials} pruebas"
-                                   + (f" · sin {' ni '.join(algs.GROUPS[g]['label'] for g in drop)}" if drop else "")),
+                                   + (f" · sin {' ni '.join(algs.GROUPS[g]['label'] for g in drop)}" if drop else "")
+                                   + (" · espacio propio" if space else "")),
                 config={"n_trials": body.n_trials, "k_out": k_out, "k_in": k_in, "seed": body.seed, "metric": "PR-AUC ponderada",
                         "cv": "anidada temporal (ventana creciente)", "target": f"entra a KEV en {d.params.get('horizon_days')} días",
-                        "drop": list(drop)},
+                        "drop": list(drop), "space": space, "study_id": str(body.study_id) if body.study_id else None},
                 folds=[], trials=[], aggregate={}, best_params={}, final_metrics={}, reading=[])  # fmt: skip
     db.add(m)
     db.commit()
@@ -289,7 +315,7 @@ def train_model(request: Request, body: TrainIn, actor: User = Depends(require("
             rep(int(95 * done["n"] / total), msg)
 
         rep(1, "Cargando el dataset")
-        res = training.train(ds.load(path), body.algorithm, body.n_trials, k_out, k_in, body.seed, report, drop)
+        res = training.train(ds.load(path), body.algorithm, body.n_trials, k_out, k_in, body.seed, report, drop, space)
         rep(97, "Guardando el modelo y las predicciones")
         base = sources.data_dir() / "models"
         base.mkdir(exist_ok=True)
@@ -581,3 +607,143 @@ def inference_predict(request: Request, model_id: uuid.UUID, body: PredictIn, ac
     audit(db, request, "ml", "model_predict", user=actor, detail={"model": str(m.id), "cve": body.cve or "manual"})
     db.commit()
     return {"result": res, "case": case, "values": vals, "reading": inf.reading(res, s["calibration"], s["horizon_days"], case)}
+
+
+# ---- Fase 7: estudios de Optuna (configuración de búsqueda, monitoreo y resultados) --------------------------------
+
+
+class StudyIn(BaseModel):
+    dataset_id: uuid.UUID
+    algorithm: Literal["logreg", "random_forest", "hgb"]
+    name: str | None = Field(None, max_length=120)
+    sampler: Literal["tpe", "random"] = "tpe"
+    pruner: Literal["median", "none"] = "median"
+    n_trials: int = Field(30, ge=3, le=200)
+    timeout_minutes: float = Field(30, ge=1, le=240)
+    seed: int = Field(7, ge=0, le=1_000_000)
+    k_in: Literal[3, 4, 5] = 3
+    include_defaults: bool = True
+    drop: list[Literal["cvss", "epss"]] = Field(default_factory=list, max_length=2)
+    space: dict[str, SpaceRange] | None = None
+
+
+def _study_out(st: MlStudy, full: bool = True) -> dict[str, Any]:
+    out: dict[str, Any] = {"id": str(st.id), "dataset_id": str(st.dataset_id), "algorithm": st.algorithm, "name": st.name,
+           "status": st.status, "config": st.config, "best_params": st.best_params, "best_value": st.best_value,
+           "seconds": st.seconds, "error": st.error, "stop_requested": st.stop_requested, "n_done": len(st.trials),
+           "created_at": st.created_at.isoformat() if st.created_at else None,
+           "finished_at": st.finished_at.isoformat() if st.finished_at else None}  # fmt: skip
+    if full:
+        out |= {"space": st.space, "trials": st.trials, "summary": st.summary}
+    return out
+
+
+def _get_study(db: Session, study_id: uuid.UUID) -> MlStudy:
+    st = db.get(MlStudy, study_id)
+    if st is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Estudio no encontrado")
+    return st
+
+
+@router.get("/studies")
+def list_studies(dataset_id: uuid.UUID | None = None, _: User = Depends(require("ml", "view")),
+                 db: Session = Depends(get_db)) -> list[dict[str, Any]]:  # fmt: skip
+    q = select(MlStudy).order_by(MlStudy.created_at.desc())
+    if dataset_id is not None:
+        q = q.where(MlStudy.dataset_id == dataset_id)
+    return [_study_out(st, full=False) for st in db.execute(q).scalars()]
+
+
+@router.get("/studies/{study_id}")
+def get_study(study_id: uuid.UUID, _: User = Depends(require("ml", "view")), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return _study_out(_get_study(db, study_id))
+
+
+@router.post("/studies", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("12/hour")
+def create_study(request: Request, body: StudyIn, actor: User = Depends(require("ml", "create")),
+                 db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """Lanza un estudio de Optuna en segundo plano sobre la partición de desarrollo (validación y prueba no se tocan)."""
+    from datetime import UTC, datetime
+
+    from app.ml import algorithms as algs
+    from app.ml import optimize
+
+    d = _get(db, body.dataset_id)
+    path = _ready(d)
+    by_split: Any = d.stats.get("by_split") or {}
+    dev_snaps = int((by_split.get("desarrollo") or {}).get("snapshots", 0))
+    if dev_snaps < body.k_in + 1:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"Hacen falta al menos {body.k_in + 1} fotos de desarrollo para {body.k_in} pliegues")
+    space = _space(body.algorithm, body.space) or algs.custom_space(body.algorithm, None)
+    drop = sorted(set(body.drop))
+    cfg = {"sampler": body.sampler, "pruner": body.pruner, "n_trials": body.n_trials, "timeout_minutes": body.timeout_minutes,
+           "seed": body.seed, "k_in": body.k_in, "include_defaults": body.include_defaults, "drop": drop,
+           "metric": "PR-AUC ponderada (media de los pliegues internos de desarrollo)"}  # fmt: skip
+    label = algs.ALGORITHMS[body.algorithm]["label"]
+    st = MlStudy(dataset_id=d.id, algorithm=body.algorithm, created_by=actor.id, status="running", config=cfg, space=space,
+                 name=body.name or f"{label} · {optimize.SAMPLERS[body.sampler]} · {body.n_trials} pruebas",
+                 trials=[], summary={}, best_params={}, stop_requested=False)  # fmt: skip
+    db.add(st)
+    db.commit()
+    study_id, bind = st.id, db.get_bind()
+
+    def work(rep: jobs.Reporter, maker: jobs.Maker) -> None:
+        rep(1, "Cargando el dataset (solo desarrollo)")
+        df = ds.load(path)
+        dev = df[df["split"] == "desarrollo"]
+        del df
+
+        def on_trial(rec: dict[str, Any]) -> bool:
+            with maker() as s:
+                row = s.get(MlStudy, study_id)
+                assert row is not None
+                row.trials = [*row.trials, rec]
+                if rec["best"] is not None:
+                    row.best_value = rec["best"]
+                stop, n = row.stop_requested, len(row.trials)
+                s.commit()
+            value = "—" if rec["value"] is None else f"{rec['value']:.4f}".replace(".", ",")
+            rep(min(99, int(100 * n / body.n_trials)), f"Prueba {rec['number']} {rec['state']} · PR-AUC {value}")
+            return bool(stop)
+
+        res = optimize.run(dev, body.algorithm, space, cfg, on_trial)
+        with maker() as s:
+            row = s.get(MlStudy, study_id)
+            assert row is not None
+            row.status = "stopped" if row.stop_requested else "done"
+            row.trials, row.summary = res["trials"], res["summary"]
+            row.best_params, row.best_value, row.seconds = res["best_params"], res["best_value"], res["seconds"]
+            row.finished_at = datetime.now(UTC)
+            s.commit()
+
+    def failed(msg: str) -> None:
+        with sessionmaker(bind=bind)() as s:
+            row = s.get(MlStudy, study_id)
+            if row is not None:
+                row.status, row.error, row.finished_at = "failed", msg, datetime.now(UTC)
+                s.commit()
+
+    try:
+        job = jobs.start(db, "optimize", study_id, actor.id, work, failed)
+    except jobs.JobBusy as e:
+        db.delete(st)
+        db.commit()
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from None
+    audit(db, request, "ml", "study_create", user=actor, detail={"study": str(study_id), "dataset": str(d.id), "algorithm": body.algorithm,
+          "sampler": body.sampler, "pruner": body.pruner, "n_trials": body.n_trials})  # fmt: skip
+    db.commit()
+    return {"study_id": str(study_id), "job_id": str(job.id)}
+
+
+@router.post("/studies/{study_id}/stop")
+def stop_study(request: Request, study_id: uuid.UUID, actor: User = Depends(require("ml", "create")),
+               db: Session = Depends(get_db)) -> dict[str, Any]:  # fmt: skip
+    """Pide detener el estudio: termina la prueba en curso y luego calcula los resultados con lo que haya."""
+    st = _get_study(db, study_id)
+    if st.status != "running":
+        raise HTTPException(status.HTTP_409_CONFLICT, "El estudio ya terminó")
+    st.stop_requested = True
+    audit(db, request, "ml", "study_stop", user=actor, detail={"study": str(study_id)})
+    db.commit()
+    return _study_out(st, full=False)

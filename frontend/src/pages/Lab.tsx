@@ -1,4 +1,4 @@
-// Laboratorio de modelos (experimental): predice qué CVE entrarán a KEV. Fases 1 a 6 (datos … inferencia).
+// Laboratorio de modelos (experimental): predice qué CVE entrarán a KEV. Fases 1 a 7 (datos … optimización).
 import { Flask } from '@phosphor-icons/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -9,6 +9,7 @@ import { JobProgress } from '../components/lab/JobProgress'
 import { LabEvaluation } from '../components/lab/LabEvaluation'
 import { LabExplain } from '../components/lab/LabExplain'
 import { LabInference } from '../components/lab/LabInference'
+import { LabOptimize } from '../components/lab/LabOptimize'
 import { LabReports } from '../components/lab/LabReports'
 import { Training } from '../components/lab/Training'
 import type { Dataset, Job } from '../components/lab/types'
@@ -18,7 +19,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 const PHASES = ['Datos', 'Entrenamiento', 'Evaluación', 'Explicabilidad', 'Reportes', 'Inferencia', 'Optimización']
-const READY_PHASES = 6 // fases ya implementadas
+const READY_PHASES = 7 // fases ya implementadas
 const STATUS: Record<Dataset['status'], ['ok' | 'warn' | 'danger' | 'neutral', string]> = {
   ready: ['ok', 'Listo'], building: ['neutral', 'Construyendo'], failed: ['danger', 'Falló'],
 }
@@ -94,7 +95,7 @@ export default function Lab() {
         </ol>
       </nav>
 
-      {phase === 1 ? <Training datasets={list.data ?? []} /> : phase === 2 ? <LabEvaluation datasets={list.data ?? []} /> : phase === 3 ? <LabExplain datasets={list.data ?? []} /> : phase === 4 ? <LabReports datasets={list.data ?? []} /> : phase === 5 ? <LabInference datasets={list.data ?? []} /> : (
+      {phase === 1 ? <Training datasets={list.data ?? []} /> : phase === 2 ? <LabEvaluation datasets={list.data ?? []} /> : phase === 3 ? <LabExplain datasets={list.data ?? []} /> : phase === 4 ? <LabReports datasets={list.data ?? []} /> : phase === 5 ? <LabInference datasets={list.data ?? []} /> : phase === 6 ? <LabOptimize datasets={list.data ?? []} /> : (
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-4">
           {can('ml', 'create') && (

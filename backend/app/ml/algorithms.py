@@ -77,14 +77,62 @@ def prepare(df: pd.DataFrame, drop: tuple[str, ...] | list[str] = ()) -> pd.Data
     return X
 
 
-def defaults(algo: str) -> dict[str, Any]:
-    return {p["name"]: p["default"] for p in SPACES[algo]}
+# Límites absolutos que acepta el editor del espacio de búsqueda (Fase 7): más amplios que el espacio por defecto,
+# pero dentro de lo que el algoritmo admite y de un tiempo de ajuste razonable.
+LIMITS: dict[str, dict[str, tuple[float, float]]] = {
+    "logreg": {"C": (1e-5, 100.0)},
+    "random_forest": {"n_estimators": (20, 600), "max_depth": (2, 30), "min_samples_leaf": (1, 500)},
+    "hgb": {"learning_rate": (0.005, 1.0), "max_iter": (20, 800), "max_leaf_nodes": (4, 255), "min_samples_leaf": (1, 1000),
+            "l2_regularization": (1e-6, 10.0)},
+}  # fmt: skip
 
 
-def suggest(trial: Any, algo: str) -> dict[str, Any]:
-    """Hiperparámetros propuestos por Optuna dentro del espacio del algoritmo."""
-    out: dict[str, Any] = {}
+def custom_space(algo: str, overrides: dict[str, dict[str, Any]] | None) -> list[dict[str, Any]]:
+    """Espacio de búsqueda con rangos o categorías propios. Valida contra LIMITS y deja el valor por defecto dentro
+    del rango (es la prueba 0). Sin cambios devuelve el espacio de siempre."""
+    if algo not in SPACES:
+        raise ValueError(f"Algoritmo desconocido: {algo}")
+    overrides = overrides or {}
+    unknown = set(overrides) - {p["name"] for p in SPACES[algo]}
+    if unknown:
+        raise ValueError(f"Hiperparámetros desconocidos para {algo}: {', '.join(sorted(unknown))}")
+    out = []
     for p in SPACES[algo]:
+        q = dict(p)
+        o = overrides.get(p["name"]) or {}
+        if p["type"] == "cat":
+            if "choices" in o:
+                choices = [c for c in p["choices"] if c in set(o["choices"])]
+                if not choices or len(choices) != len(set(o["choices"])):
+                    raise ValueError(f"{p['name']}: elija una o más opciones válidas ({', '.join(p['choices'])})")
+                q["choices"] = choices
+            if q["default"] not in q["choices"]:
+                q["default"] = q["choices"][0]
+        else:
+            lo_lim, hi_lim = LIMITS[algo][p["name"]]
+            lo, hi = float(o.get("low", p["low"])), float(o.get("high", p["high"]))
+            if p["type"] == "int":
+                lo, hi = float(round(lo)), float(round(hi))
+            if not (lo_lim <= lo < hi <= hi_lim):
+                raise ValueError(f"{p['name']}: el rango debe cumplir {_lim(lo_lim)} ≤ mínimo < máximo ≤ {_lim(hi_lim)}")
+            q["low"], q["high"] = (int(lo), int(hi)) if p["type"] == "int" else (lo, hi)
+            q["default"] = min(max(p["default"], q["low"]), q["high"])
+        out.append(q)
+    return out
+
+
+def _lim(v: float) -> str:
+    return f"{v:g}".replace(".", ",")
+
+
+def defaults(algo: str, space: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    return {p["name"]: p["default"] for p in (space or SPACES[algo])}
+
+
+def suggest(trial: Any, algo: str, space: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Hiperparámetros propuestos por Optuna dentro del espacio del algoritmo (o del espacio propio de la Fase 7)."""
+    out: dict[str, Any] = {}
+    for p in space or SPACES[algo]:
         if p["type"] == "float_log":
             out[p["name"]] = trial.suggest_float(p["name"], p["low"], p["high"], log=True)
         elif p["type"] == "int":
@@ -137,4 +185,5 @@ BASELINES: dict[str, tuple[str, Baseline]] = {
 
 
 def catalog() -> list[dict[str, Any]]:
-    return [{"key": k, **v, "space": SPACES[k], "defaults": defaults(k)} for k, v in ALGORITHMS.items()]
+    limits = {k: {n: {"low": lo, "high": hi} for n, (lo, hi) in v.items()} for k, v in LIMITS.items()}
+    return [{"key": k, **v, "space": SPACES[k], "defaults": defaults(k), "limits": limits[k]} for k, v in ALGORITHMS.items()]
