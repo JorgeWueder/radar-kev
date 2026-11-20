@@ -1,0 +1,89 @@
+[    9.4 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0372
+[   17.8 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0215
+[   24.4 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0210
+[   32.0 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0263
+[   39.9 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0642
+[   43.8 s] Pliegue 1/4 Â· prueba 6/10 Â· podada
+[   52.4 s] Pliegue 1/4 Â· prueba 7/10 Â· PR-AUC interna 0,0645
+[   55.9 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   59.8 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   63.6 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[   70.7 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,00325
+[   80.1 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0049
+[   90.9 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0058
+[  100.7 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0045
+[  111.6 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0041
+[  119.9 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0373
+[  124.3 s] Pliegue 2/4 Â· prueba 6/10 Â· podada
+[  129.3 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[  139.5 s] Pliegue 2/4 Â· prueba 8/10 Â· PR-AUC interna 0,0063
+[  144.7 s] Pliegue 2/4 Â· prueba 9/10 Â· podada
+[  148.9 s] Pliegue 2/4 Â· prueba 10/10 Â· podada
+[  154.6 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00326
+[  166.8 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0040
+[  177.2 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0035
+[  188.6 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0214
+[  201.5 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0046
+[  216.0 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0043
+[  221.5 s] Pliegue 3/4 Â· prueba 6/10 Â· podada
+[  226.8 s] Pliegue 3/4 Â· prueba 7/10 Â· podada
+[  238.6 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0052
+[  250.7 s] Pliegue 3/4 Â· prueba 9/10 Â· PR-AUC interna 0,0041
+[  255.1 s] Pliegue 3/4 Â· prueba 10/10 Â· podada
+[  262.7 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,05707
+[  276.3 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0039
+[  292.5 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0185
+[  306.2 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0125
+[  320.9 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0018
+[  335.5 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0130
+[  350.6 s] Pliegue 4/4 Â· prueba 6/10 Â· PR-AUC interna 0,0146
+[  357.4 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[  372.6 s] Pliegue 4/4 Â· prueba 8/10 Â· podada
+[  388.9 s] Pliegue 4/4 Â· prueba 9/10 Â· PR-AUC interna 0,0261
+[  403.6 s] Pliegue 4/4 Â· prueba 10/10 Â· PR-AUC interna 0,0173
+[  412.6 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,04453
+[  412.6 s] Modelo final: bÃºsqueda en todo desarrollo
+[  427.1 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0505
+[  445.0 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0339
+[  457.1 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0003
+[  473.3 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0305
+[  489.3 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0161
+[  497.1 s] Modelo final Â· prueba 6/10 Â· podada
+[  505.0 s] Modelo final Â· prueba 7/10 Â· podada
+[  511.5 s] Modelo final Â· prueba 8/10 Â· podada
+[  518.8 s] Modelo final Â· prueba 9/10 Â· podada
+[  526.6 s] Modelo final Â· prueba 10/10 Â· podada
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00415,
+   "roc_auc": 0.8396,
+   "recall_1pct": 0.3098,
+   "recall_5pct": 0.4185
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.00263,
+   "roc_auc": 0.8501,
+   "recall_1pct": 0.2562,
+   "recall_5pct": 0.5125
+  }
+ },
+ "best_params": {
+  "learning_rate": 0.05,
+  "max_leaf_nodes": 15,
+  "min_samples_leaf": 100,
+  "l2_regularization": 0.1
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-bfcc37d57fa0 Creating 
+ Container radar-backend-run-bfcc37d57fa0 Created 

@@ -1,0 +1,221 @@
+{
+ "logreg": {
+  "comparison": {
+   "validation_events": 80,
+   "cv_logloss": {
+    "platt": 0.0007909333218032621,
+    "isotonic": 0.00086355211221748
+   },
+   "choice": "platt",
+   "min_events_isotonic": 50,
+   "test": {
+    "platt": {
+     "label": "platt",
+     "oe": 0.8100494442051904,
+     "brier": 9.157450602188503e-05,
+     "logloss": 0.0007994952919404498
+    },
+    "isotonic": {
+     "label": "isotonic",
+     "oe": 0.6155092466310402,
+     "brier": 0.0001236538023246832,
+     "logloss": 0.001423209189529652
+    },
+    "raw": {
+     "label": "sin calibrar",
+     "oe": 1.3579955016565763,
+     "brier": 9.165784470321641e-05,
+     "logloss": 0.0008021650538722095
+    }
+   },
+   "drift": {
+    "recent_validation_snapshots": [
+     "2025-10-01",
+     "2025-11-01",
+     "2025-12-01"
+    ],
+    "oe_recent_validation": 0.999999999999999,
+    "recalibrated_with_recent": {
+     "label": "platt (solo validación reciente)",
+     "oe": 0.9152260797947813,
+     "brier": 9.158676728077429e-05,
+     "logloss": 0.0007976572895592171
+    },
+    "oe_test_full_validation_platt": 0.8100494442051904
+   }
+  },
+  "platt_test": {
+   "observed": 184.0,
+   "expected": 227.14662829074382,
+   "oe": 0.8100494442051903,
+   "oe_lo": 0.6631883691554585,
+   "oe_hi": 0.9270140789621292,
+   "slope": 1.071843895082747,
+   "slope_lo": 0.9426986973195989,
+   "slope_hi": 1.2171697916376936,
+   "intercept": 0.3337792253682487,
+   "intercept_lo": -0.6682127255837231,
+   "intercept_hi": 1.4445495921876275,
+   "brier_raw": 9.165784470321641e-05,
+   "brier_cal": 9.157450602188503e-05,
+   "brier_ref": 9.184349804896808e-05,
+   "brier_skill": 0.002928808601558641,
+   "hl": 41.64945032921238,
+   "hl_df": 7,
+   "hl_p": 6.073850808577357e-07,
+   "positives": 184,
+   "rows": 100336
+  },
+  "base_rate": {
+   "validacion": 9.147038646238281e-05,
+   "prueba": 9.185193468129376e-05
+  },
+  "bands": null
+ },
+ "random_forest": {
+  "comparison": {
+   "validation_events": 80,
+   "cv_logloss": {
+    "platt": 0.0008158441681418609,
+    "isotonic": 0.0008163840315817195
+   },
+   "choice": "platt",
+   "min_events_isotonic": 50,
+   "test": {
+    "platt": {
+     "label": "platt",
+     "oe": 0.5535960396852705,
+     "brier": 9.181894899464301e-05,
+     "logloss": 0.0008577741612760708
+    },
+    "isotonic": {
+     "label": "isotonic",
+     "oe": 0.4902965312080718,
+     "brier": 9.197488191064989e-05,
+     "logloss": 0.0008822103808710513
+    },
+    "raw": {
+     "label": "sin calibrar",
+     "oe": 0.18907156313400542,
+     "brier": 9.489799943828927e-05,
+     "logloss": 0.001095784522584546
+    }
+   },
+   "drift": {
+    "recent_validation_snapshots": [
+     "2025-10-01",
+     "2025-11-01",
+     "2025-12-01"
+    ],
+    "oe_recent_validation": 1.0000000000000007,
+    "recalibrated_with_recent": {
+     "label": "platt (solo validación reciente)",
+     "oe": 0.6334536680577569,
+     "brier": 9.179001201459094e-05,
+     "logloss": 0.0008486112516439665
+    },
+    "oe_test_full_validation_platt": 0.5535960396852705
+   }
+  },
+  "platt_test": {
+   "observed": 184.0,
+   "expected": 332.3723199042522,
+   "oe": 0.553596039685271,
+   "oe_lo": 0.455933445715627,
+   "oe_hi": 0.6366065888653387,
+   "slope": 0.9239691948863651,
+   "slope_lo": 0.8084400109649421,
+   "slope_hi": 1.0614190332084614,
+   "intercept": -1.157277729407158,
+   "intercept_lo": -2.0513092272919904,
+   "intercept_hi": -0.08120082763698466,
+   "brier_raw": 9.489799943828927e-05,
+   "brier_cal": 9.181894899464301e-05,
+   "brier_ref": 9.184349804896808e-05,
+   "brier_skill": 0.00026729224002319807,
+   "hl": 77.41927189903326,
+   "hl_df": 7,
+   "hl_p": 4.621709442628814e-14,
+   "positives": 184,
+   "rows": 100336
+  },
+  "base_rate": {
+   "validacion": 9.147038646238281e-05,
+   "prueba": 9.185193468129376e-05
+  },
+  "bands": null
+ },
+ "hgb": {
+  "comparison": {
+   "validation_events": 80,
+   "cv_logloss": {
+    "platt": 0.0008265017952673232,
+    "isotonic": 0.0008112086646593437
+   },
+   "choice": "isotonic",
+   "min_events_isotonic": 50,
+   "test": {
+    "platt": {
+     "label": "platt",
+     "oe": 0.8463572033110051,
+     "brier": 9.188854636889948e-05,
+     "logloss": 0.000833660979469991
+    },
+    "isotonic": {
+     "label": "isotonic",
+     "oe": 0.7927593555438794,
+     "brier": 9.169906250819326e-05,
+     "logloss": 0.0008449769196102278
+    },
+    "raw": {
+     "label": "sin calibrar",
+     "oe": 0.21693343919356678,
+     "brier": 0.00017792726998237116,
+     "logloss": 0.0011633053125138476
+    }
+   },
+   "drift": {
+    "recent_validation_snapshots": [
+     "2025-10-01",
+     "2025-11-01",
+     "2025-12-01"
+    ],
+    "oe_recent_validation": 1.0000000000000022,
+    "recalibrated_with_recent": {
+     "label": "platt (solo validación reciente)",
+     "oe": 0.8699405602569863,
+     "brier": 9.212855854301931e-05,
+     "logloss": 0.0008346403210593155
+    },
+    "oe_test_full_validation_platt": 0.8463572033110051
+   }
+  },
+  "platt_test": {
+   "observed": 184.0,
+   "expected": 217.40229690275092,
+   "oe": 0.8463572033110003,
+   "oe_lo": 0.7010309414393849,
+   "oe_hi": 0.9749497627477611,
+   "slope": 0.9849834949509257,
+   "slope_lo": 0.8897734263130725,
+   "slope_hi": 1.0994338268724106,
+   "intercept": -0.285948122520962,
+   "intercept_lo": -1.1137810093260707,
+   "intercept_hi": 0.6864167413308081,
+   "brier_raw": 0.00017792726998237116,
+   "brier_cal": 9.188854636889953e-05,
+   "brier_ref": 9.184349804896808e-05,
+   "brier_skill": -0.0004904900280195967,
+   "hl": 52.753430156558146,
+   "hl_df": 7,
+   "hl_p": 4.146802832940717e-09,
+   "positives": 184,
+   "rows": 100336
+  },
+  "base_rate": {
+   "validacion": 9.147038646238281e-05,
+   "prueba": 9.185193468129376e-05
+  },
+  "bands": null
+ }
+}

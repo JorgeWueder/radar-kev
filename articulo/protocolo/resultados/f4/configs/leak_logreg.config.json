@@ -1,0 +1,17 @@
+{
+ "n_trials": 10,
+ "seed": 7,
+ "sampler": "tpe",
+ "k_out": 4,
+ "k_in": 2,
+ "v_out": 3,
+ "v_in": 2,
+ "algorithm": "logreg",
+ "horizon": 0,
+ "drop": [
+  "epss_version"
+ ],
+ "name": "leak_logreg",
+ "dataset_path": "/data/ml/datasets/021c5288-f834-4c31-948e-2201d60a7052.csv.gz",
+ "out_dir": "/out"
+}

@@ -1,0 +1,86 @@
+[    3.3 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0467
+[    4.6 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0418
+[    5.8 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0418
+[    7.0 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0418
+[    8.3 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0469
+[    9.5 s] Pliegue 1/4 Â· prueba 6/10 Â· PR-AUC interna 0,0522
+[   10.1 s] Pliegue 1/4 Â· prueba 7/10 Â· podada
+[   10.6 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   11.9 s] Pliegue 1/4 Â· prueba 9/10 Â· PR-AUC interna 0,0315
+[   13.1 s] Pliegue 1/4 Â· prueba 10/10 Â· PR-AUC interna 0,0468
+[   14.2 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,03987
+[   16.0 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0030
+[   17.9 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0212
+[   19.7 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0030
+[   21.5 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0030
+[   23.3 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0231
+[   25.1 s] Pliegue 2/4 Â· prueba 6/10 Â· PR-AUC interna 0,0455
+[   25.9 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[   26.7 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[   28.6 s] Pliegue 2/4 Â· prueba 9/10 Â· PR-AUC interna 0,0236
+[   29.4 s] Pliegue 2/4 Â· prueba 10/10 Â· podada
+[   30.9 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00214
+[   33.2 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0007
+[   35.5 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0003
+[   38.0 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0026
+[   40.3 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0003
+[   42.6 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0003
+[   44.9 s] Pliegue 3/4 Â· prueba 6/10 Â· PR-AUC interna 0,0007
+[   47.3 s] Pliegue 3/4 Â· prueba 7/10 Â· PR-AUC interna 0,0120
+[   49.7 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0111
+[   50.8 s] Pliegue 3/4 Â· prueba 9/10 Â· podada
+[   53.1 s] Pliegue 3/4 Â· prueba 10/10 Â· PR-AUC interna 0,0023
+[   54.9 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,02735
+[   57.8 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0016
+[   60.8 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0321
+[   63.8 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0226
+[   66.8 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0015
+[   69.7 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0007
+[   71.0 s] Pliegue 4/4 Â· prueba 6/10 Â· podada
+[   72.4 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[   75.4 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0218
+[   76.8 s] Pliegue 4/4 Â· prueba 9/10 Â· podada
+[   78.1 s] Pliegue 4/4 Â· prueba 10/10 Â· podada
+[   80.2 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,00315
+[   80.2 s] Modelo final: bÃºsqueda en todo desarrollo
+[   84.2 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0019
+[   88.3 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0190
+[   92.3 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0006
+[   96.3 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0015
+[  100.4 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0006
+[  102.3 s] Modelo final Â· prueba 6/10 Â· podada
+[  104.2 s] Modelo final Â· prueba 7/10 Â· podada
+[  108.2 s] Modelo final Â· prueba 8/10 Â· PR-AUC interna 0,0019
+[  112.2 s] Modelo final Â· prueba 9/10 Â· PR-AUC interna 0,0188
+[  116.4 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0190
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00792,
+   "roc_auc": 0.8891,
+   "recall_1pct": 0.3043,
+   "recall_5pct": 0.5435
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.02709,
+   "roc_auc": 0.8778,
+   "recall_1pct": 0.275,
+   "recall_5pct": 0.5188
+  }
+ },
+ "best_params": {
+  "C": 0.001185102516726142
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-26dde89c3ed6 Creating 
+ Container radar-backend-run-26dde89c3ed6 Created 

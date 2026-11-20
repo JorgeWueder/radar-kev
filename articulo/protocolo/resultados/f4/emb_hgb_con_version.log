@@ -1,0 +1,89 @@
+[   11.7 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0307
+[   22.5 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0520
+[   31.4 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0196
+[   41.1 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0516
+[   51.4 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0607
+[   62.4 s] Pliegue 1/4 Â· prueba 6/10 Â· PR-AUC interna 0,0470
+[   67.4 s] Pliegue 1/4 Â· prueba 7/10 Â· podada
+[   72.5 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   77.7 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   82.7 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[   89.6 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,00744
+[  101.5 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0038
+[  114.6 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0046
+[  126.7 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0045
+[  140.7 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0039
+[  151.1 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0112
+[  156.8 s] Pliegue 2/4 Â· prueba 6/10 Â· podada
+[  169.8 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[  175.8 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[  189.3 s] Pliegue 2/4 Â· prueba 9/10 Â· PR-AUC interna 0,0039
+[  194.4 s] Pliegue 2/4 Â· prueba 10/10 Â· podada
+[  201.2 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00329
+[  215.3 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0135
+[  228.3 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0057
+[  242.0 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0034
+[  257.3 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0045
+[  273.9 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0037
+[  280.7 s] Pliegue 3/4 Â· prueba 6/10 Â· podada
+[  287.1 s] Pliegue 3/4 Â· prueba 7/10 Â· podada
+[  301.3 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0053
+[  315.8 s] Pliegue 3/4 Â· prueba 9/10 Â· podada
+[  321.6 s] Pliegue 3/4 Â· prueba 10/10 Â· podada
+[  330.4 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,0768
+[  346.6 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0041
+[  364.7 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0187
+[  380.9 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0052
+[  397.9 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0123
+[  415.1 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0043
+[  432.2 s] Pliegue 4/4 Â· prueba 6/10 Â· PR-AUC interna 0,0167
+[  440.7 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[  458.1 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0088
+[  479.2 s] Pliegue 4/4 Â· prueba 9/10 Â· PR-AUC interna 0,0258
+[  496.7 s] Pliegue 4/4 Â· prueba 10/10 Â· PR-AUC interna 0,0270
+[  504.9 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,05715
+[  504.9 s] Modelo final: bÃºsqueda en todo desarrollo
+[  520.2 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0509
+[  539.2 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0347
+[  551.9 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0003
+[  569.0 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0301
+[  584.7 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0211
+[  592.6 s] Modelo final Â· prueba 6/10 Â· podada
+[  600.2 s] Modelo final Â· prueba 7/10 Â· podada
+[  606.9 s] Modelo final Â· prueba 8/10 Â· podada
+[  622.0 s] Modelo final Â· prueba 9/10 Â· PR-AUC interna 0,0293
+[  629.9 s] Modelo final Â· prueba 10/10 Â· podada
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00348,
+   "roc_auc": 0.8563,
+   "recall_1pct": 0.3098,
+   "recall_5pct": 0.3967
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.00234,
+   "roc_auc": 0.86,
+   "recall_1pct": 0.2313,
+   "recall_5pct": 0.5188
+  }
+ },
+ "best_params": {
+  "learning_rate": 0.05,
+  "max_leaf_nodes": 15,
+  "min_samples_leaf": 100,
+  "l2_regularization": 0.1
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-9a51aa3c43ce Creating 
+ Container radar-backend-run-9a51aa3c43ce Created 

@@ -1,0 +1,146 @@
+{
+ "1pct": {
+  "events": 105,
+  "detected": {
+   "logreg": 42,
+   "random_forest": 47,
+   "hgb": 43,
+   "epss": 16,
+   "cvss": 29
+  },
+  "pairs": {
+   "logreg_vs_random_forest": {
+    "only_a": 4,
+    "only_b": 9,
+    "p": 0.2668
+   },
+   "logreg_vs_hgb": {
+    "only_a": 7,
+    "only_b": 8,
+    "p": 1.0
+   },
+   "logreg_vs_epss": {
+    "only_a": 38,
+    "only_b": 12,
+    "p": 0.0003
+   },
+   "logreg_vs_cvss": {
+    "only_a": 16,
+    "only_b": 3,
+    "p": 0.0044
+   },
+   "random_forest_vs_logreg": {
+    "only_a": 9,
+    "only_b": 4,
+    "p": 0.2668
+   },
+   "random_forest_vs_hgb": {
+    "only_a": 8,
+    "only_b": 4,
+    "p": 0.3877
+   },
+   "random_forest_vs_epss": {
+    "only_a": 40,
+    "only_b": 9,
+    "p": 0.0
+   },
+   "random_forest_vs_cvss": {
+    "only_a": 21,
+    "only_b": 3,
+    "p": 0.0003
+   },
+   "hgb_vs_logreg": {
+    "only_a": 8,
+    "only_b": 7,
+    "p": 1.0
+   },
+   "hgb_vs_random_forest": {
+    "only_a": 4,
+    "only_b": 8,
+    "p": 0.3877
+   },
+   "hgb_vs_epss": {
+    "only_a": 39,
+    "only_b": 12,
+    "p": 0.0002
+   },
+   "hgb_vs_cvss": {
+    "only_a": 16,
+    "only_b": 2,
+    "p": 0.0013
+   }
+  }
+ },
+ "5pct": {
+  "events": 105,
+  "detected": {
+   "logreg": 65,
+   "random_forest": 73,
+   "hgb": 58,
+   "epss": 36,
+   "cvss": 45
+  },
+  "pairs": {
+   "logreg_vs_random_forest": {
+    "only_a": 5,
+    "only_b": 13,
+    "p": 0.0963
+   },
+   "logreg_vs_hgb": {
+    "only_a": 13,
+    "only_b": 6,
+    "p": 0.1671
+   },
+   "logreg_vs_epss": {
+    "only_a": 41,
+    "only_b": 12,
+    "p": 0.0001
+   },
+   "logreg_vs_cvss": {
+    "only_a": 20,
+    "only_b": 0,
+    "p": 0.0
+   },
+   "random_forest_vs_logreg": {
+    "only_a": 13,
+    "only_b": 5,
+    "p": 0.0963
+   },
+   "random_forest_vs_hgb": {
+    "only_a": 20,
+    "only_b": 5,
+    "p": 0.0041
+   },
+   "random_forest_vs_epss": {
+    "only_a": 42,
+    "only_b": 5,
+    "p": 0.0
+   },
+   "random_forest_vs_cvss": {
+    "only_a": 31,
+    "only_b": 3,
+    "p": 0.0
+   },
+   "hgb_vs_logreg": {
+    "only_a": 6,
+    "only_b": 13,
+    "p": 0.1671
+   },
+   "hgb_vs_random_forest": {
+    "only_a": 5,
+    "only_b": 20,
+    "p": 0.0041
+   },
+   "hgb_vs_epss": {
+    "only_a": 40,
+    "only_b": 18,
+    "p": 0.0054
+   },
+   "hgb_vs_cvss": {
+    "only_a": 18,
+    "only_b": 5,
+    "p": 0.0106
+   }
+  }
+ }
+}

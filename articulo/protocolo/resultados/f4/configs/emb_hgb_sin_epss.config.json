@@ -1,0 +1,18 @@
+{
+ "n_trials": 10,
+ "seed": 7,
+ "sampler": "tpe",
+ "k_out": 4,
+ "k_in": 2,
+ "v_out": 3,
+ "v_in": 2,
+ "algorithm": "hgb",
+ "horizon": 90,
+ "drop": [
+  "epss_version",
+  "epss"
+ ],
+ "name": "emb_hgb_sin_epss",
+ "dataset_path": "/data/ml/datasets/39117ad7-c6c1-4ecd-8dc5-661423847ee3.csv.gz",
+ "out_dir": "/out"
+}

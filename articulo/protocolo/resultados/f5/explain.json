@@ -1,0 +1,3318 @@
+{
+ "logreg": {
+  "importance": {
+   "base_roc_auc": 0.8882,
+   "rows": [
+    {
+     "name": "EPSS",
+     "kind": "grupo",
+     "mean": 0.1008,
+     "sd": 0.0065
+    },
+    {
+     "name": "Antigüedad del CVE",
+     "kind": "grupo",
+     "mean": 0.0916,
+     "sd": 0.0081
+    },
+    {
+     "name": "days_published",
+     "kind": "variable",
+     "mean": 0.0865,
+     "sd": 0.0061
+    },
+    {
+     "name": "CVSS de la CNA",
+     "kind": "grupo",
+     "mean": 0.0664,
+     "sd": 0.0172
+    },
+    {
+     "name": "epss",
+     "kind": "variable",
+     "mean": 0.0515,
+     "sd": 0.0073
+    },
+    {
+     "name": "cvss",
+     "kind": "variable",
+     "mean": 0.0458,
+     "sd": 0.0034
+    },
+    {
+     "name": "Exploits públicos",
+     "kind": "grupo",
+     "mean": 0.0135,
+     "sd": 0.0014
+    },
+    {
+     "name": "edb_exploits",
+     "kind": "variable",
+     "mean": 0.0116,
+     "sd": 0.0014
+    },
+    {
+     "name": "Historial KEV de la CNA",
+     "kind": "grupo",
+     "mean": 0.0089,
+     "sd": 0.0016
+    },
+    {
+     "name": "cna_kev_prior",
+     "kind": "variable",
+     "mean": 0.0088,
+     "sd": 0.0022
+    },
+    {
+     "name": "percentile",
+     "kind": "variable",
+     "mean": 0.0057,
+     "sd": 0.0048
+    },
+    {
+     "name": "CNA (quién publicó)",
+     "kind": "grupo",
+     "mean": 0.0011,
+     "sd": 0.0004
+    },
+    {
+     "name": "cna",
+     "kind": "variable",
+     "mean": 0.0009,
+     "sd": 0.0002
+    },
+    {
+     "name": "cwe",
+     "kind": "variable",
+     "mean": 0.0003,
+     "sd": 0.0005
+    },
+    {
+     "name": "epss_delta",
+     "kind": "variable",
+     "mean": 0.0,
+     "sd": 0.0
+    },
+    {
+     "name": "epss_model",
+     "kind": "variable",
+     "mean": 0.0,
+     "sd": 0.0
+    },
+    {
+     "name": "pr",
+     "kind": "variable",
+     "mean": -0.0011,
+     "sd": 0.0003
+    },
+    {
+     "name": "Tipo de debilidad (CWE)",
+     "kind": "grupo",
+     "mean": -0.0012,
+     "sd": 0.0004
+    },
+    {
+     "name": "ui",
+     "kind": "variable",
+     "mean": -0.0016,
+     "sd": 0.0009
+    },
+    {
+     "name": "ac",
+     "kind": "variable",
+     "mean": -0.002,
+     "sd": 0.0004
+    },
+    {
+     "name": "av",
+     "kind": "variable",
+     "mean": -0.0021,
+     "sd": 0.0009
+    }
+   ]
+  },
+  "pdp": [
+   {
+    "feature": "days_published",
+    "points": [
+     {
+      "x": 32.98,
+      "y": 0.000289
+     },
+     {
+      "x": 177.305714,
+      "y": 0.000135
+     },
+     {
+      "x": 387.0,
+      "y": 9.5e-05
+     },
+     {
+      "x": 565.0,
+      "y": 8e-05
+     },
+     {
+      "x": 753.134286,
+      "y": 7e-05
+     },
+     {
+      "x": 988.46,
+      "y": 6.2e-05
+     },
+     {
+      "x": 1353.422857,
+      "y": 5.4e-05
+     },
+     {
+      "x": 1723.5,
+      "y": 4.8e-05
+     },
+     {
+      "x": 2114.288571,
+      "y": 4.4e-05
+     },
+     {
+      "x": 2550.077143,
+      "y": 4e-05
+     },
+     {
+      "x": 3026.865714,
+      "y": 3.7e-05
+     },
+     {
+      "x": 3725.048571,
+      "y": 3.4e-05
+     },
+     {
+      "x": 5022.628571,
+      "y": 2.9e-05
+     },
+     {
+      "x": 6692.231429,
+      "y": 2.6e-05
+     },
+     {
+      "x": 8195.04,
+      "y": 2.3e-05
+     }
+    ]
+   },
+   {
+    "feature": "epss",
+    "points": [
+     {
+      "x": 0.00014,
+      "y": 2.3e-05
+     },
+     {
+      "x": 0.00042,
+      "y": 3e-05
+     },
+     {
+      "x": 0.000716,
+      "y": 3.5e-05
+     },
+     {
+      "x": 0.001143,
+      "y": 3.9e-05
+     },
+     {
+      "x": 0.00176,
+      "y": 4.4e-05
+     },
+     {
+      "x": 0.002379,
+      "y": 4.8e-05
+     },
+     {
+      "x": 0.00301,
+      "y": 5.1e-05
+     },
+     {
+      "x": 0.00384,
+      "y": 5.4e-05
+     },
+     {
+      "x": 0.004953,
+      "y": 5.8e-05
+     },
+     {
+      "x": 0.00691,
+      "y": 6.4e-05
+     },
+     {
+      "x": 0.009817,
+      "y": 7e-05
+     },
+     {
+      "x": 0.013683,
+      "y": 7.7e-05
+     },
+     {
+      "x": 0.022581,
+      "y": 8.8e-05
+     },
+     {
+      "x": 0.05572,
+      "y": 0.000112
+     },
+     {
+      "x": 0.36742,
+      "y": 0.000187
+     }
+    ]
+   },
+   {
+    "feature": "cvss",
+    "points": [
+     {
+      "x": 2.632,
+      "y": 3e-06
+     },
+     {
+      "x": 4.3,
+      "y": 8e-06
+     },
+     {
+      "x": 4.8,
+      "y": 1.1e-05
+     },
+     {
+      "x": 5.3,
+      "y": 1.5e-05
+     },
+     {
+      "x": 5.628,
+      "y": 1.9e-05
+     },
+     {
+      "x": 6.2,
+      "y": 2.8e-05
+     },
+     {
+      "x": 6.4,
+      "y": 3.2e-05
+     },
+     {
+      "x": 6.5,
+      "y": 3.4e-05
+     },
+     {
+      "x": 7.1,
+      "y": 5e-05
+     },
+     {
+      "x": 7.5,
+      "y": 6.5e-05
+     },
+     {
+      "x": 7.8,
+      "y": 7.9e-05
+     },
+     {
+      "x": 7.996,
+      "y": 8.9e-05
+     },
+     {
+      "x": 8.7,
+      "y": 0.000141
+     },
+     {
+      "x": 8.8,
+      "y": 0.000151
+     },
+     {
+      "x": 9.8,
+      "y": 0.000289
+     }
+    ]
+   },
+   {
+    "feature": "edb_exploits",
+    "points": [
+     {
+      "x": 0.0,
+      "y": 6.5e-05
+     },
+     {
+      "x": 1.0,
+      "y": 0.00011
+     }
+    ]
+   }
+  ],
+  "pdp2d": {
+   "x": "days_published",
+   "y": "epss",
+   "xs": [
+    32.98,
+    335.86,
+    656.96,
+    1061.24,
+    1723.5,
+    2430.0,
+    3264.68,
+    5545.9,
+    8195.04
+   ],
+   "ys": [
+    0.00014,
+    0.00063,
+    0.001445,
+    0.00252,
+    0.00384,
+    0.00633,
+    0.011465,
+    0.027189,
+    0.36742
+   ],
+   "cells": [
+    {
+     "x": 32.98,
+     "y": 0.00014,
+     "p": 8.4e-05
+    },
+    {
+     "x": 335.86,
+     "y": 0.00014,
+     "p": 2.9e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.00014,
+     "p": 2.2e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.00014,
+     "p": 1.7e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.00014,
+     "p": 1.4e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.00014,
+     "p": 1.2e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.00014,
+     "p": 1e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.00014,
+     "p": 8e-06
+    },
+    {
+     "x": 8195.04,
+     "y": 0.00014,
+     "p": 7e-06
+    },
+    {
+     "x": 32.98,
+     "y": 0.00063,
+     "p": 0.000124
+    },
+    {
+     "x": 335.86,
+     "y": 0.00063,
+     "p": 4.3e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.00063,
+     "p": 3.2e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.00063,
+     "p": 2.6e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.00063,
+     "p": 2.1e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.00063,
+     "p": 1.8e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.00063,
+     "p": 1.5e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.00063,
+     "p": 1.2e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.00063,
+     "p": 1e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.001445,
+     "p": 0.000155
+    },
+    {
+     "x": 335.86,
+     "y": 0.001445,
+     "p": 5.4e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.001445,
+     "p": 4e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.001445,
+     "p": 3.2e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.001445,
+     "p": 2.6e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.001445,
+     "p": 2.2e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.001445,
+     "p": 1.9e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.001445,
+     "p": 1.5e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.001445,
+     "p": 1.3e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.00252,
+     "p": 0.00018
+    },
+    {
+     "x": 335.86,
+     "y": 0.00252,
+     "p": 6.3e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.00252,
+     "p": 4.6e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.00252,
+     "p": 3.7e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.00252,
+     "p": 3e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.00252,
+     "p": 2.5e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.00252,
+     "p": 2.2e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.00252,
+     "p": 1.7e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.00252,
+     "p": 1.5e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.00384,
+     "p": 0.000202
+    },
+    {
+     "x": 335.86,
+     "y": 0.00384,
+     "p": 7.1e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.00384,
+     "p": 5.2e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.00384,
+     "p": 4.2e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.00384,
+     "p": 3.3e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.00384,
+     "p": 2.9e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.00384,
+     "p": 2.5e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.00384,
+     "p": 2e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.00384,
+     "p": 1.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.00633,
+     "p": 0.000231
+    },
+    {
+     "x": 335.86,
+     "y": 0.00633,
+     "p": 8.1e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.00633,
+     "p": 5.9e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.00633,
+     "p": 4.8e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.00633,
+     "p": 3.8e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.00633,
+     "p": 3.3e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.00633,
+     "p": 2.9e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.00633,
+     "p": 2.2e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.00633,
+     "p": 1.9e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.011465,
+     "p": 0.000271
+    },
+    {
+     "x": 335.86,
+     "y": 0.011465,
+     "p": 9.5e-05
+    },
+    {
+     "x": 656.96,
+     "y": 0.011465,
+     "p": 7e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.011465,
+     "p": 5.6e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.011465,
+     "p": 4.5e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.011465,
+     "p": 3.8e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.011465,
+     "p": 3.4e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.011465,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.011465,
+     "p": 2.2e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.027189,
+     "p": 0.000343
+    },
+    {
+     "x": 335.86,
+     "y": 0.027189,
+     "p": 0.00012
+    },
+    {
+     "x": 656.96,
+     "y": 0.027189,
+     "p": 8.8e-05
+    },
+    {
+     "x": 1061.24,
+     "y": 0.027189,
+     "p": 7.1e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.027189,
+     "p": 5.7e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.027189,
+     "p": 4.9e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.027189,
+     "p": 4.2e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.027189,
+     "p": 3.3e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.027189,
+     "p": 2.8e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.36742,
+     "p": 0.000695
+    },
+    {
+     "x": 335.86,
+     "y": 0.36742,
+     "p": 0.000243
+    },
+    {
+     "x": 656.96,
+     "y": 0.36742,
+     "p": 0.000179
+    },
+    {
+     "x": 1061.24,
+     "y": 0.36742,
+     "p": 0.000144
+    },
+    {
+     "x": 1723.5,
+     "y": 0.36742,
+     "p": 0.000115
+    },
+    {
+     "x": 2430.0,
+     "y": 0.36742,
+     "p": 9.8e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.36742,
+     "p": 8.6e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.36742,
+     "p": 6.7e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.36742,
+     "p": 5.6e-05
+    }
+   ]
+  },
+  "local": {
+   "aciertos": [
+    {
+     "cve": "CVE-2026-48282",
+     "snapshot": "2026-07-01",
+     "label": 1,
+     "prob": 0.010432,
+     "values": {
+      "epss": 0.01021,
+      "percentile": 0.59141,
+      "epss_delta": null,
+      "cvss": 10.0,
+      "days_published": 1.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 73.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-22",
+      "cna": "psirt@adobe.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.009968
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.009842
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.004734
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001446
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.00094
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 4.9e-05
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-1340",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 0.00959,
+     "values": {
+      "epss": 0.49052,
+      "percentile": 0.97723,
+      "epss_delta": 0.48889,
+      "cvss": 9.8,
+      "days_published": 31.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 13.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-94",
+      "cna": "3c1d8aa1-5a33-4ea4-8992-aadd6440af75"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.008972
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.008329
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.008072
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001388
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.00109
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.000814
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-25089",
+     "snapshot": "2026-07-01",
+     "label": 1,
+     "prob": 0.009504,
+     "values": {
+      "epss": 0.23393,
+      "percentile": 0.97505,
+      "epss_delta": null,
+      "cvss": 9.8,
+      "days_published": 22.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 26.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-78",
+      "cna": "psirt@fortinet.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.008892
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.008211
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.007973
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001394
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.00077
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.000622
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-39808",
+     "snapshot": "2026-05-01",
+     "label": 1,
+     "prob": 0.008797,
+     "values": {
+      "epss": 0.13099,
+      "percentile": 0.94137,
+      "epss_delta": null,
+      "cvss": 9.8,
+      "days_published": 17.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 26.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-78",
+      "cna": "psirt@fortinet.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.008231
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.007727
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.007085
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001291
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.000713
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.000576
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-33824",
+     "snapshot": "2026-07-01",
+     "label": 1,
+     "prob": 0.008418,
+     "values": {
+      "epss": 0.5585,
+      "percentile": 0.98921,
+      "epss_delta": 0.55792,
+      "cvss": 9.8,
+      "days_published": 78.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 369.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-415",
+      "cna": "secure@microsoft.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.007877
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.007363
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.006406
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001123
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.00091
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.000904
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    }
+   ],
+   "escapados": [
+    {
+     "cve": "CVE-2021-22681",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 1.1e-05,
+     "values": {
+      "epss": 0.00182,
+      "percentile": 0.39943,
+      "epss_delta": 0.0,
+      "cvss": null,
+      "days_published": 1824.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 5.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "CWE-522",
+      "cna": "ics-cert@hq.dhs.gov"
+     },
+     "attributions": [
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -2e-06
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 1e-06
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 1e-06
+      },
+      {
+       "group": "EPSS",
+       "delta": -1e-06
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-48700",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 1.3e-05,
+     "values": {
+      "epss": 0.00027,
+      "percentile": 0.07327,
+      "epss_delta": 2e-05,
+      "cvss": null,
+      "days_published": 251.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 307.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "cve@mitre.org"
+     },
+     "attributions": [
+      {
+       "group": "EPSS",
+       "delta": -1.8e-05
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 8e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 1e-06
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-48700",
+     "snapshot": "2026-04-01",
+     "label": 1,
+     "prob": 1.5e-05,
+     "values": {
+      "epss": 0.00046,
+      "percentile": 0.14155,
+      "epss_delta": 0.00019,
+      "cvss": null,
+      "days_published": 282.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 309.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "cve@mitre.org"
+     },
+     "attributions": [
+      {
+       "group": "EPSS",
+       "delta": -1.4e-05
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 9e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 1e-06
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2021-30952",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 1.7e-05,
+     "values": {
+      "epss": 0.00329,
+      "percentile": 0.55506,
+      "epss_delta": 0.0,
+      "cvss": null,
+      "days_published": 1650.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 87.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "product-security@apple.com"
+     },
+     "attributions": [
+      {
+       "group": "EPSS",
+       "delta": 4e-06
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 1e-06
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 1e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-43510",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 1.9e-05,
+     "values": {
+      "epss": 0.00018,
+      "percentile": 0.04529,
+      "epss_delta": 4e-05,
+      "cvss": null,
+      "days_published": 79.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 87.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "product-security@apple.com"
+     },
+     "attributions": [
+      {
+       "group": "EPSS",
+       "delta": -3.3e-05
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 1.4e-05
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 1e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    }
+   ],
+   "falsas_alarmas": [
+    {
+     "cve": "CVE-2026-56413",
+     "snapshot": "2026-07-01",
+     "label": 0,
+     "prob": 0.015526,
+     "values": {
+      "epss": 0.03081,
+      "percentile": 0.86068,
+      "epss_delta": null,
+      "cvss": 10.0,
+      "days_published": 1.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 8.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-78",
+      "cna": "ics-cert@hq.dhs.gov"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.014831
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.014644
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.010665
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.002272
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.002265
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.001032
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-34156",
+     "snapshot": "2026-06-01",
+     "label": 0,
+     "prob": 0.010548,
+     "values": {
+      "epss": 0.29502,
+      "percentile": 0.96698,
+      "epss_delta": 0.19808,
+      "cvss": 9.9,
+      "days_published": 62.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 34.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "LOW",
+      "ui": "NONE",
+      "cwe": "CWE-913",
+      "cna": "security-advisories@github.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.009868
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.008939
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.008271
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.004315
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001406
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.000656
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.000494
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-3844",
+     "snapshot": "2026-05-01",
+     "label": 0,
+     "prob": 0.009367,
+     "values": {
+      "epss": 0.13134,
+      "percentile": 0.94144,
+      "epss_delta": null,
+      "cvss": 9.8,
+      "days_published": 8.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 0.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-434",
+      "cna": "security@wordfence.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.008764
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.008537
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.007544
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.003096
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001243
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.00064
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-27174",
+     "snapshot": "2026-04-01",
+     "label": 0,
+     "prob": 0.008553,
+     "values": {
+      "epss": 0.5163,
+      "percentile": 0.97874,
+      "epss_delta": 0.5122,
+      "cvss": 9.8,
+      "days_published": 42.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 14.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-94",
+      "cna": "disclosure@vulncheck.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.008003
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.007446
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.007005
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.001239
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.000929
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.000726
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-28289",
+     "snapshot": "2026-04-01",
+     "label": 0,
+     "prob": 0.008281,
+     "values": {
+      "epss": 0.16521,
+      "percentile": 0.94871,
+      "epss_delta": null,
+      "cvss": 10.0,
+      "days_published": 29.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 30.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-434",
+      "cna": "security-advisories@github.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.007814
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.00701
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.006779
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0011
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.000516
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.00046
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  "coefficients": [
+   {
+    "feature": "days_published",
+    "coef": -0.5861
+   },
+   {
+    "feature": "cvss",
+    "coef": 0.5443
+   },
+   {
+    "feature": "epss",
+    "coef": 0.4811
+   },
+   {
+    "feature": "percentile",
+    "coef": 0.2781
+   },
+   {
+    "feature": "epss_model_desconocido",
+    "coef": -0.1883
+   },
+   {
+    "feature": "edb_exploits",
+    "coef": 0.1847
+   },
+   {
+    "feature": "cwe_desconocido",
+    "coef": -0.1447
+   },
+   {
+    "feature": "cna_kev_prior",
+    "coef": 0.1444
+   },
+   {
+    "feature": "av_desconocido",
+    "coef": -0.1427
+   },
+   {
+    "feature": "ac_desconocido",
+    "coef": -0.1427
+   },
+   {
+    "feature": "pr_desconocido",
+    "coef": -0.1427
+   },
+   {
+    "feature": "ui_desconocido",
+    "coef": -0.1427
+   },
+   {
+    "feature": "ui_REQUIRED",
+    "coef": -0.0896
+   },
+   {
+    "feature": "cna_cve@mitre.org",
+    "coef": -0.0826
+   },
+   {
+    "feature": "missingindicator_days_published",
+    "coef": -0.0711
+   },
+   {
+    "feature": "pr_LOW",
+    "coef": -0.0476
+   },
+   {
+    "feature": "ui_NONE",
+    "coef": 0.0413
+   },
+   {
+    "feature": "cwe_CWE-79",
+    "coef": -0.0354
+   },
+   {
+    "feature": "cna_secure@microsoft.com",
+    "coef": 0.0327
+   },
+   {
+    "feature": "av_LOCAL",
+    "coef": -0.0318
+   }
+  ],
+  "baseline": {
+   "epss": 0.0015,
+   "percentile": 0.5008,
+   "epss_delta": 0.0,
+   "cvss": 6.5,
+   "days_published": 1820.0,
+   "edb_exploits": 0.0,
+   "cna_kev_prior": 68.0,
+   "epss_model": "v2023.03.01",
+   "av": "desconocido",
+   "ac": "desconocido",
+   "pr": "desconocido",
+   "ui": "desconocido",
+   "cwe": "desconocido",
+   "cna": "cve@mitre.org"
+  },
+  "drop": [
+   "epss_version"
+  ],
+  "equivalences": [
+   {
+    "promptuario": "Grad-CAM++",
+    "aqui": "Atribución por oclusión",
+    "porque": "Grad-CAM++ marca qué zona de una imagen pesó en la decisión. En datos tabulares, la oclusión mide cuánto cambia la probabilidad de un CVE si se tapa cada grupo de variables."
+   },
+   {
+    "promptuario": "Mapas de atención",
+    "aqui": "Importancia por permutación y mapa de interacción 2D",
+    "porque": "Muestran en qué variables «se fija» el modelo en general y cómo combina las dos más importantes."
+   },
+   {
+    "promptuario": "Visualización de máscaras",
+    "aqui": "Máscaras por grupo de variables, caso por caso",
+    "porque": "Cada barra de una explicación individual es el efecto de enmascarar ese grupo: aciertos, KEV que se escaparon y falsas alarmas."
+   }
+  ],
+  "how_to_read": {
+   "importance": "Cuánto cae el ROC-AUC en prueba si se desordena esa variable (o grupo) rompiendo su relación con la etiqueta. Más caída = el modelo depende más de ella. Una caída cercana a 0 indica que no la usa.",
+   "pdp": "Probabilidad media que da el modelo cuando todos los CVE toman ese valor de la variable (el resto queda igual). Muestra la forma de la relación: si sube, baja o se satura.",
+   "pdp2d": "Probabilidad media para cada combinación de las dos variables más importantes. Más intenso = mayor probabilidad de entrar a KEV. Si el patrón no es una simple suma de las dos, el modelo usa su interacción.",
+   "local": "Cada barra es lo que cambia el puntaje de ESE CVE al tapar el grupo con un valor típico (la mediana o la categoría más común). Barras hacia la derecha empujaron hacia «entra a KEV»; hacia la izquierda, en contra. Ojo: el puntaje sale de un modelo entrenado con pesos balanceados, así que NO es una probabilidad calibrada (un 99 % no significa 99 de cada 100): sirve para ordenar y comparar CVE entre sí.",
+   "coef": "En la regresión logística cada variable suma o resta al logit. Coeficiente positivo = sube la probabilidad. Las numéricas están estandarizadas, así que se pueden comparar entre sí."
+  },
+  "interpretation": [
+   "Los grupos de variables en los que más se apoya el modelo (caída del ROC-AUC en prueba al desordenarlos): EPSS (0,101); Antigüedad del CVE (0,092); CVSS de la CNA (0,066).",
+   "Casi no usa: CNA (quién publicó), Tipo de debilidad (CWE) (desordenarlos no cambia el resultado).",
+   "Modelo entrenado sin EPSS_VERSION (ablación): esas variables no pueden influir.",
+   "Al pasar days_published de 33 a 8195, la probabilidad media baja (0,029 % → 0,002 %).",
+   "Al pasar epss de 0,000 a 0,367, la probabilidad media sube (0,002 % → 0,019 %).",
+   "En los KEV que se le escaparon, lo que más empujó en contra fue «EPSS»: son CVE que no se parecen a los que el modelo aprendió a asociar con KEV."
+  ],
+  "refit_max_abs_diff_vs_saved_scores": 9.999054535747565e-17
+ },
+ "hgb": {
+  "importance": {
+   "base_roc_auc": 0.8381,
+   "rows": [
+    {
+     "name": "days_published",
+     "kind": "variable",
+     "mean": 0.152,
+     "sd": 0.0094
+    },
+    {
+     "name": "Antigüedad del CVE",
+     "kind": "grupo",
+     "mean": 0.1502,
+     "sd": 0.0069
+    },
+    {
+     "name": "cna",
+     "kind": "variable",
+     "mean": 0.0727,
+     "sd": 0.0139
+    },
+    {
+     "name": "CNA (quién publicó)",
+     "kind": "grupo",
+     "mean": 0.0634,
+     "sd": 0.0042
+    },
+    {
+     "name": "EPSS",
+     "kind": "grupo",
+     "mean": 0.0479,
+     "sd": 0.0043
+    },
+    {
+     "name": "percentile",
+     "kind": "variable",
+     "mean": 0.0349,
+     "sd": 0.0006
+    },
+    {
+     "name": "Exploits públicos",
+     "kind": "grupo",
+     "mean": 0.0227,
+     "sd": 0.0019
+    },
+    {
+     "name": "edb_exploits",
+     "kind": "variable",
+     "mean": 0.0214,
+     "sd": 0.0014
+    },
+    {
+     "name": "cvss",
+     "kind": "variable",
+     "mean": 0.0202,
+     "sd": 0.0008
+    },
+    {
+     "name": "epss",
+     "kind": "variable",
+     "mean": 0.0179,
+     "sd": 0.001
+    },
+    {
+     "name": "CVSS de la CNA",
+     "kind": "grupo",
+     "mean": 0.0172,
+     "sd": 0.0024
+    },
+    {
+     "name": "cwe",
+     "kind": "variable",
+     "mean": 0.004,
+     "sd": 0.0036
+    },
+    {
+     "name": "pr",
+     "kind": "variable",
+     "mean": 0.0011,
+     "sd": 0.0008
+    },
+    {
+     "name": "ui",
+     "kind": "variable",
+     "mean": 0.0006,
+     "sd": 0.0003
+    },
+    {
+     "name": "ac",
+     "kind": "variable",
+     "mean": 0.0001,
+     "sd": 0.0001
+    },
+    {
+     "name": "epss_delta",
+     "kind": "variable",
+     "mean": 0.0,
+     "sd": 0.0
+    },
+    {
+     "name": "epss_model",
+     "kind": "variable",
+     "mean": 0.0,
+     "sd": 0.0
+    },
+    {
+     "name": "Tipo de debilidad (CWE)",
+     "kind": "grupo",
+     "mean": -0.0005,
+     "sd": 0.0047
+    },
+    {
+     "name": "av",
+     "kind": "variable",
+     "mean": -0.0026,
+     "sd": 0.001
+    },
+    {
+     "name": "cna_kev_prior",
+     "kind": "variable",
+     "mean": -0.0097,
+     "sd": 0.0071
+    },
+    {
+     "name": "Historial KEV de la CNA",
+     "kind": "grupo",
+     "mean": -0.0109,
+     "sd": 0.0041
+    }
+   ]
+  },
+  "pdp": [
+   {
+    "feature": "days_published",
+    "points": [
+     {
+      "x": 32.98,
+      "y": 0.007049
+     },
+     {
+      "x": 177.305714,
+      "y": 0.00148
+     },
+     {
+      "x": 387.0,
+      "y": 0.000793
+     },
+     {
+      "x": 565.0,
+      "y": 0.000186
+     },
+     {
+      "x": 753.134286,
+      "y": 0.000186
+     },
+     {
+      "x": 988.46,
+      "y": 0.000198
+     },
+     {
+      "x": 1353.422857,
+      "y": 0.000117
+     },
+     {
+      "x": 1723.5,
+      "y": 7.2e-05
+     },
+     {
+      "x": 2114.288571,
+      "y": 6.8e-05
+     },
+     {
+      "x": 2550.077143,
+      "y": 6.8e-05
+     },
+     {
+      "x": 3026.865714,
+      "y": 6.1e-05
+     },
+     {
+      "x": 3725.048571,
+      "y": 4.9e-05
+     },
+     {
+      "x": 5022.628571,
+      "y": 2.7e-05
+     },
+     {
+      "x": 6692.231429,
+      "y": 2.7e-05
+     },
+     {
+      "x": 8195.04,
+      "y": 2.7e-05
+     }
+    ]
+   },
+   {
+    "feature": "percentile",
+    "points": [
+     {
+      "x": 0.015168,
+      "y": 9.7e-05
+     },
+     {
+      "x": 0.08964,
+      "y": 9.5e-05
+     },
+     {
+      "x": 0.165498,
+      "y": 9.4e-05
+     },
+     {
+      "x": 0.222908,
+      "y": 9.4e-05
+     },
+     {
+      "x": 0.2833,
+      "y": 9.8e-05
+     },
+     {
+      "x": 0.354808,
+      "y": 0.000106
+     },
+     {
+      "x": 0.437768,
+      "y": 0.00012
+     },
+     {
+      "x": 0.50045,
+      "y": 0.000119
+     },
+     {
+      "x": 0.570933,
+      "y": 0.000121
+     },
+     {
+      "x": 0.627011,
+      "y": 0.000149
+     },
+     {
+      "x": 0.702818,
+      "y": 0.000171
+     },
+     {
+      "x": 0.773459,
+      "y": 0.000173
+     },
+     {
+      "x": 0.835961,
+      "y": 0.000178
+     },
+     {
+      "x": 0.9082,
+      "y": 0.000225
+     },
+     {
+      "x": 0.976763,
+      "y": 0.001122
+     }
+    ]
+   },
+   {
+    "feature": "edb_exploits",
+    "points": [
+     {
+      "x": 0.0,
+      "y": 0.000156
+     },
+     {
+      "x": 1.0,
+      "y": 0.002096
+     }
+    ]
+   },
+   {
+    "feature": "cvss",
+    "points": [
+     {
+      "x": 2.632,
+      "y": 0.000102
+     },
+     {
+      "x": 4.3,
+      "y": 0.000102
+     },
+     {
+      "x": 4.8,
+      "y": 0.000102
+     },
+     {
+      "x": 5.3,
+      "y": 0.000123
+     },
+     {
+      "x": 5.628,
+      "y": 9.7e-05
+     },
+     {
+      "x": 6.2,
+      "y": 0.0001
+     },
+     {
+      "x": 6.4,
+      "y": 0.0001
+     },
+     {
+      "x": 6.5,
+      "y": 0.0001
+     },
+     {
+      "x": 7.1,
+      "y": 0.000103
+     },
+     {
+      "x": 7.5,
+      "y": 0.00011
+     },
+     {
+      "x": 7.8,
+      "y": 0.000113
+     },
+     {
+      "x": 7.996,
+      "y": 0.000113
+     },
+     {
+      "x": 8.7,
+      "y": 0.000118
+     },
+     {
+      "x": 8.8,
+      "y": 0.000124
+     },
+     {
+      "x": 9.8,
+      "y": 0.001877
+     }
+    ]
+   }
+  ],
+  "pdp2d": {
+   "x": "days_published",
+   "y": "percentile",
+   "xs": [
+    32.98,
+    335.86,
+    656.96,
+    1061.24,
+    1723.5,
+    2430.0,
+    3264.68,
+    5545.9,
+    8195.04
+   ],
+   "ys": [
+    0.015168,
+    0.14289,
+    0.255082,
+    0.377813,
+    0.50045,
+    0.610235,
+    0.741271,
+    0.85735,
+    0.976763
+   ],
+   "cells": [
+    {
+     "x": 32.98,
+     "y": 0.015168,
+     "p": 0.004318
+    },
+    {
+     "x": 335.86,
+     "y": 0.015168,
+     "p": 0.000121
+    },
+    {
+     "x": 656.96,
+     "y": 0.015168,
+     "p": 0.00011
+    },
+    {
+     "x": 1061.24,
+     "y": 0.015168,
+     "p": 9.5e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.015168,
+     "p": 4.6e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.015168,
+     "p": 5.1e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.015168,
+     "p": 4.5e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.015168,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.015168,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.14289,
+     "p": 0.003635
+    },
+    {
+     "x": 335.86,
+     "y": 0.14289,
+     "p": 0.000121
+    },
+    {
+     "x": 656.96,
+     "y": 0.14289,
+     "p": 0.00011
+    },
+    {
+     "x": 1061.24,
+     "y": 0.14289,
+     "p": 9.5e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.14289,
+     "p": 4.6e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.14289,
+     "p": 5.1e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.14289,
+     "p": 4.5e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.14289,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.14289,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.255082,
+     "p": 0.003619
+    },
+    {
+     "x": 335.86,
+     "y": 0.255082,
+     "p": 0.000127
+    },
+    {
+     "x": 656.96,
+     "y": 0.255082,
+     "p": 0.000113
+    },
+    {
+     "x": 1061.24,
+     "y": 0.255082,
+     "p": 9.7e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.255082,
+     "p": 4.7e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.255082,
+     "p": 5.1e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.255082,
+     "p": 4.5e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.255082,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.255082,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.377813,
+     "p": 0.004799
+    },
+    {
+     "x": 335.86,
+     "y": 0.377813,
+     "p": 0.000123
+    },
+    {
+     "x": 656.96,
+     "y": 0.377813,
+     "p": 0.000109
+    },
+    {
+     "x": 1061.24,
+     "y": 0.377813,
+     "p": 9.3e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.377813,
+     "p": 4.3e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.377813,
+     "p": 4.5e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.377813,
+     "p": 4.2e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.377813,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.377813,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.50045,
+     "p": 0.004975
+    },
+    {
+     "x": 335.86,
+     "y": 0.50045,
+     "p": 0.000124
+    },
+    {
+     "x": 656.96,
+     "y": 0.50045,
+     "p": 0.000109
+    },
+    {
+     "x": 1061.24,
+     "y": 0.50045,
+     "p": 9.4e-05
+    },
+    {
+     "x": 1723.5,
+     "y": 0.50045,
+     "p": 4.3e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.50045,
+     "p": 4.6e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.50045,
+     "p": 4.2e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.50045,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.50045,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.610235,
+     "p": 0.005125
+    },
+    {
+     "x": 335.86,
+     "y": 0.610235,
+     "p": 0.000127
+    },
+    {
+     "x": 656.96,
+     "y": 0.610235,
+     "p": 0.000116
+    },
+    {
+     "x": 1061.24,
+     "y": 0.610235,
+     "p": 0.000104
+    },
+    {
+     "x": 1723.5,
+     "y": 0.610235,
+     "p": 5.7e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.610235,
+     "p": 6e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.610235,
+     "p": 5.6e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.610235,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.610235,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.741271,
+     "p": 0.006633
+    },
+    {
+     "x": 335.86,
+     "y": 0.741271,
+     "p": 0.000205
+    },
+    {
+     "x": 656.96,
+     "y": 0.741271,
+     "p": 0.000192
+    },
+    {
+     "x": 1061.24,
+     "y": 0.741271,
+     "p": 0.000259
+    },
+    {
+     "x": 1723.5,
+     "y": 0.741271,
+     "p": 8.5e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.741271,
+     "p": 8.5e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.741271,
+     "p": 8e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.741271,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.741271,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.85735,
+     "p": 0.006764
+    },
+    {
+     "x": 335.86,
+     "y": 0.85735,
+     "p": 0.000223
+    },
+    {
+     "x": 656.96,
+     "y": 0.85735,
+     "p": 0.00021
+    },
+    {
+     "x": 1061.24,
+     "y": 0.85735,
+     "p": 0.000286
+    },
+    {
+     "x": 1723.5,
+     "y": 0.85735,
+     "p": 9e-05
+    },
+    {
+     "x": 2430.0,
+     "y": 0.85735,
+     "p": 9e-05
+    },
+    {
+     "x": 3264.68,
+     "y": 0.85735,
+     "p": 8e-05
+    },
+    {
+     "x": 5545.9,
+     "y": 0.85735,
+     "p": 2.6e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.85735,
+     "p": 2.6e-05
+    },
+    {
+     "x": 32.98,
+     "y": 0.976763,
+     "p": 0.008909
+    },
+    {
+     "x": 335.86,
+     "y": 0.976763,
+     "p": 0.001742
+    },
+    {
+     "x": 656.96,
+     "y": 0.976763,
+     "p": 0.00033
+    },
+    {
+     "x": 1061.24,
+     "y": 0.976763,
+     "p": 0.000356
+    },
+    {
+     "x": 1723.5,
+     "y": 0.976763,
+     "p": 0.000295
+    },
+    {
+     "x": 2430.0,
+     "y": 0.976763,
+     "p": 0.00023
+    },
+    {
+     "x": 3264.68,
+     "y": 0.976763,
+     "p": 0.000196
+    },
+    {
+     "x": 5545.9,
+     "y": 0.976763,
+     "p": 3.4e-05
+    },
+    {
+     "x": 8195.04,
+     "y": 0.976763,
+     "p": 3.4e-05
+    }
+   ]
+  },
+  "local": {
+   "aciertos": [
+    {
+     "cve": "CVE-2026-59310",
+     "snapshot": "2026-08-01",
+     "label": 1,
+     "prob": 0.559719,
+     "values": {
+      "epss": 0.0114,
+      "percentile": 0.63456,
+      "epss_delta": null,
+      "cvss": 9.8,
+      "days_published": 2.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 31.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-22",
+      "cna": "security@vmware.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.559553
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.424763
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.311329
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.06971
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.024142
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-63077",
+     "snapshot": "2026-08-01",
+     "label": 1,
+     "prob": 0.554414,
+     "values": {
+      "epss": 0.00649,
+      "percentile": 0.47534,
+      "epss_delta": null,
+      "cvss": 9.8,
+      "days_published": 5.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 3.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-502",
+      "cna": "cve@jetbrains.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.554355
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.542665
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.479357
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.449424
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.281359
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.038145
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-20079",
+     "snapshot": "2026-07-01",
+     "label": 1,
+     "prob": 0.407273,
+     "values": {
+      "epss": 0.33898,
+      "percentile": 0.98188,
+      "epss_delta": 0.2109,
+      "cvss": 10.0,
+      "days_published": 119.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 93.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-288",
+      "cna": "psirt@cisco.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.406069
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.405148
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.402422
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.229867
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": -0.101303
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.064366
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-20079",
+     "snapshot": "2026-08-01",
+     "label": 1,
+     "prob": 0.407273,
+     "values": {
+      "epss": 0.37671,
+      "percentile": 0.9839,
+      "epss_delta": 0.03773,
+      "cvss": 10.0,
+      "days_published": 150.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 94.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-288",
+      "cna": "psirt@cisco.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.406069
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.405148
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.402422
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.229867
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": -0.101303
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.064366
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-20963",
+     "snapshot": "2026-03-01",
+     "label": 1,
+     "prob": 0.380327,
+     "values": {
+      "epss": 0.01629,
+      "percentile": 0.81665,
+      "epss_delta": 0.00799,
+      "cvss": 9.8,
+      "days_published": 47.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 352.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-502",
+      "cna": "secure@microsoft.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.380163
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.2802
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.269268
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.261671
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.037172
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.008207
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    }
+   ],
+   "escapados": [
+    {
+     "cve": "CVE-2008-4128",
+     "snapshot": "2026-05-01",
+     "label": 1,
+     "prob": 2.1e-05,
+     "values": {
+      "epss": 0.02304,
+      "percentile": 0.84809,
+      "epss_delta": 0.0,
+      "cvss": null,
+      "days_published": 6434.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 314.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "cve@mitre.org"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -6.2e-05
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2008-4128",
+     "snapshot": "2026-06-01",
+     "label": 1,
+     "prob": 2.1e-05,
+     "values": {
+      "epss": 0.02304,
+      "percentile": 0.85014,
+      "epss_delta": 0.0,
+      "cvss": null,
+      "days_published": 6465.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 315.0,
+      "epss_model": "v2025.03.14",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "cve@mitre.org"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -6.2e-05
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2008-4128",
+     "snapshot": "2026-07-01",
+     "label": 1,
+     "prob": 2.2e-05,
+     "values": {
+      "epss": 0.12036,
+      "percentile": 0.95621,
+      "epss_delta": 0.09732,
+      "cvss": null,
+      "days_published": 6495.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 316.0,
+      "epss_model": "v2026.06.15",
+      "av": "desconocido",
+      "ac": "desconocido",
+      "pr": "desconocido",
+      "ui": "desconocido",
+      "cwe": "desconocido",
+      "cna": "cve@mitre.org"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -0.000142
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2023-4346",
+     "snapshot": "2026-05-01",
+     "label": 1,
+     "prob": 2.3e-05,
+     "values": {
+      "epss": 0.00047,
+      "percentile": 0.14247,
+      "epss_delta": 0.0,
+      "cvss": 7.5,
+      "days_published": 976.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 7.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-645",
+      "cna": "ics-cert@hq.dhs.gov"
+     },
+     "attributions": [
+      {
+       "group": "CNA (quién publicó)",
+       "delta": -2.6e-05
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -1e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.0
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2023-4346",
+     "snapshot": "2026-06-01",
+     "label": 1,
+     "prob": 2.3e-05,
+     "values": {
+      "epss": 0.00059,
+      "percentile": 0.18555,
+      "epss_delta": 0.00012,
+      "cvss": 7.5,
+      "days_published": 1007.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 7.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-645",
+      "cna": "ics-cert@hq.dhs.gov"
+     },
+     "attributions": [
+      {
+       "group": "CNA (quién publicó)",
+       "delta": -2.7e-05
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": -1e-06
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": -0.0
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.0
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.0
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.0
+      }
+     ]
+    }
+   ],
+   "falsas_alarmas": [
+    {
+     "cve": "CVE-2024-42327",
+     "snapshot": "2026-03-01",
+     "label": 0,
+     "prob": 0.852538,
+     "values": {
+      "epss": 0.89909,
+      "percentile": 0.99573,
+      "epss_delta": -0.00387,
+      "cvss": 9.9,
+      "days_published": 459.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 2.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "LOW",
+      "ui": "NONE",
+      "cwe": "CWE-89",
+      "cna": "security@zabbix.com"
+     },
+     "attributions": [
+      {
+       "group": "EPSS",
+       "delta": 0.843164
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.840471
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.821001
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.810918
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.751614
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.077418
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.029107
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-34121",
+     "snapshot": "2026-04-01",
+     "label": 0,
+     "prob": 0.793279,
+     "values": {
+      "epss": 0.67826,
+      "percentile": 0.98571,
+      "epss_delta": 0.03352,
+      "cvss": 9.3,
+      "days_published": 259.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 14.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-306",
+      "cna": "disclosure@vulncheck.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.790684
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.785593
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.606934
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.535805
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.286667
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-46811",
+     "snapshot": "2026-08-01",
+     "label": 0,
+     "prob": 0.776767,
+     "values": {
+      "epss": 0.10353,
+      "percentile": 0.95253,
+      "epss_delta": 0.0,
+      "cvss": 9.8,
+      "days_published": 367.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 0.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-862",
+      "cna": "meissner@suse.de"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.769763
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.767867
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.767393
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.744974
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.692606
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.230516
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.040864
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2026-50242",
+     "snapshot": "2026-08-01",
+     "label": 0,
+     "prob": 0.695561,
+     "values": {
+      "epss": 0.006,
+      "percentile": 0.45352,
+      "epss_delta": 0.00184,
+      "cvss": 10.0,
+      "days_published": 43.0,
+      "edb_exploits": 0.0,
+      "cna_kev_prior": 3.0,
+      "epss_model": "v2026.06.15",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-306",
+      "cna": "cve@jetbrains.com"
+     },
+     "attributions": [
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.695418
+      },
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.658891
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": 0.623273
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.605191
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.287371
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.033426
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.0
+      }
+     ]
+    },
+    {
+     "cve": "CVE-2025-34077",
+     "snapshot": "2026-04-01",
+     "label": 0,
+     "prob": 0.68987,
+     "values": {
+      "epss": 0.72361,
+      "percentile": 0.98749,
+      "epss_delta": 0.01154,
+      "cvss": 10.0,
+      "days_published": 266.0,
+      "edb_exploits": 1.0,
+      "cna_kev_prior": 14.0,
+      "epss_model": "v2025.03.14",
+      "av": "NETWORK",
+      "ac": "LOW",
+      "pr": "NONE",
+      "ui": "NONE",
+      "cwe": "CWE-94",
+      "cna": "disclosure@vulncheck.com"
+     },
+     "attributions": [
+      {
+       "group": "CVSS de la CNA",
+       "delta": 0.679896
+      },
+      {
+       "group": "Antigüedad del CVE",
+       "delta": 0.650457
+      },
+      {
+       "group": "EPSS",
+       "delta": 0.644805
+      },
+      {
+       "group": "Exploits públicos",
+       "delta": 0.482777
+      },
+      {
+       "group": "CNA (quién publicó)",
+       "delta": 0.124022
+      },
+      {
+       "group": "Historial KEV de la CNA",
+       "delta": 0.074169
+      },
+      {
+       "group": "Tipo de debilidad (CWE)",
+       "delta": -0.047119
+      }
+     ]
+    }
+   ]
+  },
+  "coefficients": [],
+  "baseline": {
+   "epss": 0.0015,
+   "percentile": 0.5008,
+   "epss_delta": 0.0,
+   "cvss": 6.5,
+   "days_published": 1820.0,
+   "edb_exploits": 0.0,
+   "cna_kev_prior": 68.0,
+   "epss_model": "v2023.03.01",
+   "av": "desconocido",
+   "ac": "desconocido",
+   "pr": "desconocido",
+   "ui": "desconocido",
+   "cwe": "desconocido",
+   "cna": "cve@mitre.org"
+  },
+  "drop": [
+   "epss_version"
+  ],
+  "equivalences": [
+   {
+    "promptuario": "Grad-CAM++",
+    "aqui": "Atribución por oclusión",
+    "porque": "Grad-CAM++ marca qué zona de una imagen pesó en la decisión. En datos tabulares, la oclusión mide cuánto cambia la probabilidad de un CVE si se tapa cada grupo de variables."
+   },
+   {
+    "promptuario": "Mapas de atención",
+    "aqui": "Importancia por permutación y mapa de interacción 2D",
+    "porque": "Muestran en qué variables «se fija» el modelo en general y cómo combina las dos más importantes."
+   },
+   {
+    "promptuario": "Visualización de máscaras",
+    "aqui": "Máscaras por grupo de variables, caso por caso",
+    "porque": "Cada barra de una explicación individual es el efecto de enmascarar ese grupo: aciertos, KEV que se escaparon y falsas alarmas."
+   }
+  ],
+  "how_to_read": {
+   "importance": "Cuánto cae el ROC-AUC en prueba si se desordena esa variable (o grupo) rompiendo su relación con la etiqueta. Más caída = el modelo depende más de ella. Una caída cercana a 0 indica que no la usa.",
+   "pdp": "Probabilidad media que da el modelo cuando todos los CVE toman ese valor de la variable (el resto queda igual). Muestra la forma de la relación: si sube, baja o se satura.",
+   "pdp2d": "Probabilidad media para cada combinación de las dos variables más importantes. Más intenso = mayor probabilidad de entrar a KEV. Si el patrón no es una simple suma de las dos, el modelo usa su interacción.",
+   "local": "Cada barra es lo que cambia el puntaje de ESE CVE al tapar el grupo con un valor típico (la mediana o la categoría más común). Barras hacia la derecha empujaron hacia «entra a KEV»; hacia la izquierda, en contra. Ojo: el puntaje sale de un modelo entrenado con pesos balanceados, así que NO es una probabilidad calibrada (un 99 % no significa 99 de cada 100): sirve para ordenar y comparar CVE entre sí.",
+   "coef": "En la regresión logística cada variable suma o resta al logit. Coeficiente positivo = sube la probabilidad. Las numéricas están estandarizadas, así que se pueden comparar entre sí."
+  },
+  "interpretation": [
+   "Los grupos de variables en los que más se apoya el modelo (caída del ROC-AUC en prueba al desordenarlos): Antigüedad del CVE (0,150); CNA (quién publicó) (0,063); EPSS (0,048).",
+   "Casi no usa: Tipo de debilidad (CWE) (desordenarlos no cambia el resultado).",
+   "Modelo entrenado sin EPSS_VERSION (ablación): esas variables no pueden influir.",
+   "Al pasar days_published de 33 a 8195, la probabilidad media baja (0,705 % → 0,003 %).",
+   "Al pasar percentile de 0,015 a 0,977, la probabilidad media sube (0,010 % → 0,112 %).",
+   "En los KEV que se le escaparon, lo que más empujó en contra fue «Antigüedad del CVE»: son CVE que no se parecen a los que el modelo aprendió a asociar con KEV.",
+   "Los KEV que se escaparon tenían una antigüedad mediana de 17,6 años al momento de la foto, frente a 0,1 años de los que acertó: CISA también agrega a KEV CVE viejos que vuelven a explotarse, y esos son los más difíciles de anticipar."
+  ],
+  "refit_max_abs_diff_vs_saved_scores": 9.996344030316351e-17
+ }
+}

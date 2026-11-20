@@ -1,0 +1,88 @@
+[   15.7 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0024
+[   29.8 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0019
+[   42.3 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0055
+[   56.1 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0027
+[   70.8 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0022
+[   76.4 s] Pliegue 1/4 Â· prueba 6/10 Â· podada
+[   83.6 s] Pliegue 1/4 Â· prueba 7/10 Â· podada
+[   99.0 s] Pliegue 1/4 Â· prueba 8/10 Â· PR-AUC interna 0,0028
+[  109.2 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[  115.1 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[  123.5 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,00896
+[  141.1 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0142
+[  155.4 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0135
+[  170.6 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0054
+[  194.7 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0060
+[  216.8 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0231
+[  258.8 s] Pliegue 2/4 Â· prueba 6/10 Â· PR-AUC interna 0,0251
+[  266.8 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[  276.2 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[  314.1 s] Pliegue 2/4 Â· prueba 9/10 Â· PR-AUC interna 0,0140
+[  359.8 s] Pliegue 2/4 Â· prueba 10/10 Â· PR-AUC interna 0,0297
+[  392.9 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00282
+[  415.3 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0120
+[  477.6 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0196
+[  528.1 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0325
+[  562.9 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0059
+[  580.7 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0025
+[  593.3 s] Pliegue 3/4 Â· prueba 6/10 Â· podada
+[  647.5 s] Pliegue 3/4 Â· prueba 7/10 Â· PR-AUC interna 0,0328
+[  658.3 s] Pliegue 3/4 Â· prueba 8/10 Â· podada
+[  683.6 s] Pliegue 3/4 Â· prueba 9/10 Â· PR-AUC interna 0,0205
+[  747.8 s] Pliegue 3/4 Â· prueba 10/10 Â· PR-AUC interna 0,0322
+[  782.8 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,04607
+[  810.4 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0125
+[  854.2 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0242
+[  914.0 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0150
+[  946.8 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0128
+[ 1024.5 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0047
+[ 1046.5 s] Pliegue 4/4 Â· prueba 6/10 Â· PR-AUC interna 0,0130
+[ 1061.2 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[ 1084.1 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0226
+[ 1099.8 s] Pliegue 4/4 Â· prueba 9/10 Â· podada
+[ 1134.8 s] Pliegue 4/4 Â· prueba 10/10 Â· podada
+[ 1161.5 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,00717
+[ 1161.5 s] Modelo final: bÃºsqueda en todo desarrollo
+[ 1194.1 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0164
+[ 1241.8 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0272
+[ 1283.1 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0160
+[ 1343.9 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0136
+[ 1417.3 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0268
+[ 1432.9 s] Modelo final Â· prueba 6/10 Â· podada
+[ 1530.9 s] Modelo final Â· prueba 7/10 Â· PR-AUC interna 0,0265
+[ 1654.9 s] Modelo final Â· prueba 8/10 Â· PR-AUC interna 0,0352
+[ 1781.9 s] Modelo final Â· prueba 9/10 Â· PR-AUC interna 0,0306
+[ 1873.1 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0376
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100398,
+   "positives": 184,
+   "prevalence_pct": 0.00918,
+   "pr_auc": 0.00987,
+   "roc_auc": 0.8709,
+   "recall_1pct": 0.1522,
+   "recall_5pct": 0.6141
+  },
+  "validacion": {
+   "rows": 90353,
+   "positives": 191,
+   "prevalence_pct": 0.01059,
+   "pr_auc": 0.00379,
+   "roc_auc": 0.8753,
+   "recall_1pct": 0.3141,
+   "recall_5pct": 0.6021
+  }
+ },
+ "best_params": {
+  "max_depth": 8,
+  "min_samples_leaf": 28,
+  "max_features": "0.3"
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-f430568afb57 Creating 
+ Container radar-backend-run-f430568afb57 Created 

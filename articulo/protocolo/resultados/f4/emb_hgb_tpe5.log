@@ -1,0 +1,89 @@
+[    9.3 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0372
+[   17.7 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0215
+[   24.3 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0210
+[   31.9 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0263
+[   39.9 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0642
+[   43.4 s] Pliegue 1/4 Â· prueba 6/10 Â· podada
+[   52.5 s] Pliegue 1/4 Â· prueba 7/10 Â· PR-AUC interna 0,0391
+[   55.8 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   59.4 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   62.7 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[   68.7 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,0044
+[   78.1 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0049
+[   89.1 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0058
+[   99.0 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0045
+[  109.8 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0041
+[  118.0 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0373
+[  126.9 s] Pliegue 2/4 Â· prueba 6/10 Â· PR-AUC interna 0,0061
+[  132.1 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[  136.4 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[  140.2 s] Pliegue 2/4 Â· prueba 9/10 Â· podada
+[  144.8 s] Pliegue 2/4 Â· prueba 10/10 Â· podada
+[  150.6 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00326
+[  162.5 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0040
+[  173.0 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0035
+[  184.3 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0214
+[  197.2 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0046
+[  211.8 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0043
+[  218.1 s] Pliegue 3/4 Â· prueba 6/10 Â· podada
+[  223.8 s] Pliegue 3/4 Â· prueba 7/10 Â· podada
+[  237.9 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0242
+[  243.0 s] Pliegue 3/4 Â· prueba 9/10 Â· podada
+[  255.6 s] Pliegue 3/4 Â· prueba 10/10 Â· PR-AUC interna 0,0232
+[  263.5 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,06251
+[  277.3 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0039
+[  293.4 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0185
+[  307.3 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0125
+[  321.9 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0018
+[  336.8 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0130
+[  350.9 s] Pliegue 4/4 Â· prueba 6/10 Â· podada
+[  367.3 s] Pliegue 4/4 Â· prueba 7/10 Â· PR-AUC interna 0,0253
+[  384.0 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0256
+[  401.9 s] Pliegue 4/4 Â· prueba 9/10 Â· PR-AUC interna 0,0267
+[  417.6 s] Pliegue 4/4 Â· prueba 10/10 Â· PR-AUC interna 0,0242
+[  427.0 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,01203
+[  427.1 s] Modelo final: bÃºsqueda en todo desarrollo
+[  441.4 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0505
+[  458.9 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0339
+[  470.4 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0003
+[  486.2 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0305
+[  501.1 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0161
+[  507.0 s] Modelo final Â· prueba 6/10 Â· podada
+[  513.8 s] Modelo final Â· prueba 7/10 Â· podada
+[  521.1 s] Modelo final Â· prueba 8/10 Â· podada
+[  528.2 s] Modelo final Â· prueba 9/10 Â· podada
+[  543.4 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0328
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00415,
+   "roc_auc": 0.8396,
+   "recall_1pct": 0.3098,
+   "recall_5pct": 0.4185
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.00263,
+   "roc_auc": 0.8501,
+   "recall_1pct": 0.2562,
+   "recall_5pct": 0.5125
+  }
+ },
+ "best_params": {
+  "learning_rate": 0.05,
+  "max_leaf_nodes": 15,
+  "min_samples_leaf": 100,
+  "l2_regularization": 0.1
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-4a6c446b8b2e Creating 
+ Container radar-backend-run-4a6c446b8b2e Created 

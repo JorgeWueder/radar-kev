@@ -1,0 +1,89 @@
+[    6.7 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0127
+[   12.6 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0473
+[   16.6 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0712
+[   21.6 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0593
+[   26.9 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0322
+[   29.5 s] Pliegue 1/4 Â· prueba 6/10 Â· podada
+[   32.1 s] Pliegue 1/4 Â· prueba 7/10 Â· podada
+[   34.2 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   36.8 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   39.2 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[   44.3 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,04144
+[   51.1 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0006
+[   59.3 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0005
+[   66.2 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0004
+[   74.9 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0008
+[   80.6 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0043
+[   87.7 s] Pliegue 2/4 Â· prueba 6/10 Â· PR-AUC interna 0,0020
+[   91.1 s] Pliegue 2/4 Â· prueba 7/10 Â· podada
+[   94.5 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[   98.5 s] Pliegue 2/4 Â· prueba 9/10 Â· podada
+[  101.1 s] Pliegue 2/4 Â· prueba 10/10 Â· podada
+[  105.4 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00314
+[  114.2 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0126
+[  121.9 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0566
+[  130.4 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0287
+[  140.9 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0286
+[  151.9 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0194
+[  155.9 s] Pliegue 3/4 Â· prueba 6/10 Â· podada
+[  159.6 s] Pliegue 3/4 Â· prueba 7/10 Â· podada
+[  163.9 s] Pliegue 3/4 Â· prueba 8/10 Â· podada
+[  168.3 s] Pliegue 3/4 Â· prueba 9/10 Â· podada
+[  171.9 s] Pliegue 3/4 Â· prueba 10/10 Â· podada
+[  177.1 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,01403
+[  187.6 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0189
+[  199.1 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0054
+[  209.6 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0026
+[  221.6 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0034
+[  233.2 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0208
+[  244.3 s] Pliegue 4/4 Â· prueba 6/10 Â· PR-AUC interna 0,0063
+[  256.3 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[  267.2 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0208
+[  273.3 s] Pliegue 4/4 Â· prueba 9/10 Â· podada
+[  278.6 s] Pliegue 4/4 Â· prueba 10/10 Â· podada
+[  286.1 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,01006
+[  286.1 s] Modelo final: bÃºsqueda en todo desarrollo
+[  298.8 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0027
+[  314.6 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0091
+[  325.7 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0013
+[  339.8 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0354
+[  351.8 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0078
+[  365.9 s] Modelo final Â· prueba 6/10 Â· podada
+[  379.7 s] Modelo final Â· prueba 7/10 Â· podada
+[  385.1 s] Modelo final Â· prueba 8/10 Â· podada
+[  391.2 s] Modelo final Â· prueba 9/10 Â· podada
+[  404.9 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0090
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00827,
+   "roc_auc": 0.8192,
+   "recall_1pct": 0.2663,
+   "recall_5pct": 0.3804
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.00167,
+   "roc_auc": 0.8077,
+   "recall_1pct": 0.2812,
+   "recall_5pct": 0.4813
+  }
+ },
+ "best_params": {
+  "learning_rate": 0.02234843752377777,
+  "max_leaf_nodes": 17,
+  "min_samples_leaf": 177,
+  "l2_regularization": 1.6404241128227346
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-787a47d9ddb8 Creating 
+ Container radar-backend-run-787a47d9ddb8 Created 

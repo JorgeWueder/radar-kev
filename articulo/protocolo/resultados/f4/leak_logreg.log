@@ -1,0 +1,86 @@
+[    5.3 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0005
+[    8.2 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0003
+[   10.9 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0003
+[   13.7 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0003
+[   16.6 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0006
+[   19.6 s] Pliegue 1/4 Â· prueba 6/10 Â· PR-AUC interna 0,0117
+[   22.5 s] Pliegue 1/4 Â· prueba 7/10 Â· PR-AUC interna 0,0194
+[   23.8 s] Pliegue 1/4 Â· prueba 8/10 Â· podada
+[   25.2 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   28.0 s] Pliegue 1/4 Â· prueba 10/10 Â· PR-AUC interna 0,0006
+[   29.8 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,02912
+[   33.2 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0017
+[   36.7 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0311
+[   40.1 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0017
+[   43.5 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0017
+[   47.0 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0124
+[   50.4 s] Pliegue 2/4 Â· prueba 6/10 Â· PR-AUC interna 0,0135
+[   53.9 s] Pliegue 2/4 Â· prueba 7/10 Â· PR-AUC interna 0,0236
+[   55.5 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[   59.0 s] Pliegue 2/4 Â· prueba 9/10 Â· PR-AUC interna 0,0322
+[   62.4 s] Pliegue 2/4 Â· prueba 10/10 Â· PR-AUC interna 0,0323
+[   64.5 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00367
+[   68.5 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0018
+[   72.5 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0010
+[   76.6 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0108
+[   80.6 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0010
+[   84.5 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0010
+[   88.4 s] Pliegue 3/4 Â· prueba 6/10 Â· PR-AUC interna 0,0018
+[   92.4 s] Pliegue 3/4 Â· prueba 7/10 Â· PR-AUC interna 0,0359
+[   96.5 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0358
+[   98.3 s] Pliegue 3/4 Â· prueba 9/10 Â· podada
+[  102.5 s] Pliegue 3/4 Â· prueba 10/10 Â· PR-AUC interna 0,0369
+[  104.9 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,01777
+[  109.7 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0005
+[  114.6 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0297
+[  119.3 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0118
+[  124.1 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0025
+[  128.9 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0006
+[  133.6 s] Pliegue 4/4 Â· prueba 6/10 Â· PR-AUC interna 0,0021
+[  135.8 s] Pliegue 4/4 Â· prueba 7/10 Â· podada
+[  138.1 s] Pliegue 4/4 Â· prueba 8/10 Â· podada
+[  140.3 s] Pliegue 4/4 Â· prueba 9/10 Â· podada
+[  142.5 s] Pliegue 4/4 Â· prueba 10/10 Â· podada
+[  145.2 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,00447
+[  145.2 s] Modelo final: bÃºsqueda en todo desarrollo
+[  150.6 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0097
+[  156.2 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0145
+[  161.5 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0097
+[  166.9 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0021
+[  172.2 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0097
+[  177.7 s] Modelo final Â· prueba 6/10 Â· PR-AUC interna 0,0097
+[  180.2 s] Modelo final Â· prueba 7/10 Â· podada
+[  182.8 s] Modelo final Â· prueba 8/10 Â· podada
+[  188.3 s] Modelo final Â· prueba 9/10 Â· PR-AUC interna 0,0147
+[  194.0 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0159
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100398,
+   "positives": 184,
+   "prevalence_pct": 0.00918,
+   "pr_auc": 0.00823,
+   "roc_auc": 0.8891,
+   "recall_1pct": 0.3261,
+   "recall_5pct": 0.5924
+  },
+  "validacion": {
+   "rows": 90353,
+   "positives": 191,
+   "prevalence_pct": 0.01059,
+   "pr_auc": 0.04067,
+   "roc_auc": 0.8607,
+   "recall_1pct": 0.3089,
+   "recall_5pct": 0.5131
+  }
+ },
+ "best_params": {
+  "C": 0.001185102516726142
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-b2c65416301b Creating 
+ Container radar-backend-run-b2c65416301b Created 

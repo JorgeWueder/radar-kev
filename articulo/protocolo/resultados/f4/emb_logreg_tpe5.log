@@ -1,0 +1,86 @@
+[    3.2 s] Pliegue 1/4 Â· prueba 1/10 Â· PR-AUC interna 0,0467
+[    4.5 s] Pliegue 1/4 Â· prueba 2/10 Â· PR-AUC interna 0,0418
+[    5.7 s] Pliegue 1/4 Â· prueba 3/10 Â· PR-AUC interna 0,0418
+[    6.9 s] Pliegue 1/4 Â· prueba 4/10 Â· PR-AUC interna 0,0418
+[    8.1 s] Pliegue 1/4 Â· prueba 5/10 Â· PR-AUC interna 0,0469
+[    8.7 s] Pliegue 1/4 Â· prueba 6/10 Â· podada
+[    9.2 s] Pliegue 1/4 Â· prueba 7/10 Â· podada
+[   10.4 s] Pliegue 1/4 Â· prueba 8/10 Â· PR-AUC interna 0,0568
+[   10.9 s] Pliegue 1/4 Â· prueba 9/10 Â· podada
+[   11.5 s] Pliegue 1/4 Â· prueba 10/10 Â· podada
+[   12.6 s] Pliegue 1/4 terminado Â· PR-AUC en outer_val 0,0003
+[   14.5 s] Pliegue 2/4 Â· prueba 1/10 Â· PR-AUC interna 0,0030
+[   16.3 s] Pliegue 2/4 Â· prueba 2/10 Â· PR-AUC interna 0,0212
+[   18.1 s] Pliegue 2/4 Â· prueba 3/10 Â· PR-AUC interna 0,0030
+[   19.9 s] Pliegue 2/4 Â· prueba 4/10 Â· PR-AUC interna 0,0030
+[   21.7 s] Pliegue 2/4 Â· prueba 5/10 Â· PR-AUC interna 0,0231
+[   22.5 s] Pliegue 2/4 Â· prueba 6/10 Â· podada
+[   24.3 s] Pliegue 2/4 Â· prueba 7/10 Â· PR-AUC interna 0,0428
+[   25.1 s] Pliegue 2/4 Â· prueba 8/10 Â· podada
+[   25.9 s] Pliegue 2/4 Â· prueba 9/10 Â· podada
+[   27.8 s] Pliegue 2/4 Â· prueba 10/10 Â· PR-AUC interna 0,0453
+[   29.2 s] Pliegue 2/4 terminado Â· PR-AUC en outer_val 0,00278
+[   31.6 s] Pliegue 3/4 Â· prueba 1/10 Â· PR-AUC interna 0,0007
+[   34.0 s] Pliegue 3/4 Â· prueba 2/10 Â· PR-AUC interna 0,0003
+[   36.4 s] Pliegue 3/4 Â· prueba 3/10 Â· PR-AUC interna 0,0026
+[   38.7 s] Pliegue 3/4 Â· prueba 4/10 Â· PR-AUC interna 0,0003
+[   41.0 s] Pliegue 3/4 Â· prueba 5/10 Â· PR-AUC interna 0,0003
+[   43.4 s] Pliegue 3/4 Â· prueba 6/10 Â· PR-AUC interna 0,0377
+[   45.8 s] Pliegue 3/4 Â· prueba 7/10 Â· PR-AUC interna 0,0194
+[   48.2 s] Pliegue 3/4 Â· prueba 8/10 Â· PR-AUC interna 0,0013
+[   50.6 s] Pliegue 3/4 Â· prueba 9/10 Â· PR-AUC interna 0,0025
+[   51.6 s] Pliegue 3/4 Â· prueba 10/10 Â· podada
+[   53.4 s] Pliegue 3/4 terminado Â· PR-AUC en outer_val 0,00045
+[   56.3 s] Pliegue 4/4 Â· prueba 1/10 Â· PR-AUC interna 0,0016
+[   59.4 s] Pliegue 4/4 Â· prueba 2/10 Â· PR-AUC interna 0,0321
+[   62.4 s] Pliegue 4/4 Â· prueba 3/10 Â· PR-AUC interna 0,0226
+[   65.6 s] Pliegue 4/4 Â· prueba 4/10 Â· PR-AUC interna 0,0015
+[   68.5 s] Pliegue 4/4 Â· prueba 5/10 Â· PR-AUC interna 0,0007
+[   69.9 s] Pliegue 4/4 Â· prueba 6/10 Â· podada
+[   72.9 s] Pliegue 4/4 Â· prueba 7/10 Â· PR-AUC interna 0,0226
+[   76.1 s] Pliegue 4/4 Â· prueba 8/10 Â· PR-AUC interna 0,0125
+[   77.4 s] Pliegue 4/4 Â· prueba 9/10 Â· podada
+[   80.4 s] Pliegue 4/4 Â· prueba 10/10 Â· PR-AUC interna 0,0235
+[   82.5 s] Pliegue 4/4 terminado Â· PR-AUC en outer_val 0,00315
+[   82.5 s] Modelo final: bÃºsqueda en todo desarrollo
+[   86.4 s] Modelo final Â· prueba 1/10 Â· PR-AUC interna 0,0019
+[   90.4 s] Modelo final Â· prueba 2/10 Â· PR-AUC interna 0,0190
+[   94.3 s] Modelo final Â· prueba 3/10 Â· PR-AUC interna 0,0006
+[   98.3 s] Modelo final Â· prueba 4/10 Â· PR-AUC interna 0,0015
+[  102.3 s] Modelo final Â· prueba 5/10 Â· PR-AUC interna 0,0006
+[  106.3 s] Modelo final Â· prueba 6/10 Â· PR-AUC interna 0,0028
+[  108.2 s] Modelo final Â· prueba 7/10 Â· podada
+[  110.1 s] Modelo final Â· prueba 8/10 Â· podada
+[  112.0 s] Modelo final Â· prueba 9/10 Â· podada
+[  116.2 s] Modelo final Â· prueba 10/10 Â· PR-AUC interna 0,0283
+{
+ "final_metrics": {
+  "prueba": {
+   "rows": 100336,
+   "positives": 184,
+   "prevalence_pct": 0.00919,
+   "pr_auc": 0.00799,
+   "roc_auc": 0.8934,
+   "recall_1pct": 0.3098,
+   "recall_5pct": 0.5598
+  },
+  "validacion": {
+   "rows": 87612,
+   "positives": 160,
+   "prevalence_pct": 0.00915,
+   "pr_auc": 0.02214,
+   "roc_auc": 0.8826,
+   "recall_1pct": 0.2812,
+   "recall_5pct": 0.525
+  }
+ },
+ "best_params": {
+  "C": 0.0009981045687116623
+ }
+}
+
+ Container radar-postgres-1 Running 
+ Container radar-postgres-1 Waiting 
+ Container radar-postgres-1 Healthy 
+ Container radar-backend-run-c73907d2fb1a Creating 
+ Container radar-backend-run-c73907d2fb1a Created 

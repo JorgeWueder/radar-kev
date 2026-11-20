@@ -1,0 +1,602 @@
+{
+ "per_snapshot": [
+  {
+   "snapshot": "2025-01-01",
+   "split": "desarrollo",
+   "rows": 13355,
+   "pos": 30,
+   "neg": 13325,
+   "unique_cve": 13355,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0112557686,
+   "label_window_end": "2025-04-01"
+  },
+  {
+   "snapshot": "2025-02-01",
+   "split": "desarrollo",
+   "rows": 13799,
+   "pos": 36,
+   "neg": 13763,
+   "unique_cve": 13799,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0130768337,
+   "label_window_end": "2025-05-02"
+  },
+  {
+   "snapshot": "2025-03-01",
+   "split": "desarrollo",
+   "rows": 13866,
+   "pos": 27,
+   "neg": 13839,
+   "unique_cve": 13866,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0097540886,
+   "label_window_end": "2025-05-30"
+  },
+  {
+   "snapshot": "2025-04-01",
+   "split": "desarrollo",
+   "rows": 13631,
+   "pos": 23,
+   "neg": 13608,
+   "unique_cve": 13631,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0084501971,
+   "label_window_end": "2025-06-30"
+  },
+  {
+   "snapshot": "2025-05-01",
+   "split": "desarrollo",
+   "rows": 13859,
+   "pos": 27,
+   "neg": 13832,
+   "unique_cve": 13859,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0097590244,
+   "label_window_end": "2025-07-30"
+  },
+  {
+   "snapshot": "2025-06-01",
+   "split": "desarrollo",
+   "rows": 13829,
+   "pos": 29,
+   "neg": 13800,
+   "unique_cve": 13829,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0105061425,
+   "label_window_end": "2025-08-30"
+  },
+  {
+   "snapshot": "2025-07-01",
+   "split": "desarrollo",
+   "rows": 14180,
+   "pos": 22,
+   "neg": 14158,
+   "unique_cve": 14180,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0077688554,
+   "label_window_end": "2025-09-29"
+  },
+  {
+   "snapshot": "2025-08-01",
+   "split": "desarrollo",
+   "rows": 14536,
+   "pos": 33,
+   "neg": 14503,
+   "unique_cve": 14536,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0113756623,
+   "label_window_end": "2025-10-30"
+  },
+  {
+   "snapshot": "2025-09-01",
+   "split": "desarrollo",
+   "rows": 14539,
+   "pos": 31,
+   "neg": 14508,
+   "unique_cve": 14539,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0106826194,
+   "label_window_end": "2025-11-30"
+  },
+  {
+   "snapshot": "2025-10-01",
+   "split": "desarrollo",
+   "rows": 14652,
+   "pos": 34,
+   "neg": 14618,
+   "unique_cve": 14652,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0116281456,
+   "label_window_end": "2025-12-30"
+  },
+  {
+   "snapshot": "2025-11-01",
+   "split": "desarrollo",
+   "rows": 14768,
+   "pos": 17,
+   "neg": 14751,
+   "unique_cve": 14768,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0057619892,
+   "label_window_end": "2026-01-30"
+  },
+  {
+   "snapshot": "2025-12-01",
+   "split": "desarrollo",
+   "rows": 15341,
+   "pos": 23,
+   "neg": 15318,
+   "unique_cve": 15341,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0075069439,
+   "label_window_end": "2026-03-01"
+  },
+  {
+   "snapshot": "2026-01-01",
+   "split": "desarrollo",
+   "rows": 15294,
+   "pos": 37,
+   "neg": 15257,
+   "unique_cve": 15294,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0121241116,
+   "label_window_end": "2026-04-01"
+  },
+  {
+   "snapshot": "2026-02-01",
+   "split": "desarrollo",
+   "rows": 15387,
+   "pos": 49,
+   "neg": 15338,
+   "unique_cve": 15387,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0159708483,
+   "label_window_end": "2026-05-02"
+  },
+  {
+   "snapshot": "2026-03-01",
+   "split": "validacion",
+   "rows": 15723,
+   "pos": 46,
+   "neg": 15677,
+   "unique_cve": 15723,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0146690222,
+   "label_window_end": "2026-05-30"
+  },
+  {
+   "snapshot": "2026-04-01",
+   "split": "validacion",
+   "rows": 16196,
+   "pos": 31,
+   "neg": 16165,
+   "unique_cve": 16196,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0095876981,
+   "label_window_end": "2026-06-30"
+  },
+  {
+   "snapshot": "2026-05-01",
+   "split": "validacion",
+   "rows": 16435,
+   "pos": 14,
+   "neg": 16421,
+   "unique_cve": 16435,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0042626525,
+   "label_window_end": "2026-07-30"
+  },
+  {
+   "snapshot": "2026-06-01",
+   "split": "prueba",
+   "rows": 16712,
+   "pos": 24,
+   "neg": 16688,
+   "unique_cve": 16712,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0071902787,
+   "label_window_end": "2026-08-30"
+  },
+  {
+   "snapshot": "2026-07-01",
+   "split": "prueba",
+   "rows": 17286,
+   "pos": 32,
+   "neg": 17254,
+   "unique_cve": 17286,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0092723522,
+   "label_window_end": "2026-09-29"
+  },
+  {
+   "snapshot": "2026-08-01",
+   "split": "prueba",
+   "rows": 17779,
+   "pos": 37,
+   "neg": 17742,
+   "unique_cve": 17779,
+   "neg_w": 20.0,
+   "prev_real_pct": 0.0104261477,
+   "label_window_end": "2026-10-30"
+  }
+ ],
+ "weights": {
+  "neg_weight_unique": [
+   20.0
+  ],
+  "pos_weight": [
+   1.0
+  ]
+ },
+ "epss_model_by_snapshot": {
+  "2025-01-01": "v2023.03.01",
+  "2025-02-01": "v2023.03.01",
+  "2025-03-01": "v2023.03.01",
+  "2025-04-01": "v2025.03.14",
+  "2025-05-01": "v2025.03.14",
+  "2025-06-01": "v2025.03.14",
+  "2025-07-01": "v2025.03.14",
+  "2025-08-01": "v2025.03.14",
+  "2025-09-01": "v2025.03.14",
+  "2025-10-01": "v2025.03.14",
+  "2025-11-01": "v2025.03.14",
+  "2025-12-01": "v2025.03.14",
+  "2026-01-01": "v2025.03.14",
+  "2026-02-01": "v2025.03.14",
+  "2026-03-01": "v2025.03.14",
+  "2026-04-01": "v2025.03.14",
+  "2026-05-01": "v2025.03.14",
+  "2026-06-01": "v2025.03.14",
+  "2026-07-01": "v2026.06.15",
+  "2026-08-01": "v2026.06.15"
+ },
+ "split_ranges": {
+  "desarrollo": {
+   "min": "2025-01-01",
+   "max": "2026-02-01"
+  },
+  "prueba": {
+   "min": "2026-06-01",
+   "max": "2026-08-01"
+  },
+  "validacion": {
+   "min": "2026-03-01",
+   "max": "2026-05-01"
+  }
+ },
+ "overlap": {
+  "dev_pos_total": 418,
+  "dev_pos_event_after_val_start": 49,
+  "val_pos_total": 91,
+  "val_pos_event_after_test_start": 9,
+  "dev_snaps_with_window_past_val_start": [
+   "2026-01-01",
+   "2026-02-01"
+  ],
+  "val_snaps_with_window_past_test_start": [
+   "2026-04-01",
+   "2026-05-01"
+  ],
+  "same_cve_positive_dev_and_val": 34,
+  "same_cve_positive_val_and_test": 7,
+  "same_cve_positive_dev_and_test": 0,
+  "cve_rows_mean_snapshots": 1.5143380079144395,
+  "positive_cve_unique": 264,
+  "positive_rows": 602,
+  "positive_cve_in_k_snapshots": {
+   "1": 71,
+   "2": 48,
+   "3": 145
+  },
+  "unique_positive_events": 264
+ },
+ "outer_folds": [
+  {
+   "fold": 1,
+   "train": [
+    "2025-01-01",
+    "2025-04-01"
+   ],
+   "val": [
+    "2025-05-01",
+    "2025-06-01"
+   ],
+   "n_train_snaps": 4,
+   "train_snaps_with_window_past_val_start": 3,
+   "val_pos": 56,
+   "train_pos": 116,
+   "train_pos_event_after_val_start": 23
+  },
+  {
+   "fold": 2,
+   "train": [
+    "2025-01-01",
+    "2025-06-01"
+   ],
+   "val": [
+    "2025-07-01",
+    "2025-08-01"
+   ],
+   "n_train_snaps": 6,
+   "train_snaps_with_window_past_val_start": 2,
+   "val_pos": 55,
+   "train_pos": 172,
+   "train_pos_event_after_val_start": 19
+  },
+  {
+   "fold": 3,
+   "train": [
+    "2025-01-01",
+    "2025-08-01"
+   ],
+   "val": [
+    "2025-09-01",
+    "2025-10-01"
+   ],
+   "n_train_snaps": 8,
+   "train_snaps_with_window_past_val_start": 2,
+   "val_pos": 65,
+   "train_pos": 227,
+   "train_pos_event_after_val_start": 30
+  },
+  {
+   "fold": 4,
+   "train": [
+    "2025-01-01",
+    "2025-10-01"
+   ],
+   "val": [
+    "2025-11-01",
+    "2025-12-01"
+   ],
+   "n_train_snaps": 10,
+   "train_snaps_with_window_past_val_start": 2,
+   "val_pos": 40,
+   "train_pos": 292,
+   "train_pos_event_after_val_start": 10
+  },
+  {
+   "fold": 5,
+   "train": [
+    "2025-01-01",
+    "2025-12-01"
+   ],
+   "val": [
+    "2026-01-01",
+    "2026-02-01"
+   ],
+   "n_train_snaps": 12,
+   "train_snaps_with_window_past_val_start": 2,
+   "val_pos": 86,
+   "train_pos": 332,
+   "train_pos_event_after_val_start": 23
+  }
+ ],
+ "embargo_cost": {
+  "dev_to_val_snaps_lost": 2,
+  "val_to_test_snaps_lost": 2,
+  "outer_folds_lost": [
+   3,
+   2,
+   2,
+   2,
+   2
+  ]
+ },
+ "inner_final_search_folds": [
+  {
+   "train_n": 5,
+   "val": [
+    "2025-06-01",
+    "2025-08-01"
+   ],
+   "leaky_train_snaps": 2
+  },
+  {
+   "train_n": 8,
+   "val": [
+    "2025-09-01",
+    "2025-11-01"
+   ],
+   "leaky_train_snaps": 2
+  },
+  {
+   "train_n": 11,
+   "val": [
+    "2025-12-01",
+    "2026-02-01"
+   ],
+   "leaky_train_snaps": 2
+  }
+ ],
+ "epss_scale": [
+  {
+   "epss_model": "v2023.03.01",
+   "first": "2025-01-01",
+   "last": "2025-03-01",
+   "rows": 41020,
+   "epss_p99": 0.8624593999999983
+  },
+  {
+   "epss_model": "v2025.03.14",
+   "first": "2025-04-01",
+   "last": "2026-06-01",
+   "rows": 225082,
+   "epss_p99": 0.7475
+  },
+  {
+   "epss_model": "v2026.06.15",
+   "first": "2026-07-01",
+   "last": "2026-08-01",
+   "rows": 35065,
+   "epss_p99": 0.5514436000000003
+  }
+ ],
+ "reproduced": {
+  "hgb": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.00168,
+    "roc_auc": 0.8521,
+    "recall_1pct": 0.3441,
+    "recall_5pct": 0.5054
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01893,
+    "roc_auc": 0.954,
+    "recall_1pct": 0.6374,
+    "recall_5pct": 0.8022
+   },
+   "base_epss_prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.00057,
+    "roc_auc": 0.6371,
+    "recall_1pct": 0.086,
+    "recall_5pct": 0.3226
+   },
+   "base_epss_validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01257,
+    "roc_auc": 0.7046,
+    "recall_1pct": 0.2198,
+    "recall_5pct": 0.4286
+   },
+   "base_cvss_prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.00132,
+    "roc_auc": 0.7856,
+    "recall_1pct": 0.2258,
+    "recall_5pct": 0.4946
+   },
+   "base_cvss_validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.00027,
+    "roc_auc": 0.627,
+    "recall_1pct": 0.0769,
+    "recall_5pct": 0.2308
+   },
+   "azar_prueba": {
+    "pr_auc_mean": 8.850000000000001e-05,
+    "prevalence_pct": 0.009
+   },
+   "azar_validacion": {
+    "pr_auc_mean": 0.0001035,
+    "prevalence_pct": 0.00943
+   }
+  },
+  "logreg": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.01151,
+    "roc_auc": 0.9203,
+    "recall_1pct": 0.3656,
+    "recall_5pct": 0.5914
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01281,
+    "roc_auc": 0.8619,
+    "recall_1pct": 0.2088,
+    "recall_5pct": 0.5055
+   }
+  },
+  "rf": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.01781,
+    "roc_auc": 0.9145,
+    "recall_1pct": 0.4194,
+    "recall_5pct": 0.6344
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01823,
+    "roc_auc": 0.9208,
+    "recall_1pct": 0.3407,
+    "recall_5pct": 0.6813
+   }
+  },
+  "hgb_sin_epss": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.01246,
+    "roc_auc": 0.8456,
+    "recall_1pct": 0.3333,
+    "recall_5pct": 0.4839
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01587,
+    "roc_auc": 0.9335,
+    "recall_1pct": 0.5275,
+    "recall_5pct": 0.7582
+   }
+  },
+  "hgb_sin_cvss": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.01301,
+    "roc_auc": 0.8316,
+    "recall_1pct": 0.2258,
+    "recall_5pct": 0.5054
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01804,
+    "roc_auc": 0.9165,
+    "recall_1pct": 0.5824,
+    "recall_5pct": 0.7582
+   }
+  },
+  "logreg_espacio": {
+   "prueba": {
+    "rows": 51777,
+    "positives": 93,
+    "prevalence_pct": 0.009,
+    "pr_auc": 0.00764,
+    "roc_auc": 0.8525,
+    "recall_1pct": 0.2903,
+    "recall_5pct": 0.4946
+   },
+   "validacion": {
+    "rows": 48354,
+    "positives": 91,
+    "prevalence_pct": 0.00943,
+    "pr_auc": 0.01343,
+    "roc_auc": 0.8329,
+    "recall_1pct": 0.2747,
+    "recall_5pct": 0.5604
+   }
+  }
+ }
+}

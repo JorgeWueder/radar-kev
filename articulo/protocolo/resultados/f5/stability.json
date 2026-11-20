@@ -1,0 +1,152 @@
+[
+ {
+  "snapshot": "2026-03-01",
+  "epss_version": "v2025.03.14",
+  "events": 46,
+  "logreg": {
+   "pr_auc": 0.04651,
+   "roc_auc": 0.8385
+  },
+  "random_forest": {
+   "pr_auc": 0.00939,
+   "roc_auc": 0.8331
+  },
+  "hgb": {
+   "pr_auc": 0.00442,
+   "roc_auc": 0.8337
+  },
+  "epss": {
+   "pr_auc": 0.02582,
+   "roc_auc": 0.673
+  },
+  "cvss": {
+   "pr_auc": 0.00043,
+   "roc_auc": 0.6276
+  }
+ },
+ {
+  "snapshot": "2026-04-01",
+  "epss_version": "v2025.03.14",
+  "events": 31,
+  "logreg": {
+   "pr_auc": 0.00146,
+   "roc_auc": 0.8751
+  },
+  "random_forest": {
+   "pr_auc": 0.00217,
+   "roc_auc": 0.8621
+  },
+  "hgb": {
+   "pr_auc": 0.00113,
+   "roc_auc": 0.8151
+  },
+  "epss": {
+   "pr_auc": 0.00143,
+   "roc_auc": 0.7144
+  },
+  "cvss": {
+   "pr_auc": 0.00024,
+   "roc_auc": 0.6356
+  }
+ },
+ {
+  "snapshot": "2026-05-01",
+  "epss_version": "v2025.03.14",
+  "events": 14,
+  "logreg": {
+   "pr_auc": 0.00472,
+   "roc_auc": 0.8854
+  },
+  "random_forest": {
+   "pr_auc": 0.00089,
+   "roc_auc": 0.8003
+  },
+  "hgb": {
+   "pr_auc": 0.00256,
+   "roc_auc": 0.6672
+  },
+  "epss": {
+   "pr_auc": 0.00149,
+   "roc_auc": 0.7893
+  },
+  "cvss": {
+   "pr_auc": 0.00019,
+   "roc_auc": 0.6112
+  }
+ },
+ {
+  "snapshot": "2026-06-01",
+  "epss_version": "v2025.03.14",
+  "events": 24,
+  "logreg": {
+   "pr_auc": 0.00416,
+   "roc_auc": 0.9185
+  },
+  "random_forest": {
+   "pr_auc": 0.04332,
+   "roc_auc": 0.8686
+  },
+  "hgb": {
+   "pr_auc": 0.00368,
+   "roc_auc": 0.8353
+  },
+  "epss": {
+   "pr_auc": 0.00031,
+   "roc_auc": 0.5284
+  },
+  "cvss": {
+   "pr_auc": 0.00136,
+   "roc_auc": 0.7673
+  }
+ },
+ {
+  "snapshot": "2026-07-01",
+  "epss_version": "v2026.06.15",
+  "events": 32,
+  "logreg": {
+   "pr_auc": 0.06175,
+   "roc_auc": 0.944
+  },
+  "random_forest": {
+   "pr_auc": 0.00699,
+   "roc_auc": 0.8473
+  },
+  "hgb": {
+   "pr_auc": 0.01812,
+   "roc_auc": 0.8796
+  },
+  "epss": {
+   "pr_auc": 0.00049,
+   "roc_auc": 0.634
+  },
+  "cvss": {
+   "pr_auc": 0.00193,
+   "roc_auc": 0.8278
+  }
+ },
+ {
+  "snapshot": "2026-08-01",
+  "epss_version": "v2026.06.15",
+  "events": 37,
+  "logreg": {
+   "pr_auc": 0.05139,
+   "roc_auc": 0.9246
+  },
+  "random_forest": {
+   "pr_auc": 0.08227,
+   "roc_auc": 0.8853
+  },
+  "hgb": {
+   "pr_auc": 0.00955,
+   "roc_auc": 0.9072
+  },
+  "epss": {
+   "pr_auc": 0.00197,
+   "roc_auc": 0.6684
+  },
+  "cvss": {
+   "pr_auc": 0.0008,
+   "roc_auc": 0.7567
+  }
+ }
+]
