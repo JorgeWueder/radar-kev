@@ -5,6 +5,7 @@ Cruza **cada día** el inventario propio de activos con el catálogo **KEV de CI
 - **Detección determinista** (sin IA): descarga de KEV y EPSS, cruce con pandas y decisión de "nueva entrada KEV en mi entorno".
 - **IA opcional** (Ollama local por defecto, Anthropic u OpenAI desde `.env`): enriquece tickets, responde consultas en lenguaje natural y redacta el resumen ejecutivo. Todo lo generado va marcado y queda en la bitácora.
 - **Operación**: alertas urgentes (app + correo + webhook), tickets de remediación con SLA, dashboard y reportes en PDF, Word y Excel.
+- **Laboratorio de modelos** (experimental, aparte de la detección): entrena y evalúa modelos que anticipan qué CVE entrarán a KEV.
 
 ## Arquitectura
 
@@ -19,6 +20,7 @@ flowchart LR
   API -->|LangChain| OL
   API -.-> CLOUD[Anthropic / OpenAI]
   API --> NVD[NVD] & MP[SMTP / Webhook]
+  API -.->|laboratorio| SRC[EPSS histórico · feeds NVD · Exploit-DB]
 ```
 
 Tres bases aisladas en un solo PostgreSQL (`radar`, `n8n`, `langflow`), cada una con su propio rol: n8n **no** puede leer la base de la app.
@@ -100,8 +102,8 @@ SLA en KEV: el `dueDate` de CISA (si se detectó después, la misma ventana desd
 
 ## Análisis estadístico
 
-Todo se calcula en el backend con pandas/numpy (sin SciPy ni modelos entrenados) y cada tabla o figura trae su lectura
-en español («Cómo leerla»).
+Todo se calcula en el backend con pandas/numpy (sin modelos entrenados: esos están aparte, en el
+[Laboratorio de modelos](#laboratorio-de-modelos-experimental)) y cada tabla o figura trae su lectura en español («Cómo leerla»).
 
 | Dónde | Qué responde | API |
 |---|---|---|
@@ -116,15 +118,65 @@ El score completo nunca se evalúa contra KEV (incluye KEV: daría un resultado 
 analíticos en PDF, Word (figuras a 600 DPI) y Excel: *Perfil del inventario*, *Evaluación de criterios frente a KEV* y
 *Prueba prospectiva de EPSS* (esta última necesita un cálculo guardado).
 
+## Laboratorio de modelos (experimental)
+
+Menú *Laboratorio*. Entrena modelos para una pregunta concreta: **¿qué CVE que hoy no están en KEV entrarán en los
+próximos N días?** (clasificación binaria). Es un módulo de análisis aparte: **nunca** cambia la detección, el score
+ni las alertas del radar. Sigue las fases del Promptuario del curso:
+
+| Fase | Qué hace | Dónde |
+|---|---|---|
+| 1 · Datos | Construye el dataset a partir de fuentes públicas, valida, describe las variables y guarda la procedencia (URL, fecha, SHA-256, licencia) | `ml/dataset.py`, `ml/profile.py` |
+| 2 · Entrenamiento | Regresión logística, random forest y gradient boosting con validación cruzada anidada **temporal** 5×3 y Optuna (TPE con semilla); ablación sin EPSS o sin CVSS | `ml/training.py` |
+| 3 · Evaluación | En prueba: PR-AUC, ROC-AUC, matrices de confusión, curvas, bootstrap pareado, McNemar, Friedman y estabilidad por mes | `ml/assess.py` |
+| 4 · Explicabilidad | Equivalentes tabulares de Grad-CAM++ (oclusión), mapas de atención (permutación, dependencia parcial 1D/2D) y máscaras caso por caso | `ml/explain.py` |
+| 5 · Reportes | Dataset, entrenamiento, evaluación y explicabilidad en PDF, Word (600 DPI) y Excel | `services/reports/lab.py` |
+| 6 · Inferencia | Predicción de un CVE (del dataset o con valores a mano): probabilidad calibrada con IC 90 %, severidad y explicación | `ml/inference.py` |
+| 7 · Optimización | Estudios de Optuna configurables (espacio, muestreador, poda, pruebas, tiempo), monitoreo en vivo, importancia fANOVA y avisos de rango | `ml/optimize.py` |
+
+**Datos.** Una fila es un CVE que aún no estaba en KEV en una foto mensual S; la etiqueta es si entró a KEV en (S, S+N].
+Fuentes: EPSS histórico diario de FIRST, KEV (tabla del radar), feeds 2.0 del NVD por año y `files_exploits.csv` de
+Exploit-DB. Solo se usan variables conocidas **en la fecha de la foto** (EPSS y su cambio, CVSS y CWE puestos por la
+propia CNA, antigüedad del CVE, exploits públicos con fecha anterior, KEV previos de la misma CNA). Se descartaron por
+fuga de información SSVC de CISA, el CVSS/CWE del NVD o de terceros, el número de referencias y Metasploit. La partición
+es temporal 70/15/15 por fotos (el futuro nunca predice el pasado); los negativos se muestrean con su peso (1/tasa).
+El modelo se **elige en validación** y se **informa en prueba**.
+
+**Uso.** La primera construcción descarga unos 290 MB (se guardan en el volumen `ml_data` y se reutilizan; con la caché,
+un dataset se arma en unos 3 minutos). Entrenar tarda de minutos (logística) a cerca de una hora (gradient boosting con
+15 pruebas). Los trabajos corren en segundo plano con su progreso en pantalla; **no reinicie el backend mientras
+entrena** (el trabajo queda «interrumpido»). Permisos `ml:view` (ver, predecir) y `ml:create` (construir, entrenar,
+lanzar estudios); la API está en `/api/v1/ml/*` y cada acción queda en la bitácora.
+
+**Resultados con datos reales** (20 fotos de ene-2025 a ago-2026, horizonte de 90 días, 301 167 filas y 602 entradas a
+KEV; prueba = jun a ago-2026 con 93 entradas):
+
+| Modelo | PR-AUC prueba | ROC-AUC prueba | Revisando el 1 % cubre |
+|---|---|---|---|
+| Random forest | 0,0178 | 0,914 | 42 % |
+| Regresión logística | 0,0115 | 0,920 | 37 % |
+| Gradient boosting (elegido en validación) | 0,0017 | 0,852 | 34 % |
+| EPSS solo, sin entrenar | 0,0006 | 0,637 | — |
+
+- Los modelos entrenados superan con holgura a EPSS solo, pero la prevalencia es de ~0,01 %: incluso el mejor acierta
+  pocas veces en términos absolutos. Sirven para ordenar, no como alarma.
+- El gradient boosting gana en validación y cae en prueba en los tres meses: generaliza peor a meses nuevos. Es el
+  ejemplo de por qué no se elige mirando la prueba.
+- Calibradas en validación, todas las probabilidades **sobreestiman** en prueba (en los cinco primeros modelos entra
+  entre el 50 % y el 80 % de lo esperado; en la logística reentrenada, el 12 %): hay deriva entre meses y conviene
+  recalibrar con datos recientes.
+- Optuna: en la logística, `class_weight` explica el 90 % de la variación; reentrenarla con un rango de C más amplio
+  empeoró el resultado (con tan pocos positivos, la regularización fuerte generaliza mejor).
+
 ## Pruebas
 
 ```bash
-docker compose run --rm backend pytest              # unos 230 tests (crea esquemas temporales; no toca los datos)
+docker compose run --rm backend pytest              # unos 270 tests, ~6 min (crea esquemas temporales; no toca los datos)
 docker compose run --rm backend sh -c "ruff check . && mypy app"
 cd frontend && npm ci && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Los tests de IA usan modelos simulados (nunca llaman a un LLM real). Los tests de backend necesitan la base de datos del `docker compose`.
+Los tests de IA usan modelos simulados (nunca llaman a un LLM real) y los del laboratorio, fuentes sintéticas (no descargan nada). Los tests de backend necesitan la base de datos del `docker compose`.
 
 ## Seguridad (resumen)
 
@@ -141,7 +193,7 @@ Los tests de IA usan modelos simulados (nunca llaman a un LLM real). Los tests d
 ## Estructura
 
 ```
-backend/        FastAPI (api/, services/ [cruce, score, reportes], ai/, models/, alembic/, tests/)
+backend/        FastAPI (api/, services/ [cruce, score, reportes], ai/, ml/ [laboratorio], models/, alembic/, tests/)
 frontend/       React + Vite + TypeScript + Tailwind v4
 n8n/            workflows versionados y script de importación
 langflow/flows/ flow de enriquecimiento de tickets
@@ -162,6 +214,8 @@ infra/          inicialización de PostgreSQL (3 bases)
 | `.env` con variables que parecen tener texto raro | No ponga comentarios en la misma línea de una variable vacía; Compose los toma como valor. |
 | LangFlow devuelve 403 tras recrearlo | Mantenga fijo `LANGFLOW_SECRET_KEY`; si cambió, reinicie el backend. |
 | Error al subir el `.sh` en Windows (`illegal option -`) | Finales de línea CRLF; el repositorio fuerza LF para `*.sh` (`.gitattributes`). |
+| Un entrenamiento o estudio del laboratorio aparece «Interrumpido por un reinicio» | Se reinició el backend mientras corría (los trabajos viven en el proceso). Vuelva a lanzarlo. |
+| Evaluación, explicabilidad o reporte del laboratorio dicen «calculando» o piden calcular | Se calculan una vez en segundo plano (minutos) y quedan en caché; los reportes de las fases 3 y 4 piden calcularlas antes. |
 
 ## Limitaciones conocidas
 
@@ -169,3 +223,4 @@ infra/          inicialización de PostgreSQL (3 bases)
 - Un modelo local de 3B es modesto: los controles detectan datos inventados (CVE, equipos, URLs) pero no toda imprecisión semántica; revise lo generado. Para más calidad use un modelo mayor o Anthropic/OpenAI.
 - La bitácora se protege con trigger y hash encadenado, pero el rol de la app es dueño de la tabla y podría quitar el trigger (mejora futura: rol de solo inserción).
 - PostgreSQL 16 es requisito del proyecto; n8n 3.x lo marca como "compatibilidad" (funciona).
+- Laboratorio: con 24 a 37 entradas a KEV por mes, las cifras mensuales son ruidosas y los intervalos, anchos. Los modelos se entrenan con meses hasta ago-2026 y no se reentrenan solos; con el tiempo hay que reconstruir el dataset y reentrenar.
